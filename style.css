@@ -112,9 +112,9 @@ select,.pill{
   font-weight:600;
   color:#6B7C8F;
   line-height:1.15;
-  margin-bottom:7px;
+  margin-bottom:4px;
   white-space:nowrap;
-  transform:translateY(-9px);
+  transform:translateY(-2px);
 }
 #optimalisasi .gauge.labeled .value{
   margin:0;
@@ -144,7 +144,7 @@ select,.pill{
   #optimalisasi .gauge .arc{width:190px;height:95px;border-width:16px}
   #optimalisasi .gauge-scale{width:190px}
   #optimalisasi .gauge-center{width:160px;bottom:25px}
-  #optimalisasi .gauge-label{font-size:8.5px;transform:translateY(-7px)}
+  #optimalisasi .gauge-label{font-size:8.5px;transform:translateY(-1px)}
   #optimalisasi .gauge.labeled .value{font-size:25px;transform:translateY(6px)}
 }
 .chart{padding:12px 14px}

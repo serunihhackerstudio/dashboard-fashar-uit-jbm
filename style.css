@@ -167,6 +167,17 @@ select,.pill{
 .ok{background:#DDF5E8;color:#17734C}.warn{background:#FFF2CD;color:#9B6A00}.bad{background:#FDE2DF;color:#A33C31}
 .page{display:none}.page.active{display:block}
 .section-title{font-weight:800;font-size:18px;letter-spacing:-.015em;margin:6px 0 12px}
+#health .health-columns{align-items:start}
+#health .health-column{min-width:0}
+#health .health-title{
+  min-height:56px;
+  display:flex;
+  align-items:flex-end;
+  margin:6px 0 12px;
+}
+@media (max-width:1050px){
+  #health .health-title{min-height:auto;align-items:flex-start}
+}
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .small-card{padding:16px;border-radius:12px;background:#fff;border:1px solid var(--line)}
 .small-card .big{font-size:28px;font-weight:800;letter-spacing:-.025em}

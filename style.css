@@ -524,3 +524,6 @@ select,.pill{
  #trafo .trafo-right-grid,#trafo .trafo-loan-grid{grid-template-columns:1fr}
  #trafo .trafo-map{height:240px}
 }
+
+/* Temporary: hide dashboard filters */
+.filters{display:none!important}

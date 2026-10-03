@@ -14,6 +14,7 @@ body{margin:0;font-family:'Poppins',Arial,sans-serif;background:var(--bg);color:
   box-shadow:4px 0 18px rgba(8,55,90,.08)
 }
 .sidebar.collapsed{width:72px}
+.sidebar.collapsed .toggle{left:50%;right:auto;transform:translateX(-50%)}
 .brand{padding:18px 52px 16px 16px;border-bottom:1px solid rgba(255,255,255,.12);min-height:78px}
 .brand .title{font-size:15px;font-weight:800;white-space:nowrap;line-height:1.2;letter-spacing:.005em}
 .brand .sub{font-size:11px;font-weight:600;opacity:.80;margin-top:4px;white-space:nowrap}

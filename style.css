@@ -293,55 +293,68 @@ select,.pill{
   align-self:start;
 }
 #kinerja .top-gauge-card .card-b{
-  padding:14px 16px 10px;
+  padding:14px 18px 12px;
 }
 #kinerja .hero-gauge{
   position:relative;
-  height:230px;
-  overflow:hidden;
+  height:178px;
+  overflow:visible;
 }
-#kinerja .hero-track,
+
+/* Full semicircle: grey outer track + fixed-color inner arc */
+#kinerja .hero-track{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:320px;
+  height:160px;
+  top:2px;
+  border:28px solid #E2E8EE;
+  border-bottom:0;
+  border-radius:320px 320px 0 0;
+  box-sizing:border-box;
+}
 #kinerja .hero-fill{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  width:460px;
-  height:230px;
-  border-radius:460px 460px 0 0;
+  width:278px;
+  height:139px;
+  top:23px;
   border-bottom:0;
+  border-radius:278px 278px 0 0;
   box-sizing:border-box;
-  top:4px;
 }
-#kinerja .hero-track{
-  border:42px solid #E2E8EE;
-  border-bottom:0;
-}
+
+/* Fixed colours — do not change by value */
 #kinerja .hero-gauge.gi .hero-fill{
-  border:42px solid #FF8617;
+  border:26px solid #FF8617;
   border-bottom:0;
 }
 #kinerja .hero-gauge.jar .hero-fill{
-  border:42px solid #46C78A;
+  border:26px solid #46C78A;
   border-bottom:0;
 }
+
 #kinerja .hero-center{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  bottom:38px;
-  width:270px;
+  bottom:24px;
+  width:230px;
   text-align:center;
   z-index:2;
 }
 #kinerja .hero-label{
-  font-size:15px;
+  font-size:11px;
   font-weight:600;
   color:#6B7C8F;
-  line-height:1.2;
-  margin-bottom:12px;
+  line-height:1.15;
+  margin-bottom:7px;
+  white-space:nowrap;
 }
 #kinerja .hero-value{
-  font-size:58px;
+  font-size:40px;
   line-height:1;
   font-weight:800;
   color:#143A6E;
@@ -351,45 +364,44 @@ select,.pill{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  bottom:2px;
-  width:460px;
+  bottom:-1px;
+  width:320px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  font-size:17px;
+  font-size:12px;
   font-weight:700;
   color:#6B7C8F;
   z-index:2;
 }
+
 @media (max-width:1360px){
-  #kinerja .hero-gauge{height:205px}
-  #kinerja .hero-track,
-  #kinerja .hero-fill{
-    width:400px;
-    height:200px;
-    border-radius:400px 400px 0 0;
+  #kinerja .hero-gauge{height:164px}
+  #kinerja .hero-track{
+    width:290px;height:145px;border-width:25px;border-radius:290px 290px 0 0;
   }
-  #kinerja .hero-track{border-width:36px}
+  #kinerja .hero-fill{
+    width:252px;height:126px;top:21px;border-radius:252px 252px 0 0;
+  }
   #kinerja .hero-gauge.gi .hero-fill,
-  #kinerja .hero-gauge.jar .hero-fill{border-width:36px}
-  #kinerja .hero-center{width:240px;bottom:34px}
-  #kinerja .hero-label{font-size:13px;margin-bottom:9px}
-  #kinerja .hero-value{font-size:50px}
-  #kinerja .hero-scale{width:400px;font-size:15px}
+  #kinerja .hero-gauge.jar .hero-fill{border-width:23px}
+  #kinerja .hero-center{width:210px;bottom:23px}
+  #kinerja .hero-label{font-size:10px;margin-bottom:6px}
+  #kinerja .hero-value{font-size:36px}
+  #kinerja .hero-scale{width:290px;font-size:11px}
 }
 @media (max-width:1100px){
-  #kinerja .hero-gauge{height:175px}
-  #kinerja .hero-track,
-  #kinerja .hero-fill{
-    width:330px;
-    height:165px;
-    border-radius:330px 330px 0 0;
+  #kinerja .hero-gauge{height:150px}
+  #kinerja .hero-track{
+    width:260px;height:130px;border-width:22px;border-radius:260px 260px 0 0;
   }
-  #kinerja .hero-track{border-width:28px}
+  #kinerja .hero-fill{
+    width:226px;height:113px;top:19px;border-radius:226px 226px 0 0;
+  }
   #kinerja .hero-gauge.gi .hero-fill,
-  #kinerja .hero-gauge.jar .hero-fill{border-width:28px}
-  #kinerja .hero-center{width:210px;bottom:27px}
-  #kinerja .hero-label{font-size:11px;margin-bottom:7px}
-  #kinerja .hero-value{font-size:40px}
-  #kinerja .hero-scale{width:330px;font-size:13px}
+  #kinerja .hero-gauge.jar .hero-fill{border-width:20px}
+  #kinerja .hero-center{width:190px;bottom:21px}
+  #kinerja .hero-label{font-size:9px;margin-bottom:5px}
+  #kinerja .hero-value{font-size:32px}
+  #kinerja .hero-scale{width:260px;font-size:10px}
 }

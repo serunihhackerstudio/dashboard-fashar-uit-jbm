@@ -89,10 +89,7 @@ select,.pill{
 .map-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:600;margin-top:8px}
 .comp-wrap{position:relative;overflow:hidden}
 .worker-bg{
- position:absolute;right:0;bottom:0;width:38%;height:100%;
- background:linear-gradient(90deg,rgba(255,255,255,1),rgba(255,255,255,.45)),
-            radial-gradient(circle at 80% 35%,rgba(72,145,180,.20),transparent 55%);
- opacity:.55
+ display:none
 }
 .table{width:100%;border-collapse:collapse;font-size:12px;font-weight:500}
 .table th,.table td{padding:9px;border-bottom:1px solid var(--line);text-align:left}

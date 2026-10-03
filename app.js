@@ -53,15 +53,80 @@ function filterMaterialTable(cardIndex, query){
   if(empty) empty.style.display=visible?"none":"block";
 }
 
-const trafos=[
-["UPT MALANG","GI 150 kV Ngoro","CG Pauwels - 30 MVA","Berbeban","Extension trafo AI 2024 rencana onsite 2027"],
-["UPT PROBOLINGGO","GISTET 500 kV Paiton","CG Pauwels - 30 MVA","Standby","Rencana perbaikan 2026"],
-["UPT BALI","GI 150 kV Gianyar","CG Pauwels - 30 MVA","Berbeban","Belum ada extension trafo"],
-["UPT MADIUN","GI 150 kV New Tulungagung","CG Pauwels - 30 MVA","Berbeban","Hanya 1 trafo"],
-["UPT GRESIK","GIS 150 kV Tandes","ABB","Rusak","Rencana ATT"],
-["UPT SURABAYA","GI 150 kV Kalisari","ABB - 30 MVA","Rusak","Rencana ATT"]
-]
-document.getElementById("trafoCards").innerHTML=trafos.map(t=>`<div class="asset-card"><h4>${t[0]}</h4><div><b>${t[1]}</b></div><div class="muted">${t[2]} · ${t[3]}</div><div style="margin-top:8px">${t[4]}</div></div>`).join("");
+const trafoIcons={
+ location:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.2-7-11a7 7 0 1 1 14 0c0 5.8-7 11-7 11Z" fill="white"/><circle cx="12" cy="10" r="2.8" fill="#8A867A"/></svg>`,
+ doc:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" fill="white"/><rect x="7" y="8" width="10" height="1.8" rx=".9" fill="#8A867A"/><rect x="7" y="12" width="8" height="1.8" rx=".9" fill="#8A867A"/></svg>`,
+ transformer:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="5" y="7" width="14" height="10" rx="2" fill="white"/><rect x="8" y="4" width="2" height="3" fill="white"/><rect x="14" y="4" width="2" height="3" fill="white"/><rect x="8" y="17" width="2" height="3" fill="white"/><rect x="14" y="17" width="2" height="3" fill="white"/></svg>`,
+ rotate:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v-5h5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 9a7 7 0 0 1 11-2" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M17 15a7 7 0 0 1-11 2" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
+ gear:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z" fill="white"/><path d="M12 2l1.3 2.6 2.9.5-.9 2.8 2 2-2 2 .9 2.8-2.9.5L12 22l-1.3-2.6-2.9-.5.9-2.8-2-2 2-2-.9-2.8 2.9-.5L12 2Z" stroke="white" stroke-width="1.4" stroke-linejoin="round"/></svg>`
+};
+
+const trafoUptData=[
+ {title:"UPT MALANG",tone:"green",items:[
+  {icon:"location",text:"GI 150 kV Ngoro"},
+  {icon:"doc",text:"Perkuatan GI Ngoro (Pertumbuhan beban)"},
+  {icon:"transformer",text:"CG Pauwels - 30 MVA (Berbeban)"},
+  {icon:"rotate",text:"Extension trafo AI 2024 rencana onsite 2027"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]},
+ {title:"UPT PROBOLINGGO",tone:"green",items:[
+  {icon:"location",text:"GISTET 500 kV Paiton"},
+  {icon:"doc",text:"Perkuatan trafo TFT karena hanya 1 bay trafo"},
+  {icon:"transformer",text:"CG Pauwels - 30 MVA (Standby)"},
+  {icon:"rotate",text:"Rencana perbaikan 2026"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]},
+ {title:"UPT BALI",tone:"green",items:[
+  {icon:"location",text:"GI 150 kV Gianyar"},
+  {icon:"doc",text:"Perkuatan GI Ngoro (Pertumbuhan beban)"},
+  {icon:"transformer",text:"CG Pauwels - 30 MVA (Berbeban)"},
+  {icon:"rotate",text:"Belum ada ekstension trafo karena terkendala pembebasan lahan"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel"}]},
+ {title:"UPT MADIUN",tone:"green",items:[
+  {icon:"location",text:"GI 150 kV New Tulungagung"},
+  {icon:"doc",text:"Perkuatan GI New Tul (Pertumbuhan beban)"},
+  {icon:"transformer",text:"CG Pauwels - 30 MVA (Berbeban)"},
+  {icon:"rotate",text:"Hanya 1 trafo"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]}
+];
+
+const trafoLoanData=[
+ {title:"IKN",tone:"amber",items:[
+  {icon:"location",text:"IKN"},
+  {icon:"doc",text:"Pendukung Pembangunan IKN"},
+  {icon:"transformer",text:"CG Pauwels - 30 MVA"},
+  {icon:"rotate",text:"-"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]},
+ {title:"GI 150 kV GARUDA SAKTI",tone:"amber",items:[
+  {icon:"location",text:"GI 150 kV Garuda Sakti"},
+  {icon:"doc",text:"Program High Quality Growth 2024"},
+  {icon:"transformer",text:"Fuji Electric - 20 MVA"},
+  {icon:"rotate",text:"-"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel"}]},
+ {title:"UPT GRESIK",tone:"red",items:[
+  {icon:"location",text:"GIS 150 kV Tandes"},
+  {icon:"doc",text:"Kondisi Tidak Layak Operasi / Rusak Berat"},
+  {icon:"transformer",text:"ABB (Rusak)"},
+  {icon:"rotate",text:"Rencana ATTB"},
+  {icon:"gear",text:"MTU, Kubikel"}]},
+ {title:"UPT SURABAYA",tone:"red",items:[
+  {icon:"location",text:"GI 150 kV Kalisari"},
+  {icon:"doc",text:"Hasil uji buruk pada belitan HV to Ground, OLTC rusak dan hasil uji winding buruk"},
+  {icon:"transformer",text:"ABB - 30 MVA (Rusak)"},
+  {icon:"rotate",text:"Rencana ATTB"},
+  {icon:"gear",text:"Trafo, MTU, Kubikel"}]}
+];
+
+function renderTrafoCard(card,loan=false){
+ return `<div class="${loan?'loan-card':'trafo-asset-card'}">
+  <div class="trafo-asset-head ${card.tone||''}">${card.title}</div>
+  <div class="${loan?'loan-body':'trafo-asset-body'}">
+   <div class="info-list">
+    ${card.items.map(item=>`<div class="info-row">${trafoIcons[item.icon]}<div class="info-text">${item.text}</div></div>`).join("")}
+   </div>
+  </div>
+ </div>`;
+}
+document.getElementById("trafoUptCards").innerHTML=trafoUptData.map(c=>renderTrafoCard(c,false)).join("");
+document.getElementById("trafoLoanCards").innerHTML=trafoLoanData.map(c=>renderTrafoCard(c,true)).join("");
 
 function go(id,el){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));

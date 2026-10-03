@@ -31,6 +31,10 @@ body{margin:0;font-family:'Poppins',Arial,sans-serif;background:var(--bg);color:
 .nav-item.active{background:linear-gradient(90deg,#22B6DE,#2795CF)}
 .nav-item svg{width:18px;height:18px;flex:0 0 18px;stroke:white;fill:none;stroke-width:2}
 .sidebar.collapsed .nav-label{display:none}
+.sidebar.collapsed .nav{padding-left:8px;padding-right:8px}
+.sidebar.collapsed .nav-item{justify-content:center;gap:0;padding-left:0;padding-right:0}
+.sidebar.collapsed .nav-item svg{margin:0;flex:0 0 18px}
+.sidebar.collapsed .brand{padding-left:0;padding-right:0;text-align:center}
 .main{flex:1;min-width:0}
 .topbar{
   min-height:82px;background:#fff;border-bottom:1px solid var(--line);

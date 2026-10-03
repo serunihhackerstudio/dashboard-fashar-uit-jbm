@@ -210,3 +210,45 @@ select,.pill{
  .content{padding:14px}.g3,.g2,.g4,.kpi-row{grid-template-columns:1fr}
  .topbar{padding:10px 14px;min-height:64px;grid-template-columns:1fr}.page-title{font-size:19px;white-space:normal}.filters{display:none}
 }
+/* Kinerja top gauges: compact proportions */
+#kinerja .top-gauge-card .card-b{
+  padding:14px 16px 12px;
+}
+#kinerja .top-gauge{
+  height:165px;
+  position:relative;
+}
+#kinerja .top-gauge:before,
+#kinerja .top-gauge .arc{
+  width:230px;
+  height:115px;
+  border-width:18px;
+  border-radius:230px 230px 0 0;
+  bottom:18px;
+}
+#kinerja .top-gauge .value{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:42px;
+  margin:0;
+  font-size:34px;
+  line-height:1;
+  font-weight:800;
+}
+#kinerja .top-gauge-card{
+  min-height:auto;
+}
+@media (max-width:1250px){
+  #kinerja .top-gauge{height:150px}
+  #kinerja .top-gauge:before,
+  #kinerja .top-gauge .arc{
+    width:205px;
+    height:102px;
+    border-width:17px;
+  }
+  #kinerja .top-gauge .value{
+    font-size:30px;
+    bottom:39px;
+  }
+}

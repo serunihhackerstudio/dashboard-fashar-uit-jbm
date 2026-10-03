@@ -270,7 +270,7 @@ select,.pill{
 #tower .tower-kpi .muted{
   color:rgba(255,255,255,.9);
   font-weight:600;
-  font-size:12.5px;
+  font-size:14px;
   line-height:1.25;
   text-align:center;
 }

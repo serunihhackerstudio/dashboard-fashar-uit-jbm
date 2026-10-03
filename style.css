@@ -415,3 +415,43 @@ select,.pill{
   #kinerja .hero-value{font-size:29px}
   #kinerja .hero-scale{width:210px;font-size:9px}
 }
+
+
+/* Dynamically enlarge Kinerja gauges when sidebar is collapsed */
+@media (min-width:1101px){
+  .sidebar.collapsed + .main #kinerja .hero-gauge{
+    max-width:340px;
+    height:176px;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-track{
+    width:320px;
+    height:160px;
+    border-width:27px;
+    border-radius:320px 320px 0 0;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-fill{
+    width:280px;
+    height:140px;
+    top:22px;
+    border-radius:280px 280px 0 0;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-gauge.gi .hero-fill,
+  .sidebar.collapsed + .main #kinerja .hero-gauge.jar .hero-fill{
+    border-width:25px;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-center{
+    width:230px;
+    bottom:25px;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-label{
+    font-size:10.5px;
+    margin-bottom:5px;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-value{
+    font-size:38px;
+  }
+  .sidebar.collapsed + .main #kinerja .hero-scale{
+    width:320px;
+    font-size:10.5px;
+  }
+}

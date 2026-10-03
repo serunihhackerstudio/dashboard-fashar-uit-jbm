@@ -23,7 +23,35 @@ const mats={
  "TOWER SOLUTION":[["Transfer Rod",324],["Tower Section",72],["Base Pivot",15],["Bolt Assembly",498],["Universal attachment",30]],
  "SBB":[["Mast Section",22],["Universal Bracket",27],["Line Post Insulator Bracket",6],["Bolt 3/4",180],["Hex Nut 3/4",374]]
 }
-document.getElementById("materialTables").innerHTML=Object.entries(mats).map(([k,rows])=>`<div class="card"><div class="card-h red">${k}</div><div class="card-b"><table class="table"><thead><tr><th>MATERIAL</th><th>JUMLAH</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody></table></div></div>`).join("");
+document.getElementById("materialTables").innerHTML=Object.entries(mats).map(([k,rows],idx)=>`
+<div class="card material-card" data-material-card="${idx}">
+  <div class="card-h red">${k}</div>
+  <div class="material-search-wrap">
+    <input class="material-search" type="search" placeholder="Cari material..." aria-label="Cari material ${k}" oninput="filterMaterialTable(${idx}, this.value)">
+  </div>
+  <div class="card-b">
+    <table class="table">
+      <thead><tr><th>MATERIAL</th><th>JUMLAH</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr data-material-row><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody>
+    </table>
+    <div class="material-empty" style="display:none">Material tidak ditemukan.</div>
+  </div>
+</div>`).join("");
+
+function filterMaterialTable(cardIndex, query){
+  const card=document.querySelector(`[data-material-card="${cardIndex}"]`);
+  if(!card) return;
+  const q=(query||"").trim().toLowerCase();
+  const rows=[...card.querySelectorAll("[data-material-row]")];
+  let visible=0;
+  rows.forEach(row=>{
+    const match=row.textContent.toLowerCase().includes(q);
+    row.style.display=match?"":"none";
+    if(match) visible++;
+  });
+  const empty=card.querySelector(".material-empty");
+  if(empty) empty.style.display=visible?"none":"block";
+}
 
 const trafos=[
 ["UPT MALANG","GI 150 kV Ngoro","CG Pauwels - 30 MVA","Berbeban","Extension trafo AI 2024 rencana onsite 2027"],

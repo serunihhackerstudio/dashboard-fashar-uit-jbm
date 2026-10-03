@@ -287,52 +287,61 @@ select,.pill{
    HERO GAUGE - KINERJA PDKB
    ========================= */
 #kinerja > .grid.g3:first-of-type{
-  align-items:start;
+  align-items:stretch;
 }
 #kinerja .top-gauge-card{
-  align-self:start;
+  display:flex;
+  flex-direction:column;
+  height:100%;
 }
 #kinerja .top-gauge-card .card-b{
-  padding:14px 18px 12px;
+  flex:1;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 #kinerja .hero-gauge{
   position:relative;
-  height:178px;
-  overflow:visible;
+  width:100%;
+  max-width:290px;
+  height:158px;
+  overflow:hidden;
+  margin:0 auto;
 }
 
-/* Full semicircle: grey outer track + fixed-color inner arc */
+/* Full semicircle: contained inside card */
 #kinerja .hero-track{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  width:320px;
-  height:160px;
-  top:2px;
-  border:28px solid #E2E8EE;
+  width:270px;
+  height:135px;
+  top:3px;
+  border:23px solid #E2E8EE;
   border-bottom:0;
-  border-radius:320px 320px 0 0;
+  border-radius:270px 270px 0 0;
   box-sizing:border-box;
 }
 #kinerja .hero-fill{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  width:278px;
-  height:139px;
-  top:23px;
+  width:236px;
+  height:118px;
+  top:20px;
   border-bottom:0;
-  border-radius:278px 278px 0 0;
+  border-radius:236px 236px 0 0;
   box-sizing:border-box;
 }
 
-/* Fixed colours — do not change by value */
+/* Fixed colours */
 #kinerja .hero-gauge.gi .hero-fill{
-  border:26px solid #FF8617;
+  border:21px solid #FF8617;
   border-bottom:0;
 }
 #kinerja .hero-gauge.jar .hero-fill{
-  border:26px solid #46C78A;
+  border:21px solid #46C78A;
   border-bottom:0;
 }
 
@@ -341,20 +350,20 @@ select,.pill{
   left:50%;
   transform:translateX(-50%);
   bottom:24px;
-  width:230px;
+  width:205px;
   text-align:center;
   z-index:2;
 }
 #kinerja .hero-label{
-  font-size:11px;
+  font-size:10px;
   font-weight:600;
   color:#6B7C8F;
   line-height:1.15;
-  margin-bottom:7px;
+  margin-bottom:5px;
   white-space:nowrap;
 }
 #kinerja .hero-value{
-  font-size:40px;
+  font-size:35px;
   line-height:1;
   font-weight:800;
   color:#143A6E;
@@ -364,44 +373,45 @@ select,.pill{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  bottom:-1px;
-  width:320px;
+  bottom:2px;
+  width:270px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  font-size:12px;
+  padding:0 2px;
+  font-size:10px;
   font-weight:700;
   color:#6B7C8F;
   z-index:2;
 }
 
 @media (max-width:1360px){
-  #kinerja .hero-gauge{height:164px}
+  #kinerja .hero-gauge{max-width:255px;height:146px}
   #kinerja .hero-track{
-    width:290px;height:145px;border-width:25px;border-radius:290px 290px 0 0;
+    width:238px;height:119px;border-width:20px;border-radius:238px 238px 0 0;
   }
   #kinerja .hero-fill{
-    width:252px;height:126px;top:21px;border-radius:252px 252px 0 0;
+    width:208px;height:104px;top:18px;border-radius:208px 208px 0 0;
   }
   #kinerja .hero-gauge.gi .hero-fill,
-  #kinerja .hero-gauge.jar .hero-fill{border-width:23px}
-  #kinerja .hero-center{width:210px;bottom:23px}
-  #kinerja .hero-label{font-size:10px;margin-bottom:6px}
-  #kinerja .hero-value{font-size:36px}
-  #kinerja .hero-scale{width:290px;font-size:11px}
+  #kinerja .hero-gauge.jar .hero-fill{border-width:18px}
+  #kinerja .hero-center{width:185px;bottom:22px}
+  #kinerja .hero-label{font-size:9px;margin-bottom:4px}
+  #kinerja .hero-value{font-size:32px}
+  #kinerja .hero-scale{width:238px;font-size:9px}
 }
 @media (max-width:1100px){
-  #kinerja .hero-gauge{height:150px}
+  #kinerja .hero-gauge{max-width:225px;height:136px}
   #kinerja .hero-track{
-    width:260px;height:130px;border-width:22px;border-radius:260px 260px 0 0;
+    width:210px;height:105px;border-width:18px;border-radius:210px 210px 0 0;
   }
   #kinerja .hero-fill{
-    width:226px;height:113px;top:19px;border-radius:226px 226px 0 0;
+    width:184px;height:92px;top:16px;border-radius:184px 184px 0 0;
   }
   #kinerja .hero-gauge.gi .hero-fill,
-  #kinerja .hero-gauge.jar .hero-fill{border-width:20px}
-  #kinerja .hero-center{width:190px;bottom:21px}
-  #kinerja .hero-label{font-size:9px;margin-bottom:5px}
-  #kinerja .hero-value{font-size:32px}
-  #kinerja .hero-scale{width:260px;font-size:10px}
+  #kinerja .hero-gauge.jar .hero-fill{border-width:16px}
+  #kinerja .hero-center{width:170px;bottom:21px}
+  #kinerja .hero-label{font-size:8.5px;margin-bottom:4px}
+  #kinerja .hero-value{font-size:29px}
+  #kinerja .hero-scale{width:210px;font-size:9px}
 }

@@ -98,7 +98,7 @@ select,.pill{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  bottom:40px;
+  bottom:27px;
   width:180px;
   display:flex;
   flex-direction:column;
@@ -112,8 +112,9 @@ select,.pill{
   font-weight:600;
   color:#6B7C8F;
   line-height:1.15;
-  margin-bottom:5px;
+  margin-bottom:7px;
   white-space:nowrap;
+  transform:translateY(-9px);
 }
 #optimalisasi .gauge.labeled .value{
   margin:0;
@@ -121,6 +122,7 @@ select,.pill{
   line-height:1;
   font-weight:800;
   color:var(--text);
+  transform:translateY(7px);
 }
 #optimalisasi .gauge-scale{
   position:absolute;
@@ -141,9 +143,9 @@ select,.pill{
   #optimalisasi .gauge:before,
   #optimalisasi .gauge .arc{width:190px;height:95px;border-width:16px}
   #optimalisasi .gauge-scale{width:190px}
-  #optimalisasi .gauge-center{width:160px}
-  #optimalisasi .gauge-label{font-size:8.5px}
-  #optimalisasi .gauge.labeled .value{font-size:25px}
+  #optimalisasi .gauge-center{width:160px;bottom:25px}
+  #optimalisasi .gauge-label{font-size:8.5px;transform:translateY(-7px)}
+  #optimalisasi .gauge.labeled .value{font-size:25px;transform:translateY(6px)}
 }
 .chart{padding:12px 14px}
 .bar-row{display:grid;grid-template-columns:110px 1fr 42px;gap:10px;align-items:center;margin:8px 0;font-size:12px;font-weight:600}

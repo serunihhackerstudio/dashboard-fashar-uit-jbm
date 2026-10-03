@@ -279,8 +279,7 @@ select,.pill{
 #tower .kpi-amber{background:linear-gradient(135deg,#F4B73F,#D99815)}
 
 #tower .tower-map-grid{
-  grid-template-columns:minmax(0,3fr) minmax(240px,1fr);
-  gap:14px;
+  display:block;
 }
 #tower .tower-map-grid .mapbox{
   height:auto;

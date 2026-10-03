@@ -78,11 +78,73 @@ select,.pill{
 }
 .gauge.blueg .arc{border-color:#61D9E8}
 .gauge .value{font-size:28px;font-weight:800;letter-spacing:-.025em;z-index:2;margin-bottom:12px}
-.gauge.labeled{padding-top:8px}
-.gauge-center{position:absolute;left:0;right:0;bottom:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center}
-.gauge-label{font-size:10px;font-weight:600;color:var(--muted);line-height:1.1;margin-bottom:4px}
-.gauge.labeled .value{margin-bottom:0;font-size:26px}
-.gauge-scale{position:absolute;left:18px;right:18px;bottom:6px;display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:600;z-index:2}
+
+/* Optimalisasi gauges: cleaner, centered, and closer to Looker Studio reference */
+#optimalisasi .card-b{padding:16px 18px 14px}
+#optimalisasi .gauge{
+  height:150px;
+  min-width:0;
+  overflow:visible;
+}
+#optimalisasi .gauge:before,
+#optimalisasi .gauge .arc{
+  width:220px;
+  height:110px;
+  border-width:18px;
+  border-radius:220px 220px 0 0;
+  bottom:18px;
+}
+#optimalisasi .gauge-center{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:40px;
+  width:180px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+  text-align:center;
+}
+#optimalisasi .gauge-label{
+  font-size:9.5px;
+  font-weight:600;
+  color:#6B7C8F;
+  line-height:1.15;
+  margin-bottom:5px;
+  white-space:nowrap;
+}
+#optimalisasi .gauge.labeled .value{
+  margin:0;
+  font-size:28px;
+  line-height:1;
+  font-weight:800;
+  color:var(--text);
+}
+#optimalisasi .gauge-scale{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:220px;
+  bottom:7px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:10px;
+  line-height:1;
+  color:#6B7C8F;
+  font-weight:600;
+  z-index:2;
+}
+@media (max-width:1250px){
+  #optimalisasi .gauge:before,
+  #optimalisasi .gauge .arc{width:190px;height:95px;border-width:16px}
+  #optimalisasi .gauge-scale{width:190px}
+  #optimalisasi .gauge-center{width:160px}
+  #optimalisasi .gauge-label{font-size:8.5px}
+  #optimalisasi .gauge.labeled .value{font-size:25px}
+}
 .chart{padding:12px 14px}
 .bar-row{display:grid;grid-template-columns:110px 1fr 42px;gap:10px;align-items:center;margin:8px 0;font-size:12px;font-weight:600}
 .bar{height:10px;background:#EEF3F6;border-radius:8px;overflow:hidden}.fill{height:100%;border-radius:8px;background:var(--orange)}

@@ -19,9 +19,42 @@ function assess(target,title){
 assess("jarGrid","JAR"); assess("giGrid","GI");
 
 const mats={
- "LINDSEY":[["POST INSULATOR SUPPORT",3],["TOWER GIMBAL",8],["4-WAY GUY PLATE",19],["GUY PLATE",17],["OVERHEAD GROUND WIRE BRACKET",3]],
- "TOWER SOLUTION":[["Transfer Rod",324],["Tower Section",72],["Base Pivot",15],["Bolt Assembly",498],["Universal attachment",30]],
- "SBB":[["Mast Section",22],["Universal Bracket",27],["Line Post Insulator Bracket",6],["Bolt 3/4",180],["Hex Nut 3/4",374]]
+ "LINDSEY":[
+  ["POST INSULATOR SUPPORT",3],
+  ["TOWER GIMBAL",8],
+  ["4-WAY GUY PLATE",19],
+  ["GUY PLATE",17],
+  ["OVERHEAD GROUND WIRE BRACKET",3],
+  ["ANCHOR BRACKET (MOCK)",12],
+  ["CROSS ARM SUPPORT (MOCK)",7],
+  ["INSULATOR CLAMP (MOCK)",21],
+  ["GUY WIRE FITTING (MOCK)",14],
+  ["STRUCTURE CONNECTOR (MOCK)",9]
+ ],
+ "TOWER SOLUTION":[
+  ["Transfer Rod",324],
+  ["Tower Section",72],
+  ["Base Pivot",15],
+  ["Bolt Assembly",498],
+  ["Universal attachment",30],
+  ["Extension Mast (MOCK)",18],
+  ["Support Bracket (MOCK)",42],
+  ["Pivot Connector (MOCK)",24],
+  ["Guy Assembly (MOCK)",36],
+  ["Foundation Plate (MOCK)",11]
+ ],
+ "SBB":[
+  ["Mast Section",22],
+  ["Universal Bracket",27],
+  ["Line Post Insulator Bracket",6],
+  ["Bolt 3/4",180],
+  ["Hex Nut 3/4",374],
+  ["Diagonal Brace (MOCK)",34],
+  ["Base Plate (MOCK)",16],
+  ["Lock Washer 3/4 (MOCK)",210],
+  ["Connecting Plate (MOCK)",28],
+  ["Support Clamp (MOCK)",13]
+ ]
 }
 document.getElementById("materialTables").innerHTML=Object.entries(mats).map(([k,rows],idx)=>`
 <div class="card material-card" data-material-card="${idx}">

@@ -340,7 +340,7 @@ const tdbSt = s => TDB_STATUS[s] || TDB_STATUS["BELUM DIPASTIKAN"];
 const tdbName = k => title(k.replace(/^MOBILE\s+/i, "")).replace(/\(([^)]*)\)/, (m, x) => "(" + x.toLowerCase() + ")");
 const tdbKey = r => (r.gi || "-").replace(/\s+/g, "").toUpperCase();
 const tdbOutside = r => /^UIP3B/i.test(r.upt || "");
-const TDB_ANOM = ["Open", "On Progress", "Closed"];
+const TDB_ANOM = ["Open", "In Progress", "Close"]; // harus sama dengan validasi data kolom N di sheet 2. TRAFO MOBILE
 const anomTone = s => /open/i.test(s || "") ? "bad" : /progress|proses/i.test(s || "") ? "warn" : /close|selesai/i.test(s || "") ? "ok" : "muted";
 const TDB_API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").trim();
 const TDB = {

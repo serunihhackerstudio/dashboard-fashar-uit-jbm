@@ -9,7 +9,7 @@
  * POST <url> (text/plain) → {token, action:"add"|"update", row, expect, data}
  *
  * GET mengirim semua kolom (termasuk informasi aset & riwayat lokasi) untuk
- * pop-up Detail. POST hanya mengubah kolom di EDITABLE / ADD_ONLY.
+ * pop-up Detail. POST hanya mengubah kolom di EDITABLE.
  */
 const SHEET_NAME = '2. TRAFO MOBILE';
 const HEADER_ROWS = 2;
@@ -23,8 +23,7 @@ const COLS = {
 const LINKS = ['linkFoto', 'linkNameplate', 'linkPemeliharaan', 'dokumenAnomali'];
 const RIWAYAT_COL = 30, TAHUN = [2020, 2021, 2022, 2023, 2024, 2025]; // AD.. : (LOKASI, BA) per tahun
 const EDITABLE = ['no', 'komponen', 'sn', 'merk', 'kv', 'mva', 'upt', 'gi', 'tahun', 'status',
-  'keterangan', 'anomali', 'tindakLanjut', 'statusAnomali', 'identitas'];
-const ADD_ONLY = ['namaAset']; // kolom ini berupa sel gabungan, hanya diisi saat tambah baris
+  'keterangan', 'anomali', 'tindakLanjut', 'statusAnomali', 'identitas', 'namaAset'];
 const NUMERIC = ['no', 'mva', 'tahun'];
 const TEXT = ['sn', 'kv', 'identitas']; // dipaksa teks agar "150/20" / "0119…" tidak diubah Sheets
 const STATUSES = ['OPERASI', 'STANDBY', 'RUSAK', ''];
@@ -62,7 +61,7 @@ function doPost(e) {
 
     if (req.action === 'add') {
       const r = lastDataRow_(sh) + 1;
-      EDITABLE.concat(ADD_ONLY).forEach(k => { if (k in data) write_(sh, r, k, data[k]); });
+      EDITABLE.forEach(k => { if (k in data) write_(sh, r, k, data[k]); });
       return json_({ ok: true, row: readRow_(sh, r) });
     }
     return json_({ ok: false, error: 'Aksi tidak dikenal.' });
@@ -82,7 +81,7 @@ function sheet_() {
 
 function validate_(d) {
   const out = {};
-  EDITABLE.concat(ADD_ONLY).forEach(k => {
+  EDITABLE.forEach(k => {
     if (!(k in d)) return;
     let v = d[k] == null ? '' : String(d[k]).trim();
     if (v.length > 2000) throw new Error('Isian "' + k + '" terlalu panjang.');
@@ -104,7 +103,16 @@ function write_(sh, r, key, v) {
   else if (NUMERIC.indexOf(key) >= 0 && /^\d+([.,]\d+)?$/.test(v)) val = Number(v.replace(',', '.'));
   else if (TEXT.indexOf(key) >= 0) val = /^[1-9]\d{0,14}$/.test(v) ? Number(v) : "'" + v;
   else if (/^[=+\-@]/.test(v)) val = "'" + v; // cegah isian dianggap rumus
-  sh.getRange(r, COLS[key]).setValue(val);
+  const cell = sh.getRange(r, COLS[key]);
+  if (cell.isPartOfMerge()) {
+    // sel gabungan (mis. Nama aset satu set unit): pisahkan dulu, isi semua baris dengan nilai lama,
+    // lalu ubah hanya baris ini — baris lain dalam set tidak berubah.
+    const m = cell.getMergedRanges()[0];
+    const top = m.getCell(1, 1).getValue();
+    m.breakApart();
+    m.setValue(top);
+  }
+  cell.setValue(val);
 }
 
 function lastDataRow_(sh) {

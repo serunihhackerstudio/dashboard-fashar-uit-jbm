@@ -89,24 +89,17 @@ const DATA = {
     ["Dipinjam", 2, "out", "p2"],
     ["Rusak", 2, "x", "p1"]
   ],
-  mapTrafo: [
-    { x: 110, y: 128, c: "var(--p3)", l: "GIS 150 kV Tandes" },
-    { x: 400, y: 158, c: "var(--p3)", l: "GI 150 kV Ngoro" },
-    { x: 430, y: 150, c: "var(--p3)", l: "GISTET 500 kV Paiton" },
-    { x: 455, y: 146, c: "var(--p3)", l: "GI 150 kV New Tulungagung" },
-    { x: 525, y: 158, c: "var(--p3)", l: "GI 150 kV Gianyar" }
-  ],
   trafoUpt: [
-    { title: "UPT Malang", items: ["GI 150 kV Ngoro", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Extension trafo AI 2024 rencana onsite 2027", "Trafo, MTU, Kubikel, Kontrol"] },
-    { title: "UPT Probolinggo", items: ["GISTET 500 kV Paiton", "Perkuatan trafo TFT karena hanya 1 bay trafo", "CG Pauwels - 30 MVA (Standby)", "Rencana perbaikan 2026", "Trafo, MTU, Kubikel, Kontrol"] },
-    { title: "UPT Bali", items: ["GI 150 kV Gianyar", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Belum ada ekstension trafo karena terkendala pembebasan lahan", "Trafo, MTU, Kubikel"] },
-    { title: "UPT Madiun", items: ["GI 150 kV New Tulungagung", "Perkuatan GI New Tul (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Hanya 1 trafo", "Trafo, MTU, Kubikel, Kontrol"] }
+    { title: "UPT Malang", x: 250, y: 150, items: ["GI 150 kV Ngoro", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Extension trafo AI 2024 rencana onsite 2027", "Trafo, MTU, Kubikel, Kontrol"] },
+    { title: "UPT Probolinggo", x: 385, y: 140, items: ["GISTET 500 kV Paiton", "Perkuatan trafo TFT karena hanya 1 bay trafo", "CG Pauwels - 30 MVA (Standby)", "Rencana perbaikan 2026", "Trafo, MTU, Kubikel, Kontrol"] },
+    { title: "UPT Bali", x: 535, y: 165, items: ["GI 150 kV Gianyar", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Belum ada ekstension trafo karena terkendala pembebasan lahan", "Trafo, MTU, Kubikel"] },
+    { title: "UPT Madiun", x: 150, y: 172, items: ["GI 150 kV New Tulungagung", "Perkuatan GI New Tul (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Hanya 1 trafo", "Trafo, MTU, Kubikel, Kontrol"] }
   ],
   trafoLoan: [
     { title: "IKN", status: "Dipinjam", items: ["IKN", "Pendukung Pembangunan IKN", "CG Pauwels - 30 MVA", "-", "Trafo, MTU, Kubikel, Kontrol"] },
     { title: "GI 150 kV Garuda Sakti", status: "Dipinjam", items: ["GI 150 kV Garuda Sakti", "Program High Quality Growth 2024", "Fuji Electric - 20 MVA", "-", "Trafo, MTU, Kubikel"] },
-    { title: "UPT Gresik", status: "Rusak", items: ["GIS 150 kV Tandes", "Kondisi Tidak Layak Operasi / Rusak Berat", "ABB (Rusak)", "Rencana ATTB", "MTU, Kubikel"] },
-    { title: "UPT Surabaya", status: "Rusak", items: ["GI 150 kV Kalisari", "Hasil uji buruk pada belitan HV to Ground, OLTC rusak dan hasil uji winding buruk", "ABB - 30 MVA (Rusak)", "Rencana ATTB", "Trafo, MTU, Kubikel"] }
+    { title: "UPT Gresik", x: 236, y: 118, status: "Rusak", items: ["GIS 150 kV Tandes", "Kondisi Tidak Layak Operasi / Rusak Berat", "ABB (Rusak)", "Rencana ATTB", "MTU, Kubikel"] },
+    { title: "UPT Surabaya", x: 268, y: 124, status: "Rusak", items: ["GI 150 kV Kalisari", "Hasil uji buruk pada belitan HV to Ground, OLTC rusak dan hasil uji winding buruk", "ABB - 30 MVA (Rusak)", "Rencana ATTB", "Trafo, MTU, Kubikel"] }
   ]
 };
 
@@ -157,6 +150,7 @@ function donut(vals) {
 }
 
 function mapSvg(pins, legend = true) {
+  // legend: true = otomatis dari pin, string = HTML legend kustom, false = tanpa legend
   return `<div class="map"><svg viewBox="0 0 600 240" role="img" aria-label="Peta skematis Jawa Timur dan Bali">
     <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" class="m-dot"/></pattern></defs>
     <rect x="-1200" y="-600" width="3000" height="1440" class="m-sea"/><rect x="-1200" y="-600" width="3000" height="1440" fill="url(#dots)"/>
@@ -166,7 +160,7 @@ function mapSvg(pins, legend = true) {
     <text x="230" y="226" class="m-label">JAWA TIMUR</text><text x="358" y="56" class="m-label">MADURA</text><text x="524" y="214" class="m-label">BALI</text>
     ${pins.map(p => `<g class="pin" tabindex="0"><title>${p.l}</title><circle cx="${p.x}" cy="${p.y}" r="14" style="fill:${p.c}" class="pin-halo"/><circle cx="${p.x}" cy="${p.y}" r="6.5" style="fill:${p.c}" class="pin-dot"/></g>`).join("")}
   </svg></div>
-  ${legend ? `<div class="legend">${[...new Map(pins.map(p => [p.l, p.c])).entries()].slice(0, 5).map(([l, c]) => `<span><i class="swatch" style="background:${c}"></i>${l}</span>`).join("")}</div>` : ""}`;
+  ${typeof legend === "string" ? legend : legend ? `<div class="legend">${[...new Map(pins.map(p => [p.l, p.c])).entries()].slice(0, 5).map(([l, c]) => `<span><i class="swatch" style="background:${c}"></i>${l}</span>`).join("")}</div>` : ""}`;
 }
 
 function kpi([label, value, ic, tone]) {
@@ -291,7 +285,6 @@ function filterMaterialTable(cardIndex, query) {
 
 /* ---------- Trafo Mobile ---------- */
 $("#trafoKpi").innerHTML = DATA.trafoKpi.map(kpi).join("");
-$("#mapTrafo").innerHTML = mapSvg(DATA.mapTrafo, false);
 
 const FIELD = [["location", "Lokasi"], ["doc", "Keterangan"], ["transformer", "Spesifikasi"], ["rotate", "Rencana"], ["gear", "Kelengkapan"]];
 function trafoStatus(card) {
@@ -307,6 +300,15 @@ function renderTrafoCard(card) {
     <dl class="info-list">${card.items.map((t, i) => `<div class="info-row">${icon(FIELD[i][0])}<dt>${FIELD[i][1]}</dt><dd>${t}</dd></div>`).join("")}</dl>
   </div>`;
 }
+/* Peta: warna pin = kondisi trafo (sama dengan badge kartu) */
+const STATUS_COLOR = { Berbeban: "var(--ok)", Standby: "var(--primary)", Dipinjam: "var(--p2)", Rusak: "var(--p1)" };
+const trafoAll = [...DATA.trafoUpt, ...DATA.trafoLoan].map(c => ({ ...c, st: trafoStatus(c) }));
+const trafoPins = trafoAll.filter(c => c.x != null).map(c => ({ x: c.x, y: c.y, c: STATUS_COLOR[c.st], l: `${c.items[0]} · ${c.st}` }));
+const trafoLegend = `<div class="legend">${Object.entries(STATUS_COLOR).map(([st, col]) => {
+  const n = trafoAll.filter(c => c.st === st).length, off = trafoAll.filter(c => c.st === st && c.x == null).length;
+  return `<span><i class="swatch" style="background:${col}"></i>${st} (${n})${off ? `<small class="legend-note">· di luar UIT JBM</small>` : ""}</span>`;
+}).join("")}</div>`;
+$("#mapTrafo").innerHTML = mapSvg(trafoPins, trafoLegend);
 $("#trafoUptCards").innerHTML = DATA.trafoUpt.map(renderTrafoCard).join("");
 $("#trafoLoanCards").innerHTML = DATA.trafoLoan.map(renderTrafoCard).join("");
 

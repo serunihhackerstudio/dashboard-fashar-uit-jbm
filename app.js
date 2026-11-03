@@ -357,15 +357,41 @@ const TDB_FIELDS = [
   ["kv", "Tegangan (kV)", "text", { placeholder: "mis. 150/20" }],
   ["mva", "Kapasitas (MVA)", "text", { inputmode: "decimal" }],
   ["tahun", "Tahun buatan", "text", { inputmode: "numeric", pattern: "\\d{4}", placeholder: "YYYY" }],
-  ["upt", "UPT", "text", { required: true, list: "tdbUptList" }],
-  ["gi", "Gardu induk", "text", { required: true, list: "tdbGiList" }],
+  ["lokasi", "Lokasi penempatan", "loc"],
   ["identitas", "Identitas", "text"],
-  ["namaAset", "Nama aset", "text", { addOnly: true, list: "tdbAsetList" }],
+  ["namaAset", "Nama aset", "aset"],
   ["keterangan", "Keterangan", "textarea", { wide: true }],
   ["anomali", "Uraian anomali", "textarea", { wide: true }],
   ["tindakLanjut", "Tindak lanjut & mitigasi", "textarea", { wide: true }],
   ["statusAnomali", "Status anomali", "select-anom"]
 ];
+
+/* ---------- Daftar UPT & GI (data/gi-uit-jbm.js) ---------- */
+const GI_LIST = window.GI_UIT_JBM || [];
+const UPT_LIST = [...new Set(GI_LIST.map(x => x.upt))].sort();
+const UPT_ALIAS = { PBL: "PROBOLINGGO", SBY: "SURABAYA", MLG: "MALANG", MDN: "MADIUN", GRS: "GRESIK" };
+function uptCanon(v) {
+  if (!v) return "";
+  let t = String(v).toUpperCase().replace(/\s+/g, " ").trim();
+  const m = t.match(/^UPT\s+(\w+)$/); if (m && UPT_ALIAS[m[1]]) t = "UPT " + UPT_ALIAS[m[1]];
+  return UPT_LIST.includes(t) ? t : "";
+}
+function giParts(v) {
+  const t = String(v || "").toUpperCase().replace(/\s+/g, " ").trim();
+  const m = t.match(/^(GISTET|GITET|GIS|GI)\b/);
+  const cls = !m ? "" : /T/.test(m[1].slice(2)) ? "TET" : m[1];
+  const name = t.replace(/^(GISTET|GITET|GIS|GI)\b/, "").replace(/\d+\s*KV/g, "").replace(/\([^)]*\)/g, "").replace(/[^A-Z0-9]/g, "");
+  return { cls, name };
+}
+/* cari nama GI resmi dari daftar; prioritas: nama sama + jenis sama (GI/GIS/GITET) */
+function giCanon(v, upt) {
+  if (!v) return "";
+  const p = giParts(v), pool = GI_LIST.filter(x => !upt || x.upt === upt);
+  const same = pool.filter(x => giParts(x.gi).name === p.name);
+  if (!same.length) return "";
+  return (same.find(x => giParts(x.gi).cls === p.cls) || same[0]).gi;
+}
+function giSame(a, b) { const x = giParts(a), y = giParts(b); return x.name === y.name && (x.cls === y.cls || !x.cls || !y.cls); }
 
 function renderTrafoDb() {
   if (!$("#page-trafodb")) return;
@@ -431,7 +457,7 @@ function renderTrafoDb() {
 
   /* saran isian untuk form */
   const uniq = k => [...new Set(rows.map(r => r[k]).filter(Boolean))].sort();
-  [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"], ["tdbUptList", "upt"], ["tdbGiList", "gi"], ["tdbAsetList", "namaAset"]]
+  [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"]]
     .forEach(([id, k]) => { $("#" + id).innerHTML = uniq(k).map(v => `<option value="${esc(v)}"></option>`).join(""); });
 
   tdbFilter();
@@ -482,6 +508,10 @@ async function tdbLoad() {
 /* ---------- Form tambah / edit ---------- */
 function tdbBuildForm() {
   $("#tdbFields").innerHTML = TDB_FIELDS.map(([k, label, type, o = {}]) => {
+    if (type === "loc") return `<div class="fld-group wide"><div class="fld-group-h">${label}</div>${locPickerHtml("loc", true)}</div>`;
+    if (type === "aset") return `<div class="fld-group wide"><div class="fld-group-h">${label} <small>gabungan nama UPT dan gardu induk</small>
+        <button class="btn ghost sm" type="button" onclick="asetFromLoc()">Samakan dengan lokasi penempatan</button></div>
+        ${locPickerHtml("na", false)}<p class="aset-preview" id="naPreview"></p></div>`;
     const attrs = `id="f_${k}" name="${k}"${o.required ? " required" : ""}${o.list ? ` list="${o.list}"` : ""}${o.inputmode ? ` inputmode="${o.inputmode}"` : ""}${o.pattern ? ` pattern="${o.pattern}"` : ""}${o.placeholder ? ` placeholder="${esc(o.placeholder)}"` : ""}`;
     const input = type === "select-anom"
       ? `<select ${attrs}><option value="">— Tidak ada / belum diisi —</option>${TDB_ANOM.map(v => `<option>${v}</option>`).join("")}</select>`
@@ -492,6 +522,73 @@ function tdbBuildForm() {
   }).join("");
 }
 
+function locPickerHtml(p, required) {
+  const req = required ? ' <em>*</em>' : "";
+  return `<label class="fld"><span>UPT${req}</span>
+      <select id="${p}_upt" data-req="${required}" onchange="locUptChanged('${p}')"></select>
+      <input type="text" id="${p}_upt_text" placeholder="Nama unit di luar UIT JBM" hidden autocomplete="off"></label>
+    <label class="fld"><span>Gardu induk${req}</span>
+      <select id="${p}_gi" onchange="asetPreview()"></select>
+      <input type="text" id="${p}_gi_text" placeholder="Nama gardu induk / lokasi" hidden autocomplete="off" oninput="asetPreview()"></label>`;
+}
+/* isi pilihan UPT; `extras` = UPT di luar daftar (mis. UIP3B …) yang ada di data */
+function locFill(p, upt, gi) {
+  const extras = [...new Set(TDB.rows.map(r => r.upt).filter(u => u && !uptCanon(u)))].sort();
+  const cu = uptCanon(upt);
+  const outside = upt && !cu ? upt : "";
+  if (outside && !extras.includes(outside)) extras.push(outside);
+  $(`#${p}_upt`).innerHTML = `<option value="">Pilih UPT…</option>` +
+    `<optgroup label="UIT JBM">${UPT_LIST.map(u => `<option>${esc(u)}</option>`).join("")}</optgroup>` +
+    (extras.length ? `<optgroup label="Di luar UIT JBM">${extras.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join("")}</optgroup>` : "") +
+    `<option value="__other">Lainnya (isi manual)…</option>`;
+  $(`#${p}_upt`).value = cu || outside || "";
+  locUptChanged(p, gi);
+}
+function locUptChanged(p, gi) {
+  const sel = $(`#${p}_upt`), v = sel.value, req = sel.dataset.req === "true";
+  const inList = UPT_LIST.includes(v), other = v === "__other";
+  const ut = $(`#${p}_upt_text`), gs = $(`#${p}_gi`), gt = $(`#${p}_gi_text`);
+  ut.hidden = !other; ut.required = req && other; if (!other) ut.value = "";
+  if (gi === undefined) gi = !inList && !gt.hidden ? gt.value : ""; // ganti UPT → pilih GI ulang
+  if (inList) {
+    const byUltg = {};
+    GI_LIST.filter(x => x.upt === v).forEach(x => (byUltg[x.ultg] = byUltg[x.ultg] || []).push(x.gi));
+    const cg = giCanon(gi, v);
+    const legacy = gi && !cg ? gi : "";
+    gs.innerHTML = `<option value="">Pilih gardu induk…</option>` +
+      (legacy ? `<optgroup label="Data saat ini (tidak ada di daftar)"><option value="${esc(legacy)}">${esc(legacy)}</option></optgroup>` : "") +
+      Object.entries(byUltg).map(([u, list]) => `<optgroup label="${esc(u)}">${list.map(g => `<option>${esc(g)}</option>`).join("")}</optgroup>`).join("");
+    gs.value = cg || legacy || "";
+    gs.hidden = false; gs.disabled = false; gs.required = req; gt.hidden = true; gt.required = false; gt.value = "";
+  } else if (v) {
+    gs.hidden = true; gs.required = false; gt.hidden = false; gt.required = req; gt.value = gi || "";
+  } else {
+    gs.innerHTML = `<option value="">Pilih UPT dulu</option>`; gs.disabled = true; gs.hidden = false; gs.required = false;
+    gt.hidden = true; gt.required = false;
+  }
+  asetPreview();
+}
+function locGet(p) {
+  const v = $(`#${p}_upt`).value;
+  const upt = v === "__other" ? $(`#${p}_upt_text`).value.trim() : v;
+  const gi = ($(`#${p}_gi`).hidden ? $(`#${p}_gi_text`).value : $(`#${p}_gi`).value).trim();
+  return { upt, gi };
+}
+function asetCompose() { const { upt, gi } = locGet("na"); return upt && gi ? `${upt} - ${gi}` : ""; }
+function asetPreview() {
+  const el = $("#naPreview"); if (!el) return;
+  const v = asetCompose();
+  el.innerHTML = v ? `Nama aset tersimpan: <b>${esc(v)}</b>` : "Pilih UPT dan gardu induk untuk membentuk nama aset.";
+}
+function asetFromLoc() {
+  const { upt, gi } = locGet("loc");
+  locFill("na", upt, gi);
+}
+function asetSplit(v) {
+  const i = String(v || "").indexOf(" - ");
+  return i < 0 ? { upt: "", gi: v || "" } : { upt: v.slice(0, i).trim(), gi: v.slice(i + 3).trim() };
+}
+
 function tdbOpenForm(i) {
   const r = i == null ? null : TDB.rows[i];
   TDB.editing = r;
@@ -499,7 +596,11 @@ function tdbOpenForm(i) {
   f.reset();
   $("#tdbFormTitle").textContent = r ? "Edit komponen" : "Tambah komponen";
   $("#tdbFormSub").textContent = r ? `${tdbName(r.komponen)} · ${r.gi}` : "Baris baru akan ditambahkan di akhir sheet 2. TRAFO MOBILE";
-  TDB_FIELDS.forEach(([k, , , o = {}]) => {
+  locFill("loc", r ? r.upt : "", r ? r.gi : "");
+  const na = asetSplit(r && r.namaAset);
+  locFill("na", na.upt, na.gi);
+  TDB_FIELDS.forEach(([k, , type, o = {}]) => {
+    if (type === "loc" || type === "aset") return;
     const el = $("#f_" + k);
     if (k === "statusAnomali") {
       el.querySelectorAll("option[data-extra]").forEach(o => o.remove());
@@ -509,10 +610,6 @@ function tdbOpenForm(i) {
       return;
     }
     el.value = r ? (k === "status" ? (r.status === "BELUM DIPASTIKAN" ? "" : r.status) : (r[k] ?? "")) : (k === "status" ? "OPERASI" : "");
-    const wrap = el.closest(".fld");
-    const lock = !!(r && o.addOnly);
-    el.disabled = lock;
-    wrap.querySelector(".hint").textContent = lock ? "Sel gabungan di spreadsheet — ubah langsung di Google Sheets." : "";
   });
   const canSave = !!TDB_API && TDB.live && (!r || r._row);
   $("#tdbFormWarn").hidden = canSave;
@@ -534,7 +631,15 @@ async function tdbSubmit(ev) {
   const f = $("#tdbForm"), r = TDB.editing;
   if (!f.reportValidity()) return;
   const data = {};
-  TDB_FIELDS.forEach(([k, , , o = {}]) => {
+  const loc = locGet("loc"), aset = asetCompose();
+  const put = (k, v, same) => { if (r ? !same : v) data[k] = v; };
+  put("upt", loc.upt, r && (loc.upt.toUpperCase() === String(r.upt || "").toUpperCase() || (uptCanon(loc.upt) && uptCanon(loc.upt) === uptCanon(r.upt))));
+  put("gi", loc.gi, r && (loc.gi.toUpperCase() === String(r.gi || "").toUpperCase() || giSame(loc.gi, r.gi)));
+  const oldA = asetSplit(r && r.namaAset);
+  put("namaAset", aset, r && (aset.toUpperCase() === String(r.namaAset || "").toUpperCase() ||
+    (!!aset && uptCanon(asetSplit(aset).upt) === uptCanon(oldA.upt) && !!uptCanon(oldA.upt) && giSame(asetSplit(aset).gi, oldA.gi)) || (!aset && !r.namaAset)));
+  TDB_FIELDS.forEach(([k, , type, o = {}]) => {
+    if (type === "loc" || type === "aset") return;
     const el = $("#f_" + k);
     if (el.disabled) return;
     const v = el.value.trim();

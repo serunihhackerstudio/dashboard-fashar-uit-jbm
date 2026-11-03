@@ -49,7 +49,7 @@ Jika `Code.gs` diubah, gunakan **Deploy → Manage deployments → Edit → Vers
 ### Cara kerja & keamanan
 - Siapa pun yang membuka dashboard dapat **melihat** data (sama seperti sebelumnya). **Menyimpan** perubahan wajib memasukkan kode akses edit (`EDIT_TOKEN`); kode disimpan di browser hanya selama tab terbuka.
 - Tombol **Detail** menampilkan seluruh informasi baris (termasuk informasi aset, tautan dokumentasi, dan riwayat lokasi). Kolom nilai aset, referensi, dan riwayat hanya bisa diubah langsung di Google Sheets.
-- **Nama aset** berupa sel gabungan di spreadsheet, sehingga hanya bisa diisi saat menambah baris; perubahan untuk baris lama dilakukan langsung di Google Sheets.
+- **UPT** dan **Gardu induk** dipilih dari daftar GI/GIS UIT JBM (`data/gi-uit-jbm.js`, dibuat dengan `python3 tools/xlsx_to_gi_list.py "LIST_GI_SE_UIT_JBM.xlsx"`); unit di luar UIT JBM bisa diisi manual. **Nama aset** dibentuk otomatis dari pilihan UPT + gardu induk. Bila nama aset berupa sel gabungan, skrip memisahkan sel itu dulu agar baris lain dalam satu set tidak ikut berubah.
 - Baris baru ditambahkan di bawah baris data terakhir. Sebelum mengedit, skrip memastikan isi baris belum berubah di spreadsheet (jika berubah, muat ulang halaman).
 - Untuk mengganti kode akses, ubah nilai `EDIT_TOKEN` di Script Properties.
 

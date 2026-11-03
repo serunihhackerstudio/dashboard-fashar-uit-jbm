@@ -192,7 +192,10 @@
    <div class="form-grid" id="tdbFields"></div>
   </div>
   <footer class="modal-foot">
-   <label class="fld token" id="tdbTokenWrap"><span>Kode akses edit</span><input type="password" id="f_token" autocomplete="current-password" placeholder="Kode dari admin"></label>
+   <div class="fld token" id="tdbTokenWrap">
+    <label id="tokenInput"><span>Kode akses edit</span><input type="password" id="f_token" autocomplete="current-password" placeholder="Kode dari admin"><small class="hint">Cukup sekali — akan diingat di perangkat ini.</small></label>
+    <p class="token-saved" id="tokenSaved" hidden><svg class="ic xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Kode akses tersimpan di perangkat ini · <button type="button" class="linkbtn" onclick="tokenForget()">Lupakan</button></p>
+   </div>
    <p class="form-err" id="tdbFormErr" role="alert" hidden></p>
    <div class="modal-btns"><button class="btn ghost" type="button" onclick="tdbCloseForm()">Batal</button><button class="btn primary" type="submit" id="tdbSave">Simpan</button></div>
   </footer>

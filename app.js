@@ -338,9 +338,11 @@ const TDB_STATUS = {
   "BELUM DIPASTIKAN": { label: "Belum dipastikan", tone: "muted", color: "var(--text-3)" }
 };
 const tdbSt = s => TDB_STATUS[s] || TDB_STATUS["BELUM DIPASTIKAN"];
-const tdbName = k => title(k.replace(/^MOBILE\s+/i, "")).replace(/\(([^)]*)\)/, (m, x) => "(" + x.toLowerCase() + ")");
+/* Nama komponen ditampilkan persis sesuai daftar resmi (TDB_KOMPONEN), mis. "MOBILE POWER TRANSFORMER" */
+const tdbName = k => { const t = String(k || "").replace(/\s+/g, " ").trim(); return (typeof TDB_KOMPONEN !== "undefined" && TDB_KOMPONEN.find(v => v.toUpperCase() === t.toUpperCase())) || t.toUpperCase(); };
 const tdbKey = r => (r.gi || "-").replace(/\s+/g, "").toUpperCase();
 const tdbOutside = r => /^UIP3B/i.test(r.upt || "");
+const TDB_KOMPONEN = ["MOBILE POWER TRANSFORMER", "MOBILE SWITCHGEAR", "MOBILE CUBICLE", "MOBILE CONTROL ROOM PANEL", "MOBILE CUBICLE (CABLE & CONTROL ROOM PANEL)"];
 const TDB_ANOM = ["Open", "In Progress", "Close"]; // harus sama dengan validasi data kolom N di sheet 2. TRAFO MOBILE
 const anomTone = s => /open/i.test(s || "") ? "bad" : /progress|proses/i.test(s || "") ? "warn" : /close|selesai/i.test(s || "") ? "ok" : "muted";
 const TDB_API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").trim();
@@ -350,7 +352,7 @@ const TDB = {
   live: false, editing: null
 };
 const TDB_FIELDS = [
-  ["komponen", "Komponen", "text", { required: true, list: "tdbKomponenList", wide: true }],
+  ["komponen", "Komponen", "select-komp", { required: true, wide: true }],
   ["status", "Status", "select"],
   ["no", "No", "text", { inputmode: "numeric" }],
   ["sn", "Serial number", "text"],
@@ -447,7 +449,7 @@ function renderTrafoDb() {
 
   /* saran isian untuk form */
   const uniq = k => [...new Set(rows.map(r => r[k]).filter(Boolean))].sort();
-  [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"]]
+  [["tdbMerkList", "merk"]]
     .forEach(([id, k]) => { $("#" + id).innerHTML = uniq(k).map(v => `<option value="${esc(v)}"></option>`).join(""); });
 
   tdbFilter(true); // pertahankan halaman setelah simpan / muat ulang
@@ -650,7 +652,9 @@ function tdbBuildForm() {
         <button class="btn ghost sm" type="button" onclick="asetFromLoc()">Samakan dengan lokasi penempatan</button></div>
         ${locPickerHtml("na", false)}<p class="aset-preview" id="naPreview"></p></div>`;
     const attrs = `id="f_${k}" name="${k}"${o.required ? " required" : ""}${o.list ? ` list="${o.list}"` : ""}${o.inputmode ? ` inputmode="${o.inputmode}"` : ""}${o.pattern ? ` pattern="${o.pattern}"` : ""}${o.placeholder ? ` placeholder="${esc(o.placeholder)}"` : ""}`;
-    const input = type === "select-anom"
+    const input = type === "select-komp"
+      ? `<select ${attrs}><option value="">Pilih komponen…</option>${TDB_KOMPONEN.map(v => `<option>${esc(v)}</option>`).join("")}</select>`
+      : type === "select-anom"
       ? `<select ${attrs}><option value="">— Tidak ada / belum diisi —</option>${TDB_ANOM.map(v => `<option>${v}</option>`).join("")}</select>`
       : type === "select"
       ? `<select ${attrs}>${Object.keys(TDB_STATUS).map(s => `<option value="${s === "BELUM DIPASTIKAN" ? "" : s}">${tdbSt(s).label}</option>`).join("")}</select>`
@@ -739,6 +743,14 @@ function tdbOpenForm(i) {
   TDB_FIELDS.forEach(([k, , type, o = {}]) => {
     if (type === "loc" || type === "aset") return;
     const el = $("#f_" + k);
+    if (k === "komponen") {
+      el.querySelectorAll("option[data-extra]").forEach(o => o.remove());
+      const cur = r && r.komponen ? String(r.komponen).trim() : "";
+      const hit = TDB_KOMPONEN.find(v => v.toUpperCase() === cur.toUpperCase());
+      if (cur && !hit) el.insertAdjacentHTML("beforeend", `<option data-extra value="${esc(cur)}">${esc(cur)} (data lama)</option>`);
+      el.value = hit || cur;
+      return;
+    }
     if (k === "statusAnomali") {
       el.querySelectorAll("option[data-extra]").forEach(o => o.remove());
       const cur = r && r.statusAnomali;

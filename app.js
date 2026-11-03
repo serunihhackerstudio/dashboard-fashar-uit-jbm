@@ -83,25 +83,7 @@ const DATA = {
     "LINDSEY": [["Post Insulator Support", 3], ["Tower Gimbal", 8], ["4-Way Guy Plate", 19], ["Guy Plate", 17], ["Overhead Ground Wire Bracket", 3], ["Anchor Bracket (MOCK)", 12], ["Cross Arm Support (MOCK)", 7], ["Insulator Clamp (MOCK)", 21], ["Guy Wire Fitting (MOCK)", 14], ["Structure Connector (MOCK)", 9]],
     "TOWER SOLUTION": [["Transfer Rod", 324], ["Tower Section", 72], ["Base Pivot", 15], ["Bolt Assembly", 498], ["Universal Attachment", 30], ["Extension Mast (MOCK)", 18], ["Support Bracket (MOCK)", 42], ["Pivot Connector (MOCK)", 24], ["Guy Assembly (MOCK)", 36], ["Foundation Plate (MOCK)", 11]],
     "SBB": [["Mast Section", 22], ["Universal Bracket", 27], ["Line Post Insulator Bracket", 6], ["Bolt 3/4", 180], ["Hex Nut 3/4", 374], ["Diagonal Brace (MOCK)", 34], ["Base Plate (MOCK)", 16], ["Lock Washer 3/4 (MOCK)", 210], ["Connecting Plate (MOCK)", 28], ["Support Clamp (MOCK)", 13]]
-  },
-  trafoKpi: [
-    ["Total Aset Trafo Mobile", 8, "truck", "primary"],
-    ["Beroperasi", 4, "check", "ok"],
-    ["Dipinjam", 2, "out", "p2"],
-    ["Rusak", 2, "x", "p1"]
-  ],
-  trafoUpt: [
-    { title: "UPT Malang", x: 250, y: 150, items: ["GI 150 kV Ngoro", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Extension trafo AI 2024 rencana onsite 2027", "Trafo, MTU, Kubikel, Kontrol"] },
-    { title: "UPT Probolinggo", x: 385, y: 140, items: ["GISTET 500 kV Paiton", "Perkuatan trafo TFT karena hanya 1 bay trafo", "CG Pauwels - 30 MVA (Standby)", "Rencana perbaikan 2026", "Trafo, MTU, Kubikel, Kontrol"] },
-    { title: "UPT Bali", x: 535, y: 165, items: ["GI 150 kV Gianyar", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Belum ada ekstension trafo karena terkendala pembebasan lahan", "Trafo, MTU, Kubikel"] },
-    { title: "UPT Madiun", x: 150, y: 172, items: ["GI 150 kV New Tulungagung", "Perkuatan GI New Tul (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Hanya 1 trafo", "Trafo, MTU, Kubikel, Kontrol"] }
-  ],
-  trafoLoan: [
-    { title: "IKN", status: "Dipinjam", items: ["IKN", "Pendukung Pembangunan IKN", "CG Pauwels - 30 MVA", "-", "Trafo, MTU, Kubikel, Kontrol"] },
-    { title: "GI 150 kV Garuda Sakti", status: "Dipinjam", items: ["GI 150 kV Garuda Sakti", "Program High Quality Growth 2024", "Fuji Electric - 20 MVA", "-", "Trafo, MTU, Kubikel"] },
-    { title: "UPT Gresik", x: 236, y: 118, status: "Rusak", items: ["GIS 150 kV Tandes", "Kondisi Tidak Layak Operasi / Rusak Berat", "ABB (Rusak)", "Rencana ATTB", "MTU, Kubikel"] },
-    { title: "UPT Surabaya", x: 268, y: 124, status: "Rusak", items: ["GI 150 kV Kalisari", "Hasil uji buruk pada belitan HV to Ground, OLTC rusak dan hasil uji winding buruk", "ABB - 30 MVA (Rusak)", "Rencana ATTB", "Trafo, MTU, Kubikel"] }
-  ]
+  }
 };
 
 /* =========================================================
@@ -284,41 +266,6 @@ function filterMaterialTable(cardIndex, query) {
   card.querySelector(".count").textContent = visible;
 }
 
-/* ---------- Trafo Mobile ---------- */
-$("#trafoKpi").innerHTML = DATA.trafoKpi.map(kpi).join("");
-
-const FIELD = [["location", "Lokasi"], ["doc", "Keterangan"], ["transformer", "Spesifikasi"], ["rotate", "Rencana"], ["gear", "Kelengkapan"]];
-function trafoStatus(card) {
-  if (card.status) return card.status;
-  const spec = card.items[2];
-  return /Rusak/i.test(spec) ? "Rusak" : /Standby/i.test(spec) ? "Standby" : "Berbeban";
-}
-const STATUS_TONE = { Berbeban: "ok", Standby: "info", Dipinjam: "warn", Rusak: "bad" };
-function renderTrafoCard(card) {
-  const st = trafoStatus(card);
-  return `<div class="card trafo-card st-${STATUS_TONE[st]}">
-    <div class="card-head"><div><h3>${card.title}</h3></div><span class="badge ${STATUS_TONE[st]}">${st}</span></div>
-    <dl class="info-list">${card.items.map((t, i) => `<div class="info-row">${icon(FIELD[i][0])}<dt>${FIELD[i][1]}</dt><dd>${t}</dd></div>`).join("")}</dl>
-  </div>`;
-}
-/* Peta: warna pin = kondisi trafo (sama dengan badge kartu) */
-const STATUS_COLOR = { Berbeban: "var(--ok)", Standby: "var(--primary)", Dipinjam: "var(--p2)", Rusak: "var(--p1)" };
-const trafoAll = [...DATA.trafoUpt, ...DATA.trafoLoan].map(c => ({ ...c, st: trafoStatus(c) }));
-const trafoPins = trafoAll.filter(c => c.x != null).map(c => ({ x: c.x, y: c.y, c: STATUS_COLOR[c.st], l: `${c.items[0]} · ${c.st}` }));
-const trafoLegend = `<div class="legend">${Object.entries(STATUS_COLOR).map(([st, col]) => {
-  const n = trafoAll.filter(c => c.st === st).length, off = trafoAll.filter(c => c.st === st && c.x == null).length;
-  return `<span><i class="swatch" style="background:${col}"></i>${st} (${n})${off ? `<small class="legend-note">· di luar UIT JBM</small>` : ""}</span>`;
-}).join("")}</div>`;
-$("#mapTrafo").innerHTML = mapSvg(trafoPins, trafoLegend);
-$("#trafoUptCards").innerHTML = DATA.trafoUpt.map(renderTrafoCard).join("");
-$("#trafoLoanCards").innerHTML = DATA.trafoLoan.map(renderTrafoCard).join("");
-
-function copyLink(btn) {
-  const url = "https://bit.ly/trafo-mobile-uit-jbm";
-  const done = () => toast("Tautan disalin ke clipboard");
-  if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => toast(url));
-  else toast(url);
-}
 let toastTimer;
 function toast(msg) {
   const t = $("#toast"); t.textContent = msg; t.classList.add("show");
@@ -1091,10 +1038,10 @@ const PAGES = {
   jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
-  trafo: ["Peralatan ERS", "Trafo Mobile", "Status, lokasi, dan peminjaman trafo mobile"],
-  trafodb: ["Peralatan ERS", "Database Trafo Mobile", "Kumpulan data trafo mobile per trailer"]
+  trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"]
 };
 function route() {
+  if (location.hash === "#trafo") { location.replace("#trafodb"); return; } // halaman lama Trafo Mobile dihapus
   const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "kinerja";
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + id));
   document.querySelectorAll(".nav-item").forEach(n => {

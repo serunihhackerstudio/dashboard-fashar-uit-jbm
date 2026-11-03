@@ -3,17 +3,14 @@
 Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 
 ## Menu
-1. Kinerja PDKB
-2. Optimalisasi PDKB
-3. Health Index
-4. Asesmen JAR
-5. Asesmen GI
-6. Tower Emergency
-7. Trafo Mobile (data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)
+1. Health Index
+2. Asesmen JAR
+3. Asesmen GI
+4. Tower Emergency
+5. Trafo Mobile (data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)
 
 ## Status
-Prototype frontend. Data saat ini masih statis/mock berdasarkan dashboard existing.
-Integrasi data live Google Sheets akan dilakukan pada tahap berikutnya.
+Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
 
 ## Menjalankan secara lokal
 Cukup buka `index.html` menggunakan browser modern.
@@ -69,3 +66,10 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Mengunggah/mengubah foto memakai kode akses edit yang sama.
 - **Setup:** tempel ulang `apps-script/Code.gs`, lalu **Deploy → Manage deployments → Edit → New version**. Saat diminta, izinkan akses Google Drive. Akun pemilik skrip harus punya akses edit ke folder foto.
 - Agar foto tampil di dashboard untuk semua pengguna, folder foto perlu dibagikan **"Siapa saja yang memiliki link — Viewer"**.
+
+### Riwayat perpindahan lokasi
+- Setiap komponen diberi **ID tetap** (`TM-0001`, …) di kolom **ID DASHBOARD** (kolom AP) sheet `2. TRAFO MOBILE`; diisi otomatis oleh skrip.
+- Riwayat disimpan di sheet **RIWAYAT LOKASI** (dibuat otomatis): tanggal pindah, ID komponen, dari/ke UPT & gardu induk, alasan, no/link BA, waktu pencatatan, sumber.
+- Saat **UPT/Gardu induk** diubah di form Edit, muncul isian **Perpindahan lokasi** (tanggal, BA, alasan). Bila komponen lain dengan **Nama aset** sama berada di lokasi yang sama, tersedia pilihan **pindahkan seluruh set** — semua komponen ikut dipindah dan masing-masing tercatat riwayatnya.
+- Riwayat lama dapat ditambahkan/dihapus di bagian **Riwayat perpindahan** form Edit. Pop-up Detail menampilkan timeline; tabel menampilkan tanggal pindah terakhir; peta menampilkan rute perpindahan untuk lokasi yang dipilih (hanya GI yang sudah punya koordinat di `TDB_COORDS`).
+- Setelah memperbarui `apps-script/Code.gs`, buat **New version** pada deployment.

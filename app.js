@@ -150,54 +150,6 @@ function kpi([label, value, ic, tone]) {
   return `<div class="card kpi tone-${tone}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${label}</div><div class="kpi-value">${fmt(value)}</div></div></div>`;
 }
 
-/* =========================================================
-   RENDER — Kinerja
-   ========================================================= */
-[["gaugeGI", "Optimalisasi PDKB Gardu Induk", DATA.optimTotal.gi, C.gi], ["gaugeJAR", "Optimalisasi PDKB Jaringan", DATA.optimTotal.jar, C.jar]]
-  .forEach(([id, t, v, c]) => {
-    $("#" + id).innerHTML = `<div class="card-head"><div><h3>${t}</h3><p>Capaian UIT JBM tahun berjalan</p></div></div>
-      <div class="card-body gauge-wrap">${gaugeSvg(v, c)}</div>
-      <div class="card-foot"><span class="muted">Target ${TARGET}%</span>${targetBadge(v)}</div>`;
-  });
-$("#mapKinerja").innerHTML = mapSvg(DATA.mapErs);
-
-const uptLabels = UNITS.map(title);
-["gi", "jar"].forEach(k => {
-  $(k === "gi" ? "#barsGI" : "#barsJAR").innerHTML = DATA.bars[k].map(([t, vals]) => {
-    const avg = sum(vals) / vals.length;
-    return `<div class="card"><div class="card-head"><div><h3>${t}</h3><p>Rata-rata <b>${fmt1(avg)}</b></p></div></div>
-      <div class="card-body">${barList(uptLabels, vals, C[k])}</div></div>`;
-  }).join("");
-});
-
-$("#cert").innerHTML = `<div class="legend"><span><i class="swatch" style="background:var(--ok)"></i>Aktif</span><span><i class="swatch" style="background:var(--p1)"></i>Kadaluarsa</span></div>
-  <ul class="bars stacked cert-bars">${DATA.cert.map(([l, aktif, pct]) => {
-    const total = Math.round(aktif / pct * 100), exp = total - aktif;
-    return `<li><span class="bl">${l}</span><span class="bt"><i style="width:${pct}%;background:var(--ok)"></i><i style="width:${100 - pct}%;background:var(--p1)"></i></span>
-      <b>${aktif}<small> / ${total}</small></b><span class="exp">${exp} kadaluarsa</span></li>`;
-  }).join("")}</ul>`;
-
-/* ---------- Optimalisasi ---------- */
-$("#realisasi").innerHTML = DATA.realisasi.map(([t, gi, jar, ic]) => `
-  <div class="card stat">
-    <div class="stat-head"><span class="kpi-icon sm">${icon(ic)}</span><h3>Realisasi ${t}</h3></div>
-    <div class="stat-split">
-      <div><span class="stat-l"><i class="swatch gi"></i>Gardu Induk</span><span class="stat-n">${fmt(gi)}</span></div>
-      <div><span class="stat-l"><i class="swatch jar"></i>Jaringan</span><span class="stat-n">${fmt(jar)}</span></div>
-    </div>
-    <div class="split-bar"><i style="flex:${gi};background:var(--gi)"></i><i style="flex:${jar};background:var(--jar)"></i></div>
-  </div>`).join("");
-
-$("#optimGrid").innerHTML = DATA.optimUpt.map(([u, gi, jar]) => {
-  const ok = gi >= TARGET && jar >= TARGET;
-  return `<div class="card">
-    <div class="card-head"><div><h3>UPT ${title(u)}</h3></div>${ok ? '<span class="badge ok">Semua tercapai</span>' : '<span class="badge warn">Perlu perhatian</span>'}</div>
-    <div class="card-body optim-pair">
-      <div>${gaugeSvg(gi, C.gi, "sm")}<div class="optim-l"><i class="swatch gi"></i>GI ${gi < TARGET ? '<em class="neg">' + fmt1(gi - TARGET) + '</em>' : ''}</div></div>
-      <div>${gaugeSvg(jar, C.jar, "sm")}<div class="optim-l"><i class="swatch jar"></i>Jaringan ${jar < TARGET ? '<em class="neg">' + fmt1(jar - TARGET) + '</em>' : ''}</div></div>
-    </div></div>`;
-}).join("");
-
 /* ---------- Health Index ---------- */
 function healthCards(target, rows) {
   $(target).innerHTML = CATS.map((c, i) => {
@@ -233,7 +185,7 @@ function renderAssess(grid, summary, data) {
       <div class="card-body"><ul class="bars stacked">${d.rows.map(r => {
         const t = sum(r.p), w = t / max * 100;
         return `<li title="P1 ${fmt(r.p[0])} · P2 ${fmt(r.p[1])} · P3 ${fmt(r.p[2])}"><span class="bl">${title(r.cat)}</span>
-          <span class="bt"><span class="seg" style="width:${w}%">${r.p.map((v, k) => `<i style="flex:${v};background:var(--p${k + 1})"></i>`).join("")}</span></span><b>${fmt(t)}</b></li>`;
+          <span class="bt"><span class="stk" style="width:${w}%">${r.p.map((v, k) => `<i style="flex:${v};background:var(--p${k + 1})"></i>`).join("")}</span></span><b>${fmt(t)}</b></li>`;
       }).join("")}</ul></div></div>`;
   }).join("");
 }
@@ -296,7 +248,7 @@ const TDB_API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").
 const TDB = {
   rows: (window.TRAFO_DB && window.TRAFO_DB.rows) || [],
   source: (window.TRAFO_DB && window.TRAFO_DB.source) || "",
-  live: false, editing: null
+  live: false, editing: null, moves: []
 };
 const TDB_FIELDS = [
   ["komponen", "Komponen", "select-komp", { required: true, wide: true }],
@@ -308,6 +260,7 @@ const TDB_FIELDS = [
   ["mva", "Kapasitas (MVA)", "text", { inputmode: "decimal" }],
   ["tahun", "Tahun buatan", "text", { inputmode: "numeric", pattern: "\\d{4}", placeholder: "YYYY" }],
   ["lokasi", "Lokasi penempatan", "loc"],
+  ["pindah", "Perpindahan lokasi", "move"],
   ["identitas", "Identitas", "text"],
   ["namaAset", "Nama aset", "aset"],
   ["keterangan", "Keterangan", "textarea", { wide: true }],
@@ -389,7 +342,7 @@ function renderTrafoDb() {
   $("#tdbRows").innerHTML = rows.map((r, i) => `<tr data-key="${esc(tdbKey(r))}" data-st="${esc(r.status)}">
     <td class="muted">${esc(r.no || "—")}</td><td><b>${esc(tdbName(r.komponen))}</b></td><td><code>${esc(r.sn || "—")}</code></td>
     <td>${esc(r.merk || "—")}</td><td class="num">${esc(r.kv || "—")}</td><td class="num">${esc(r.mva || "—")}</td>
-    <td>${esc(r.gi)}<div class="muted sm">${esc(r.upt)}</div></td><td class="num">${esc(r.tahun || "—")}</td>
+    <td>${esc(r.gi)}<div class="muted sm">${esc(r.upt)}</div>${(() => { const m = tdbMovesOf(r).slice(-1)[0]; return m ? `<div class="mv-last">${icon("rotate", "ic xs")}Pindah ${esc(fmtD(m.tanggal))}</div>` : ""; })()}</td><td class="num">${esc(r.tahun || "—")}</td>
     <td><span class="badge ${tdbSt(r.status).tone}">${tdbSt(r.status).label}</span></td>
     <td class="ket">${esc(r.keterangan || "—")}</td><td>${r.powerInspect ? `<span class="pi-ok" title="Sesuai dengan Power Inspect">${icon("check", "ic xs")}</span>` : ""}</td>
     <td class="act"><button class="btn ghost sm" type="button" onclick="tdbOpenDetail(${i})" aria-label="Detail ${esc(tdbName(r.komponen))} di ${esc(r.gi)}">Detail</button><button class="icon-btn sm" type="button" onclick="tdbOpenForm(${i})" aria-label="Edit ${esc(tdbName(r.komponen))} di ${esc(r.gi)}" title="Edit"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button></td></tr>`).join("");
@@ -417,6 +370,24 @@ function tdbLocTone(g) {
   return has("RUSAK") ? "RUSAK" : has("STANDBY") ? "STANDBY" : has("OPERASI") ? "OPERASI" : "BELUM DIPASTIKAN";
 }
 const TDB_MAP = { map: null, layer: null, tiles: null, markers: {}, sel: null };
+/* Rute perpindahan komponen di lokasi terpilih (garis putus-putus antar GI) */
+function tdbDrawRoutes(key) {
+  if (!TDB_MAP.map) return [];
+  if (!TDB_MAP.route) TDB_MAP.route = L.layerGroup().addTo(TDB_MAP.map);
+  TDB_MAP.route.clearLayers();
+  const g = key && (TDB.locs || []).find(x => x.key === key); if (!g) return [];
+  const C = name => TDB_COORDS[giParts(name).name] || null, all = [], seen = new Set();
+  g.rows.forEach(r => {
+    const ms = tdbMovesOf(r); if (!ms.length) return;
+    const seq = [{ gi: ms[0].dariGi, t: "" }, ...ms.map(m => ({ gi: m.keGi, t: m.tanggal }))].filter(x => C(x.gi));
+    const sig = seq.map(x => nrm(x.gi) + x.t).join(">"); if (seq.length < 2 || seen.has(sig)) return; seen.add(sig);
+    const line = seq.map(x => C(x.gi)); all.push(...line);
+    L.polyline(line, { color: "#1667D9", weight: 3, opacity: .85, dashArray: "6 8" }).addTo(TDB_MAP.route);
+    seq.slice(0, -1).forEach((x, i) => L.circleMarker(C(x.gi), { radius: 6, color: "#1667D9", weight: 2, fillColor: "#fff", fillOpacity: 1 })
+      .bindTooltip(`${esc(x.gi)}${i ? " · s.d. " : " · sebelum "}${esc(fmtD(seq[i + 1].t))}`, { direction: "top" }).addTo(TDB_MAP.route));
+  });
+  return all;
+}
 function tdbIsDark() {
   const t = document.documentElement.dataset.theme;
   return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
@@ -469,9 +440,11 @@ function tdbRenderMap() {
 function tdbSelectLoc(key, fromMap) {
   TDB_MAP.sel = key;
   Object.entries(TDB_MAP.markers).forEach(([k, mk]) => { const el = mk.getElement && mk.getElement(); if (el) el.querySelector(".tm-pin")?.classList.toggle("sel", k === key); });
+  const pts = tdbDrawRoutes(key);
   if (key && TDB_MAP.map && !fromMap) {
     const g = TDB.locs.find(x => x.key === key), c = g && tdbCoord(g);
-    if (c) TDB_MAP.map.flyTo(c, Math.max(TDB_MAP.map.getZoom(), 10), { duration: .6 });
+    if (pts.length > 1) TDB_MAP.map.flyToBounds(pts, { padding: [50, 50], maxZoom: 10, duration: .6 });
+    else if (c) TDB_MAP.map.flyTo(c, Math.max(TDB_MAP.map.getZoom(), 10), { duration: .6 });
   }
   tdbRenderPanel();
 }
@@ -576,7 +549,7 @@ async function tdbLoad() {
     const res = await fetch(TDB_API, { cache: "no-store" });
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || "Gagal memuat");
-    TDB.rows = j.rows; TDB.source = j.source || TDB.source; TDB.live = true;
+    TDB.rows = j.rows; TDB.moves = j.moves || []; TDB.source = j.source || TDB.source; TDB.live = true;
     renderTrafoDb();
     tdbSetSync("live", "Live · Google Sheets");
     $("#tdbSyncNote").textContent = `Tersambung ke spreadsheet · dimuat ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
@@ -595,6 +568,12 @@ async function tdbLoad() {
 function tdbBuildForm() {
   $("#tdbFields").innerHTML = TDB_FIELDS.map(([k, label, type, o = {}]) => {
     if (type === "loc") return `<div class="fld-group wide"><div class="fld-group-h">${label}</div>${locPickerHtml("loc", true)}</div>`;
+    if (type === "move") return `<div class="fld-group wide mv-box" id="mvBox" hidden>
+        <div class="fld-group-h">${icon("rotate", "ic xs")}${label} <small>lokasi berubah — perpindahan akan dicatat ke riwayat</small></div>
+        <label class="fld"><span>Tanggal pindah <em>*</em></span><input type="date" id="f_mvDate"></label>
+        <label class="fld"><span>No / link BA</span><input type="text" id="f_mvBa" placeholder="No. BA atau link dokumen" autocomplete="off"></label>
+        <label class="fld wide"><span>Alasan / keterangan</span><input type="text" id="f_mvAlasan" placeholder="mis. Perkuatan GI karena pertumbuhan beban" autocomplete="off"></label>
+        <label class="mv-set wide" id="mvSetWrap" hidden><input type="checkbox" id="f_mvSet" checked> <span id="mvSetLabel"></span></label></div>`;
     if (type === "aset") return `<div class="fld-group wide"><div class="fld-group-h">${label} <small>gabungan nama UPT dan gardu induk</small>
         <button class="btn ghost sm" type="button" onclick="asetFromLoc()">Samakan dengan lokasi penempatan</button></div>
         ${locPickerHtml("na", false)}<p class="aset-preview" id="naPreview"></p></div>`;
@@ -663,7 +642,26 @@ function locGet(p) {
   return { upt, gi };
 }
 function asetCompose() { const { upt, gi } = locGet("na"); return upt && gi ? `${upt} - ${gi}` : ""; }
+/* Tampilkan isian perpindahan bila lokasi penempatan diubah (hanya saat edit) */
+const locSame = (l, r) => (l.upt.toUpperCase() === String(r.upt || "").toUpperCase() || (!!uptCanon(l.upt) && uptCanon(l.upt) === uptCanon(r.upt))) &&
+  (l.gi.toUpperCase() === String(r.gi || "").toUpperCase() || giSame(l.gi, r.gi));
+const nrm = v => String(v || "").toUpperCase().replace(/\s+/g, "");
+function tdbSetMates(r) {
+  if (!r || !r.namaAset) return [];
+  return TDB.rows.filter(x => x !== r && x.namaAset === r.namaAset && nrm(x.upt) === nrm(r.upt) && nrm(x.gi) === nrm(r.gi));
+}
+function tdbMoveUi() {
+  const box = $("#mvBox"); if (!box) return;
+  const r = TDB.editing, l = locGet("loc");
+  const show = !!(r && r._row && l.upt && l.gi && !locSame(l, r));
+  box.hidden = !show; $("#f_mvDate").required = show;
+  if (show && !$("#f_mvDate").value) $("#f_mvDate").value = new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+  const mates = show ? tdbSetMates(r) : [];
+  $("#mvSetWrap").hidden = !mates.length;
+  if (mates.length) $("#mvSetLabel").innerHTML = `Pindahkan juga <b>${mates.length} komponen lain</b> dalam set yang sama (${mates.map(x => esc(tdbName(x.komponen))).join(", ")})`;
+}
 function asetPreview() {
+  tdbMoveUi();
   const el = $("#naPreview"); if (!el) return;
   const v = asetCompose();
   el.innerHTML = v ? `Nama aset tersimpan: <b>${esc(v)}</b>` : "Pilih UPT dan gardu induk untuk membentuk nama aset.";
@@ -688,7 +686,7 @@ function tdbOpenForm(i) {
   const na = asetSplit(r && r.namaAset);
   locFill("na", na.upt, na.gi);
   TDB_FIELDS.forEach(([k, , type, o = {}]) => {
-    if (type === "loc" || type === "aset") return;
+    if (type === "loc" || type === "aset" || type === "move") return;
     const el = $("#f_" + k);
     if (k === "komponen") {
       el.querySelectorAll("option[data-extra]").forEach(o => o.remove());
@@ -718,6 +716,8 @@ function tdbOpenForm(i) {
   $("#tdbFormErr").hidden = true;
   $("#tdbDialog").showModal();
   phOpen(r, true);
+  MV.adding = false; MV.err = ""; mvRender();
+  tdbMoveUi();
   setTimeout(() => $("#f_komponen").focus(), 30);
 }
 function tdbCloseForm() { $("#tdbDialog").close(); }
@@ -735,7 +735,7 @@ async function tdbSubmit(ev) {
   put("namaAset", aset, r && (aset.toUpperCase() === String(r.namaAset || "").toUpperCase() ||
     (!!aset && uptCanon(asetSplit(aset).upt) === uptCanon(oldA.upt) && !!uptCanon(oldA.upt) && giSame(asetSplit(aset).gi, oldA.gi)) || (!aset && !r.namaAset)));
   TDB_FIELDS.forEach(([k, , type, o = {}]) => {
-    if (type === "loc" || type === "aset") return;
+    if (type === "loc" || type === "aset" || type === "move") return;
     const el = $("#f_" + k);
     if (el.disabled) return;
     const v = el.value.trim();
@@ -744,21 +744,27 @@ async function tdbSubmit(ev) {
     data[k] = v;
   });
   if (r && !Object.keys(data).length) { tdbCloseForm(); toast("Tidak ada perubahan"); return; }
+  const move = r && !$("#mvBox").hidden ? { tanggal: $("#f_mvDate").value, alasan: $("#f_mvAlasan").value.trim(), ba: $("#f_mvBa").value.trim(), set: !$("#mvSetWrap").hidden && $("#f_mvSet").checked } : null;
   const token = $("#f_token").value.trim();
   if (!token) { $("#f_token").focus(); return tdbErr("Masukkan kode akses edit."); }
   const btn = $("#tdbSave"); btn.disabled = true; btn.textContent = "Menyimpan…";
   try {
-    const res = await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: r ? "update" : "add", row: r && r._row, expect: r && r.komponen, data }) });
+    const res = await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: r ? "update" : "add", row: r && r._row, expect: r && r.komponen, data, move }) });
     const j = await res.json();
     if (!j.ok) {
       if (j.code === "auth") { tokenForget(true); }
       throw new Error(j.error || "Gagal menyimpan");
     }
     tokenSave(token);
-    if (r) Object.assign(r, j.row || data); else TDB.rows.push(j.row);
-    renderTrafoDb();
     tdbCloseForm();
-    toast(r ? "Perubahan tersimpan ke Google Sheets" : "Komponen baru ditambahkan ke Google Sheets");
+    if (j.moved) {
+      await tdbLoad(); // muat ulang: lokasi beberapa komponen & riwayat berubah
+      toast(`Lokasi dipindah & riwayat tercatat (${j.moved} komponen)`);
+    } else {
+      if (r) Object.assign(r, j.row || data); else TDB.rows.push(j.row);
+      renderTrafoDb();
+      toast(r ? "Perubahan tersimpan ke Google Sheets" : "Komponen baru ditambahkan ke Google Sheets");
+    }
   } catch (e) {
     tdbErr(String(e.message || e));
   } finally {
@@ -838,9 +844,7 @@ function tdbOpenDetail(i) {
       ["Pemeliharaan", tdbLink(r.linkPemeliharaan, "Lihat data"), { html: true }],
       ["Kesesuaian dengan Power Inspect", r.powerInspect ? `<span class="badge ok">${icon("check", "ic xs")}Sesuai</span>` : null, { html: true }]
     ]), "search") +
-    sec("Riwayat lokasi", riw.some(x => x.lokasi || x.ba)
-      ? `<div class="table-wrap flat"><table class="table"><thead><tr><th>Tahun</th><th>Lokasi</th><th>BA</th></tr></thead><tbody>${riw.map(x => `<tr><td><b>${x.tahun}</b></td><td>${esc(x.lokasi || "—")}</td><td>${tdbLink(x.ba, "Lihat BA") || "—"}</td></tr>`).join("")}</tbody></table></div>`
-      : `<p class="dnil">Belum ada riwayat lokasi 2020–2025 yang tercatat.</p>`, "rotate");
+    sec("Riwayat perpindahan", mvTimeline(r), "rotate");
   $("#tdbDetail").showModal();
   phOpen(r, false);
 }
@@ -990,6 +994,77 @@ async function phDelete(id) {
   } catch (e) { PH.err = String(e.message || e); }
   PH.busy = ""; phRender();
 }
+/* =========================================================
+   RIWAYAT PERPINDAHAN
+   ========================================================= */
+const fmtD = d => { const m = String(d || "").match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : (d || "—"); };
+const tdbMovesOf = r => (TDB.moves || []).filter(m => r && r.id && m.kompId === r.id).sort((a, b) => (a.tanggal || "") < (b.tanggal || "") ? -1 : 1);
+function mvTimeline(r, editable) {
+  const ms = tdbMovesOf(r);
+  const legacy = (r.riwayat || []).filter(x => x.lokasi || x.ba);
+  const items = ms.map(m => `<li class="mv-item">
+      <span class="mv-dot"></span>
+      <div class="mv-body"><div class="mv-date">${esc(fmtD(m.tanggal))}${m.sumber ? ` <small>${esc(m.sumber)}</small>` : ""}</div>
+        <div class="mv-route"><span>${esc(m.dariGi || "—")}${m.dariUpt ? ` <small>${esc(m.dariUpt)}</small>` : ""}</span><b>→</b><span>${esc(m.keGi || "—")}${m.keUpt ? ` <small>${esc(m.keUpt)}</small>` : ""}</span></div>
+        ${m.alasan ? `<p>${esc(m.alasan)}</p>` : ""}${m.ba ? `<p class="mv-ba">BA: ${tdbLink(m.ba, "Buka BA")}</p>` : ""}
+        ${editable ? `<button type="button" class="linkbtn danger" onclick="mvDelete('${esc(m.id)}')" ${MV.busy ? "disabled" : ""}>Hapus</button>` : ""}</div></li>`).join("");
+  const now = `<li class="mv-item now"><span class="mv-dot"></span><div class="mv-body"><div class="mv-date">Saat ini</div>
+      <div class="mv-route"><span><b>${esc(r.gi || "—")}</b> <small>${esc(r.upt || "")}</small></span></div></div></li>`;
+  const leg = legacy.length ? `<div class="mv-legacy"><b>Riwayat tahunan (kolom 2020–2025)</b>${legacy.map(x => `<div>${x.tahun}: ${esc(x.lokasi || "—")}${x.ba ? ` · ${tdbLink(x.ba, "BA")}` : ""}</div>`).join("")}</div>` : "";
+  if (!ms.length && !legacy.length) return `<ul class="mv-tl">${now}</ul><p class="dnil">Belum ada riwayat perpindahan tercatat. Perpindahan tercatat otomatis saat lokasi penempatan diubah lewat <b>Edit komponen</b>${editable ? ", atau tambahkan riwayat lama di bawah" : ""}.</p>`;
+  return `<ul class="mv-tl">${items}${now}</ul>${leg}`;
+}
+const MV = { adding: false, busy: false, err: "" };
+function mvRender() {
+  const el = $("#mvSecForm"); if (!el) return;
+  const r = TDB.editing;
+  if (!r || !r._row || !phCan(r)) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="ph-head"><h4>${icon("rotate", "ic xs")}Riwayat perpindahan</h4>
+      ${MV.adding ? "" : `<button type="button" class="btn ghost sm" onclick="mvStartAdd()">${icon("rotate", "ic xs")}Tambah riwayat lama</button>`}</div>
+    ${mvTimeline(r, true)}
+    ${MV.adding ? `<div class="fld-group mv-add">
+        <div class="fld-group-h">Tambah riwayat perpindahan <small>untuk perpindahan yang terjadi sebelum dicatat di dashboard</small></div>
+        <label class="fld"><span>Tanggal pindah <em>*</em></span><input type="date" id="mv_date"></label>
+        <label class="fld"><span>No / link BA</span><input type="text" id="mv_ba" autocomplete="off"></label>
+        <div class="fld-group-h sub">Dari</div>${locPickerHtml("mvf", false)}
+        <div class="fld-group-h sub">Ke</div>${locPickerHtml("mvt", false)}
+        <label class="fld wide"><span>Alasan / keterangan</span><input type="text" id="mv_alasan" autocomplete="off"></label>
+        <div class="mv-add-btns wide"><button type="button" class="btn ghost sm" onclick="MV.adding=false;MV.err='';mvRender()">Batal</button>
+          <button type="button" class="btn primary sm" onclick="mvSave()" ${MV.busy ? "disabled" : ""}>${MV.busy ? "Menyimpan…" : "Simpan riwayat"}</button></div></div>` : ""}
+    ${MV.err ? `<p class="form-err ph-err" role="alert">${esc(MV.err)}</p>` : ""}
+    <p class="ph-foot">Riwayat langsung tersimpan ke sheet RIWAYAT LOKASI (tidak perlu menekan Simpan).</p>`;
+  if (MV.adding) { locFill("mvf", "", ""); locFill("mvt", "", ""); }
+}
+function mvStartAdd() { MV.adding = true; MV.err = ""; mvRender(); setTimeout(() => $("#mv_date")?.focus(), 20); }
+async function mvPost(action, payload) {
+  const r = TDB.editing, token = tokenGet() || ($("#f_token") && $("#f_token").value.trim());
+  if (!token) { MV.err = "Masukkan kode akses edit di bagian bawah form."; mvRender(); $("#f_token")?.focus(); return null; }
+  MV.busy = true; MV.err = ""; mvRender();
+  try {
+    const j = await (await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action, row: r._row, expect: r.komponen, ...payload }) })).json();
+    if (!j.ok) { if (j.code === "auth") tokenForget(true); throw new Error(j.error || "Gagal menyimpan riwayat"); }
+    tokenSave(token); if ($("#tdbDialog").open) tdbTokenUi();
+    TDB.moves = j.moves || TDB.moves;
+    return j;
+  } catch (e) { MV.err = String(e.message || e); return null; }
+  finally { MV.busy = false; }
+}
+async function mvSave() {
+  const d = $("#mv_date").value, from = locGet("mvf"), to = locGet("mvt");
+  if (!d) { MV.err = "Isi tanggal pindah."; return mvRender(); }
+  if (!to.gi && !to.upt) { MV.err = "Isi lokasi tujuan (Ke)."; return mvRender(); }
+  const keep = { d, ba: $("#mv_ba").value, al: $("#mv_alasan").value };
+  const j = await mvPost("move_add", { move: { tanggal: d, dariUpt: from.upt, dariGi: from.gi, keUpt: to.upt, keGi: to.gi, alasan: keep.al.trim(), ba: keep.ba.trim() } });
+  if (j) { MV.adding = false; mvRender(); renderTrafoDb(); toast("Riwayat perpindahan tersimpan"); }
+  else { mvRender(); if ($("#mv_date")) { $("#mv_date").value = keep.d; $("#mv_ba").value = keep.ba; $("#mv_alasan").value = keep.al; } }
+}
+async function mvDelete(id) {
+  if (!confirm("Hapus riwayat perpindahan ini dari sheet RIWAYAT LOKASI?")) return;
+  const j = await mvPost("move_delete", { moveId: id });
+  mvRender(); if (j) { renderTrafoDb(); toast("Riwayat dihapus"); }
+}
+
 /* Penampil foto besar */
 function phView(i) {
   if (!PH.list.length) return;
@@ -1032,8 +1107,6 @@ initTrafoDb();
    NAVIGATION (hash routing: bisa di-bookmark & tombol back)
    ========================================================= */
 const PAGES = {
-  kinerja: ["PDKB", "Kinerja PDKB", "Rekap kinerja PDKB UIT JBM tahun 2026"],
-  optimalisasi: ["PDKB", "Optimalisasi PDKB", "Capaian optimalisasi Gardu Induk & Jaringan per UPT"],
   health: ["Kondisi Aset", "Health Index", "Sebaran prioritas temuan aset Jaringan dan Gardu Induk"],
   jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
@@ -1042,7 +1115,7 @@ const PAGES = {
 };
 function route() {
   if (location.hash === "#trafo") { location.replace("#trafodb"); return; } // halaman lama Trafo Mobile dihapus
-  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "kinerja";
+  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "health"; // halaman awal (Kinerja & Optimalisasi PDKB dihapus)
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + id));
   document.querySelectorAll(".nav-item").forEach(n => {
     const on = n.dataset.page === id;

@@ -199,8 +199,9 @@ svg{display:block}
 @keyframes bar-in{from{transform:scaleX(0)}}
 .bars b{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 .bars.stacked .bt>i{border-radius:0}
-.bars.stacked .bt .seg{display:flex;height:100%;border-radius:999px;overflow:hidden;gap:2px;animation:bar-in .8s cubic-bezier(.2,.8,.2,1) both;transform-origin:left}
-.bars.stacked .seg i{display:block;height:100%;min-width:3px}
+.bars.stacked .bt{height:12px}
+.bars.stacked .bt .stk{display:flex;height:100%;border-radius:999px;overflow:hidden;gap:2px;animation:bar-in .8s cubic-bezier(.2,.8,.2,1) both;transform-origin:left}
+.bars.stacked .stk i{display:block;height:100%;min-width:3px}
 .bars.stacked li{grid-template-columns:128px minmax(0,1fr) 52px}
 .cert-bars{margin-top:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 40px}
 .cert-bars li{grid-template-columns:96px minmax(0,1fr) 64px}
@@ -498,6 +499,32 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .pv-nav:hover{background:rgba(255,255,255,.25)}
 .pv-nav.prev{left:16px}.pv-nav.next{right:16px}
 @media (max-width:520px){ .ph-grid{grid-template-columns:1fr 1fr} .pv-nav{top:auto;bottom:20px;transform:none} }
+
+/* ---------- Riwayat perpindahan ---------- */
+.mv-box{background:var(--primary-soft);border-color:color-mix(in srgb,var(--primary) 35%,var(--border))}
+.mv-box .fld-group-h .ic{width:15px;height:15px;color:var(--primary)}
+.mv-set{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text);cursor:pointer}
+.mv-set input{margin-top:2px;accent-color:var(--primary)}
+.mv-sec{margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+.mv-tl{list-style:none;margin:0;padding:0 0 0 4px;position:relative}
+.mv-tl::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--border-2)}
+.mv-item{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px;padding:0 0 14px}
+.mv-dot{position:relative;z-index:1;width:12px;height:12px;margin:4px 0 0 0;border-radius:50%;background:var(--surface);border:3px solid var(--primary)}
+.mv-item.now .mv-dot{background:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 18%,transparent)}
+.mv-date{font-size:12px;font-weight:800;color:var(--primary)}
+.mv-item.now .mv-date{color:var(--ok)}
+.mv-date small{font-weight:600;color:var(--text-3);margin-left:6px}
+.mv-route{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13px;font-weight:600;margin-top:2px}
+.mv-route small{font-weight:500;color:var(--text-3)}
+.mv-route>b{color:var(--text-3)}
+.mv-body p{margin:3px 0 0;font-size:12.5px;color:var(--text-2)}
+.mv-body .linkbtn{font-size:12px;font-weight:700;text-decoration:none;margin-top:4px}
+.mv-legacy{margin-top:6px;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:12.5px;line-height:1.6}
+.mv-add{margin-top:10px}
+.fld-group-h.sub{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.mv-add-btns{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
+.mv-last{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:11px;font-weight:700;color:var(--primary)}
+.mv-last .ic{width:11px;height:11px}
 
 /* ---------- Pemilih UPT & GI ---------- */
 .fld-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}

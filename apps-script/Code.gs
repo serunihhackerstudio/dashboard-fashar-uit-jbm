@@ -9,6 +9,10 @@
  * GET  <url>?action=photos&row=N      → daftar foto komponen di baris N
  * POST <url> (text/plain) → {token, action, row, expect, ...}
  *      action: "add" | "update" | "photo_upload" | "photo_replace" | "photo_caption" | "photo_delete"
+ *              | "move_add" | "move_delete"
+ *
+ * Riwayat perpindahan disimpan di sheet MOVE_SHEET ("RIWAYAT LOKASI"), dibuat otomatis.
+ * Setiap komponen diberi ID tetap (kolom ID DASHBOARD, kolom AP) sebagai penghubung riwayat.
  *
  * Foto disimpan di Google Drive: satu subfolder per komponen di dalam folder PHOTO_ROOT_ID.
  * Link subfolder ditulis otomatis ke kolom LINK FOTO PERALATAN (kolom Y).
@@ -23,8 +27,13 @@ const COLS = {
   no: 1, komponen: 2, sn: 3, merk: 4, kv: 5, mva: 6, upt: 7, gi: 8, tahun: 9, status: 10,
   keterangan: 11, anomali: 12, tindakLanjut: 13, statusAnomali: 14, dokumenAnomali: 15, namaAset: 16,
   nomorTid: 17, nomorAsset: 18, nilaiAset1: 19, refAset1: 20, nilaiAset2: 21, refAset2: 22, identitas: 23,
-  tanggalOperasi: 24, linkFoto: 25, linkNameplate: 26, linkPemeliharaan: 27, powerInspect: 28, lokasiAwal: 29
+  tanggalOperasi: 24, linkFoto: 25, linkNameplate: 26, linkPemeliharaan: 27, powerInspect: 28, lokasiAwal: 29,
+  id: 42 // ID DASHBOARD (kolom AP), diisi otomatis
 };
+const ID_PREFIX = 'TM-';
+const MOVE_SHEET = 'RIWAYAT LOKASI';
+const MOVE_HEAD = ['ID RIWAYAT', 'TANGGAL PINDAH', 'ID KOMPONEN', 'KOMPONEN', 'SERIAL NUMBER', 'DARI UPT', 'DARI GARDU INDUK',
+  'KE UPT', 'KE GARDU INDUK', 'ALASAN / KETERANGAN', 'NO / LINK BA', 'DICATAT PADA', 'SUMBER'];
 const LINKS = ['linkFoto', 'linkNameplate', 'linkPemeliharaan', 'dokumenAnomali'];
 const RIWAYAT_COL = 30, TAHUN = [2020, 2021, 2022, 2023, 2024, 2025]; // AD.. : (LOKASI, BA) per tahun
 const EDITABLE = ['no', 'komponen', 'sn', 'merk', 'kv', 'mva', 'upt', 'gi', 'tahun', 'status',
@@ -44,7 +53,8 @@ function doGet(e) {
       const folder = photoFolder_(sh, r, false);
       return json_({ ok: true, folder: folder ? folder.getUrl() : null, photos: folder ? listPhotos_(folder) : [] });
     }
-    return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: readRows_() });
+    ensureIds_(sheet_());
+    return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: readRows_(), moves: readMoves_() });
   } catch (err) {
     return json_({ ok: false, error: String(err.message || err) });
   }
@@ -69,15 +79,19 @@ function doPost(e) {
       if (req.expect != null && current !== String(req.expect).trim()) {
         return json_({ ok: false, code: 'conflict', error: 'Baris ini sudah berubah di spreadsheet. Muat ulang data lalu coba lagi.' });
       }
-      EDITABLE.forEach(k => { if (k in data) write_(sh, r, k, data[k]); });
-      return json_({ ok: true, row: readRow_(sh, r) });
+      let moved = 0;
+      if (req.move && ('upt' in data || 'gi' in data)) moved = moveLocation_(sh, r, data, req.move);
+      EDITABLE.forEach(k => { if (k in data && !(moved && (k === 'upt' || k === 'gi'))) write_(sh, r, k, data[k]); });
+      return json_({ ok: true, row: readRow_(sh, r), moved: moved });
     }
 
     if (String(req.action || '').indexOf('photo_') === 0) return json_(photoAction_(sh, req));
+    if (req.action === 'move_add' || req.action === 'move_delete') return json_(moveAction_(sh, req));
 
     if (req.action === 'add') {
       const r = lastDataRow_(sh) + 1;
       EDITABLE.forEach(k => { if (k in data) write_(sh, r, k, data[k]); });
+      ensureIds_(sh);
       return json_({ ok: true, row: readRow_(sh, r) });
     }
     return json_({ ok: false, error: 'Aksi tidak dikenal.' });
@@ -86,6 +100,119 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* ---------- ID komponen & riwayat perpindahan ---------- */
+/* Isi kolom ID DASHBOARD (TM-0001, …) untuk baris komponen yang belum punya ID. */
+function ensureIds_(sh) {
+  const last = lastDataRow_(sh);
+  if (last <= HEADER_ROWS) return;
+  const head = sh.getRange(1, COLS.id);
+  if (!String(head.getDisplayValue()).trim()) head.setValue('ID DASHBOARD').setFontWeight('bold');
+  const n = last - HEADER_ROWS;
+  const komp = sh.getRange(HEADER_ROWS + 1, COLS.komponen, n, 1).getDisplayValues();
+  const rng = sh.getRange(HEADER_ROWS + 1, COLS.id, n, 1), ids = rng.getDisplayValues();
+  let max = 0, missing = false;
+  ids.forEach(r => { const m = String(r[0]).match(/^TM-(\d+)$/); if (m) max = Math.max(max, Number(m[1])); });
+  const out = ids.map((r, i) => {
+    if (String(r[0]).trim() || !String(komp[i][0]).trim()) return [r[0]];
+    missing = true; max++; return [ID_PREFIX + ('000' + max).slice(-4)];
+  });
+  if (missing) rng.setValues(out);
+}
+
+function moveSheet_(create) {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(MOVE_SHEET);
+  if (!sh && create) {
+    sh = ss.insertSheet(MOVE_SHEET);
+    sh.getRange(1, 1, 1, MOVE_HEAD.length).setValues([MOVE_HEAD]).setFontWeight('bold').setBackground('#0B2545').setFontColor('#FFFFFF');
+    sh.setFrozenRows(1);
+    sh.getRange('B:B').setNumberFormat('dd-mm-yyyy');
+  }
+  return sh;
+}
+
+function fmtDate_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  return String(v || '').trim() || null;
+}
+
+function readMoves_() {
+  const sh = moveSheet_(false);
+  if (!sh || sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, MOVE_HEAD.length).getValues()
+    .filter(v => String(v[0]).trim())
+    .map(v => ({
+      id: String(v[0]), tanggal: fmtDate_(v[1]), kompId: String(v[2]), komponen: String(v[3] || ''), sn: String(v[4] || ''),
+      dariUpt: String(v[5] || ''), dariGi: String(v[6] || ''), keUpt: String(v[7] || ''), keGi: String(v[8] || ''),
+      alasan: String(v[9] || ''), ba: String(v[10] || ''), dicatat: v[11] instanceof Date ? v[11].toISOString() : String(v[11] || ''),
+      sumber: String(v[12] || '')
+    }));
+}
+
+function cleanMove_(m) {
+  m = m || {};
+  const s = (v, n) => String(v == null ? '' : v).trim().slice(0, n || 300);
+  const out = { tanggal: s(m.tanggal, 10), alasan: s(m.alasan, 500), ba: s(m.ba, 500),
+    dariUpt: s(m.dariUpt), dariGi: s(m.dariGi), keUpt: s(m.keUpt), keGi: s(m.keGi), set: !!m.set };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(out.tanggal)) throw new Error('Tanggal pindah wajib diisi (format YYYY-MM-DD).');
+  ['alasan', 'ba', 'dariUpt', 'dariGi', 'keUpt', 'keGi'].forEach(k => { if (/^[=+\-@]/.test(out[k])) out[k] = "'" + out[k]; });
+  return out;
+}
+
+function appendMove_(rec, m, sumber) {
+  const sh = moveSheet_(true);
+  const id = 'MV-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd-HHmmss') + '-' + Math.floor(Math.random() * 1000);
+  const p = m.tanggal.split('-').map(Number);
+  sh.appendRow([id, new Date(p[0], p[1] - 1, p[2]), rec.id || '', rec.komponen || '', rec.sn || '',
+    m.dariUpt, m.dariGi, m.keUpt, m.keGi, m.alasan, m.ba, new Date(), sumber]);
+  return id;
+}
+
+const norm_ = v => String(v || '').toUpperCase().replace(/\s+/g, '');
+
+/* Ubah lokasi (UPT/GI) baris r — dan seluruh set bila move.set — lalu catat riwayatnya. Mengembalikan jumlah komponen yang dipindah. */
+function moveLocation_(sh, r, data, move) {
+  const m = cleanMove_(move);
+  ensureIds_(sh);
+  const recs = readRows_(), me = recs.filter(x => x._row === r)[0];
+  if (!me) throw new Error('Baris tidak ditemukan.');
+  const keUpt = 'upt' in data ? data.upt : me.upt, keGi = 'gi' in data ? data.gi : me.gi;
+  if (norm_(keUpt) === norm_(me.upt) && norm_(keGi) === norm_(me.gi)) return 0;
+  const targets = m.set && me.namaAset
+    ? recs.filter(x => x.namaAset === me.namaAset && norm_(x.upt) === norm_(me.upt) && norm_(x.gi) === norm_(me.gi))
+    : [me];
+  targets.forEach(t => {
+    appendMove_(t, { tanggal: m.tanggal, alasan: m.alasan, ba: m.ba, dariUpt: t.upt || '', dariGi: t.gi || '', keUpt: keUpt, keGi: keGi },
+      targets.length > 1 ? 'Otomatis (satu set)' : 'Otomatis');
+    if ('upt' in data) write_(sh, t._row, 'upt', data.upt);
+    if ('gi' in data) write_(sh, t._row, 'gi', data.gi);
+  });
+  return targets.length;
+}
+
+function moveAction_(sh, req) {
+  const r = checkRow_(sh, req.row, req.expect);
+  ensureIds_(sh);
+  const me = readRow_(sh, r);
+  if (req.action === 'move_add') {
+    const m = cleanMove_(req.move);
+    if (!m.keGi && !m.keUpt) throw new Error('Isi lokasi tujuan (UPT / gardu induk).');
+    appendMove_(me, m, 'Manual');
+    return { ok: true, moves: readMoves_() };
+  }
+  const ms = moveSheet_(false);
+  if (!ms || ms.getLastRow() < 2) throw new Error('Riwayat tidak ditemukan.');
+  const vals = ms.getRange(2, 1, ms.getLastRow() - 1, 3).getDisplayValues();
+  for (let i = 0; i < vals.length; i++) {
+    if (vals[i][0] === String(req.moveId)) {
+      if (vals[i][2] !== me.id) throw new Error('Riwayat ini bukan milik komponen tersebut.');
+      ms.deleteRow(i + 2);
+      return { ok: true, moves: readMoves_() };
+    }
+  }
+  throw new Error('Riwayat tidak ditemukan.');
 }
 
 /* ---------- foto (Google Drive) ---------- */
@@ -245,7 +372,7 @@ function readRows_() {
   const sh = sheet_();
   const last = lastDataRow_(sh);
   if (last <= HEADER_ROWS) return [];
-  const width = RIWAYAT_COL - 1 + TAHUN.length * 2;
+  const width = Math.max(RIWAYAT_COL - 1 + TAHUN.length * 2, COLS.id);
   const range = sh.getRange(HEADER_ROWS + 1, 1, last - HEADER_ROWS, width);
   const vals = range.getDisplayValues();
   const rich = range.getRichTextValues();

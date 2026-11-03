@@ -40,6 +40,7 @@
   <div class="nav-group">Peralatan ERS</div>
   <a class="nav-item" href="#tower" data-page="tower" title="Tower Emergency"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M7 13h10M5 21h14"/></svg><span>Tower Emergency</span></a>
   <a class="nav-item" href="#trafo" data-page="trafo" title="Trafo Mobile"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5M7 20a1.5 1.5 0 1 0 0-.01M17 20a1.5 1.5 0 1 0 0-.01M7 9V6M12 9V6"/></svg><span>Trafo Mobile</span></a>
+  <a class="nav-item" href="#trafodb" data-page="trafodb" title="Database Trafo Mobile"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><span>Database Trafo Mobile</span></a>
  </nav>
 
  <div class="sidebar-foot">
@@ -151,10 +152,33 @@
    <div class="grid g4" id="trafoLoanCards"></div>
   </section>
 
+  <!-- DATABASE TRAFO MOBILE -->
+  <section id="page-trafodb" class="page">
+   <div class="grid g4" id="tdbKpi"></div>
+   <div class="section-head"><h2>Per Lokasi Penempatan</h2><p>Komponen trafo mobile di setiap gardu induk</p></div>
+   <div class="grid g3" id="tdbLokasi"></div>
+   <div class="section-head"><h2>Anomali &amp; Tindak Lanjut</h2><p>Temuan anomali yang tercatat pada database</p></div>
+   <div class="grid g2" id="tdbAnomali"></div>
+   <div class="section-head"><h2>Daftar Komponen</h2><p id="tdbSource"></p></div>
+   <div class="card">
+    <div class="tdb-toolbar">
+     <div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="tdbSearch" type="search" placeholder="Cari komponen, serial number, merk, lokasi…" aria-label="Cari komponen"></div>
+     <select id="tdbLoc" aria-label="Filter lokasi"></select>
+     <div class="seg" id="tdbStatus" role="group" aria-label="Filter status"></div>
+    </div>
+    <div class="table-wrap tdb-table"><table class="table">
+     <thead><tr><th>No</th><th>Komponen</th><th>Serial Number</th><th>Merk</th><th class="num">kV</th><th class="num">MVA</th><th>Lokasi</th><th class="num">Tahun</th><th>Status</th><th>Keterangan</th><th title="Kesesuaian data dengan Power Inspect">PI</th></tr></thead>
+     <tbody id="tdbRows"></tbody>
+    </table><div class="empty" id="tdbEmpty" hidden>Tidak ada komponen yang cocok dengan filter.</div></div>
+    <div class="card-foot"><span class="muted" id="tdbCount"></span><button class="btn ghost" type="button" onclick="tdbReset()">Reset filter</button></div>
+   </div>
+  </section>
+
  </div>
 </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="data/trafo-mobile-db.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

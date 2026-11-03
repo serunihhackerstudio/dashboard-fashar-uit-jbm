@@ -487,10 +487,12 @@ function tdbSetSync(state, text) {
 async function tdbLoad() {
   if (!TDB_API) {
     tdbSetSync("static", "Data statis · edit belum aktif");
+    $("#tdbReload").hidden = true;
     $("#tdbSync").title = "Isi trafoDbApi di config.js dengan URL Apps Script agar data live & bisa diedit (lihat README).";
     return;
   }
   tdbSetSync("loading", "Memuat dari Google Sheets…");
+  $("#tdbSyncNote").textContent = "";
   try {
     const res = await fetch(TDB_API, { cache: "no-store" });
     const j = await res.json();
@@ -498,9 +500,14 @@ async function tdbLoad() {
     TDB.rows = j.rows; TDB.source = j.source || TDB.source; TDB.live = true;
     renderTrafoDb();
     tdbSetSync("live", "Live · Google Sheets");
+    $("#tdbSyncNote").textContent = `Tersambung ke spreadsheet · dimuat ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
   } catch (e) {
     TDB.live = false;
     tdbSetSync("error", "Gagal terhubung · menampilkan data statis");
+    const net = e instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(String(e.message || e));
+    $("#tdbSyncNote").textContent = net
+      ? "Apps Script tidak bisa diakses tanpa login. Pastikan deployment Web app memakai Who has access: \"Anyone\" (bukan \"Anyone with Google account\")."
+      : String(e.message || e);
     $("#tdbSync").title = String(e.message || e);
   }
 }

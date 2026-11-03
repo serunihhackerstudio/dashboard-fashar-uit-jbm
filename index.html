@@ -154,13 +154,17 @@
 
   <!-- DATABASE TRAFO MOBILE -->
   <section id="page-trafodb" class="page">
+   <div class="tdb-bar card">
+    <div class="tdb-bar-info"><span class="chip sync" id="tdbSync"></span><span class="muted sm" id="tdbSyncNote"></span></div>
+    <div class="tdb-actions"><button class="btn ghost" type="button" onclick="tdbLoad()" id="tdbReload"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/></svg>Muat ulang</button><button class="btn primary" type="button" onclick="tdbOpenForm()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah komponen</button></div>
+   </div>
    <div class="grid g4" id="tdbKpi"></div>
    <div class="section-head"><h2>Per Lokasi Penempatan</h2><p>Komponen trafo mobile di setiap gardu induk</p></div>
    <div class="grid g3" id="tdbLokasi"></div>
    <div class="section-head"><h2>Anomali &amp; Tindak Lanjut</h2><p>Temuan anomali yang tercatat pada database</p></div>
    <div class="grid g2" id="tdbAnomali"></div>
    <div class="section-head"><div><h2>Daftar Komponen</h2><p id="tdbSource"></p></div>
-    <div class="tdb-actions"><span class="chip sync" id="tdbSync"></span><button class="btn primary" type="button" onclick="tdbOpenForm()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah komponen</button></div></div>
+    <div class="tdb-actions"><button class="btn primary" type="button" onclick="tdbOpenForm()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah komponen</button></div></div>
    <div class="card">
     <div class="tdb-toolbar">
      <div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="tdbSearch" type="search" placeholder="Cari komponen, serial number, merk, lokasi…" aria-label="Cari komponen"></div>

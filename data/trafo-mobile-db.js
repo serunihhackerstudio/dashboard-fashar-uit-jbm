@@ -18,9 +18,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": "JATIM-ABB93.1/2/3",
-   "powerInspect": true
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": true,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "2",
@@ -37,9 +81,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "3",
@@ -56,9 +144,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "4",
@@ -75,9 +207,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "5",
@@ -94,9 +270,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT PBL - GI JEMBER",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "6",
@@ -113,9 +333,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT PBL - GI JEMBER",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "7",
@@ -132,9 +396,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": null,
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": null,
+   "refAset1": null,
+   "nilaiAset2": null,
+   "refAset2": null,
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "7",
@@ -151,9 +459,53 @@ window.TRAFO_DB = {
    "anomali": "Indikasi anomali penurunan nilai hasil pengujian BDV dan peningkatan kadar air yang berpotensi menurunkan keandalan peralatan",
    "tindakLanjut": "1). Segera Melakukan Penggantian minyak OLTC untuk menjaga performa isolasi minyak OLTC Trafo Mobile 30MVA Gardu Induk Ngoro dengan minyak baru yang telah difilter dengan nilai BDV minimal 60 kV / 2,5 mm dan Nilai Kadar Air (Water Content) min 2 ppmv.\n\n2). Melakukan pengecekan pada box power supply dehydrating breather OLTC dan segera lakukan perbaikan jika ditemukan anomali pada peralatan tersebut.\n\n3). Pengecekan potensi sumber kontaminasi pada sistem seal gasket cover OLTC, breather (silica gel), serta kemungkinan adanya kebocoran atau masuknya kelembaban dari lingkungan sekitar.\n\n4). Melakukan pengujian ulang BDV dan Water Content pasca penggantian minyak serta meningkatkan",
    "statusAnomali": "Open",
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": true
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": true,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "8",
@@ -170,9 +522,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "9",
@@ -189,9 +585,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "10",
@@ -208,9 +648,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "4573821447",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "6533123670",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga tidak termasuk trailer karena trailernya jadi satu dengan mobile switchgear",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "11",
@@ -227,9 +711,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT PBL - GITET PAITON",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": true
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": true,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "12",
@@ -246,9 +774,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT PBL - GITET PAITON",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "13",
@@ -265,9 +837,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT PBL - GITET PAITON",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "14",
@@ -284,9 +900,53 @@ window.TRAFO_DB = {
    "anomali": "Anomali pada : \n- SAS dan Card power supply, Server-nya tidak bisa booting, modul supply bermasalah. \n- Supply DC mengalami dc ground (kabelnya breakdown)",
    "tindakLanjut": "dari perbaikan yang penawarannya 80juta, vendornya merekomendasikan untuk dilakukan penggantian dengan yang baru karena mereka tidak bisa memberikan garansi dan khawatir anomali yang sama akan berulang dengan penawaran sekitar 190 juta. pagu yang diturunkan hanya 100 juta dari KI",
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT PBL - GITET PAITON",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "4573821447",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "6533123670",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga tidak termasuk trailer karena trailernya jadi satu dengan mobile switchgear",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "15",
@@ -303,9 +963,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT BALI - GI GIANYAR",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": true
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": true,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "16",
@@ -322,9 +1026,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT BALI - GI GIANYAR",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "17",
@@ -341,9 +1089,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT BALI - GI GIANYAR",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "18",
@@ -360,9 +1152,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MADIUN - GI NEW TULUNG AGUNG",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "19",
@@ -379,9 +1215,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MADIUN - GI NEW TULUNG AGUNG",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "4573821447",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "6533123670",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga tidak termasuk trailer karena trailernya jadi satu dengan mobile switchgear",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "20",
@@ -398,9 +1278,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MADIUN - GI NEW TULUNG AGUNG",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": true
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": true,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "21",
@@ -417,9 +1341,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MADIUN - GI NEW TULUNG AGUNG",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "22",
@@ -436,9 +1404,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": "BALI-FUJI94.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "23",
@@ -455,9 +1467,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": "BALI-FUJI94.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "24",
@@ -474,9 +1530,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": "BALI-FUJI94.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "25",
@@ -493,9 +1593,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT GRESIK - GIS TANDES",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "4573821447",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "6533123670",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga tidak termasuk trailer karena trailernya jadi satu dengan mobile switchgear",
    "identitas": "BALI-FUJI94.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "26",
@@ -512,9 +1656,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": "JATIM CG 13.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "27",
@@ -531,9 +1719,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": "JATIM CG 13.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "28",
@@ -550,9 +1782,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": "JATIM CG 13.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": "29",
@@ -569,9 +1845,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "4573821447",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "6533123670",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga tidak termasuk trailer karena trailernya jadi satu dengan mobile switchgear",
    "identitas": "JATIM CG 13.1/2/3",
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": null,
@@ -588,9 +1908,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": "UPT MALANG - GI NGORO",
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "8885538298",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "18008374710",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": null,
@@ -607,9 +1971,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": null,
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6511390647",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7151579040",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*harga termasuk trailer",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   },
   {
    "no": null,
@@ -626,9 +2034,53 @@ window.TRAFO_DB = {
    "anomali": null,
    "tindakLanjut": null,
    "statusAnomali": null,
+   "dokumenAnomali": null,
    "namaAset": null,
+   "nomorTid": null,
+   "nomorAsset": null,
+   "nilaiAset1": "6751430698",
+   "refAset1": "Kontrak Trafo Mobile UIT JBTB Tahun 2018\n159. Kontrak Trafo Mobile CG Power 2018 UIT JBTB.pdf\n*harga termasuk trailer",
+   "nilaiAset2": "7902193230",
+   "refAset2": "Kontrak Trafo Mobile UIT JBB Tahun 2025\n167. Trafo Mobile 2025 UIT JBB - PT Elseweday.pdf\n*1 trailer terdiri atas cubicle dan control, jadi harga termasuk keduanya",
    "identitas": null,
-   "powerInspect": false
+   "tanggalOperasi": null,
+   "linkFoto": null,
+   "linkNameplate": null,
+   "linkPemeliharaan": null,
+   "powerInspect": false,
+   "lokasiAwal": null,
+   "riwayat": [
+    {
+     "tahun": 2020,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2021,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2022,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2023,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2024,
+     "lokasi": null,
+     "ba": null
+    },
+    {
+     "tahun": 2025,
+     "lokasi": null,
+     "ba": null
+    }
+   ]
   }
  ]
 };

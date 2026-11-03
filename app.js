@@ -340,6 +340,8 @@ const tdbSt = s => TDB_STATUS[s] || TDB_STATUS["BELUM DIPASTIKAN"];
 const tdbName = k => title(k.replace(/^MOBILE\s+/i, "")).replace(/\(([^)]*)\)/, (m, x) => "(" + x.toLowerCase() + ")");
 const tdbKey = r => (r.gi || "-").replace(/\s+/g, "").toUpperCase();
 const tdbOutside = r => /^UIP3B/i.test(r.upt || "");
+const TDB_ANOM = ["Open", "On Progress", "Closed"];
+const anomTone = s => /open/i.test(s || "") ? "bad" : /progress|proses/i.test(s || "") ? "warn" : /close|selesai/i.test(s || "") ? "ok" : "muted";
 const TDB_API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").trim();
 const TDB = {
   rows: (window.TRAFO_DB && window.TRAFO_DB.rows) || [],
@@ -362,7 +364,7 @@ const TDB_FIELDS = [
   ["keterangan", "Keterangan", "textarea", { wide: true }],
   ["anomali", "Uraian anomali", "textarea", { wide: true }],
   ["tindakLanjut", "Tindak lanjut & mitigasi", "textarea", { wide: true }],
-  ["statusAnomali", "Status anomali", "text", { list: "tdbAnomList" }]
+  ["statusAnomali", "Status anomali", "select-anom"]
 ];
 
 function renderTrafoDb() {
@@ -405,7 +407,7 @@ function renderTrafoDb() {
 
   const an = rows.filter(r => r.anomali);
   $("#tdbAnomali").innerHTML = an.length ? an.map(r => `<div class="card tdb-anom">
-    <div class="card-head"><div><h3>${esc(tdbName(r.komponen))}</h3><p>${esc(r.gi)} · ${esc(r.upt)}</p></div><span class="badge ${/open/i.test(r.statusAnomali || "") ? "bad" : r.statusAnomali ? "ok" : "warn"}">${esc(r.statusAnomali || "Belum ada status")}</span></div>
+    <div class="card-head"><div><h3>${esc(tdbName(r.komponen))}</h3><p>${esc(r.gi)} · ${esc(r.upt)}</p></div><span class="badge ${r.statusAnomali ? anomTone(r.statusAnomali) : "warn"}">${esc(r.statusAnomali || "Belum ada status")}</span></div>
     <div class="card-body"><div class="tdb-field"><span>Uraian anomali</span><p>${esc(r.anomali)}</p></div>
       ${r.tindakLanjut ? `<details class="tdb-field"><summary>Tindak lanjut &amp; mitigasi</summary><p>${esc(r.tindakLanjut)}</p></details>` : ""}</div>
   </div>`).join("") : `<div class="card"><div class="card-body empty">Tidak ada anomali tercatat.</div></div>`;
@@ -425,11 +427,11 @@ function renderTrafoDb() {
     <td>${esc(r.gi)}<div class="muted sm">${esc(r.upt)}</div></td><td class="num">${esc(r.tahun || "—")}</td>
     <td><span class="badge ${tdbSt(r.status).tone}">${tdbSt(r.status).label}</span></td>
     <td class="ket">${esc(r.keterangan || "—")}</td><td>${r.powerInspect ? `<span class="pi-ok" title="Sesuai dengan Power Inspect">${icon("check", "ic xs")}</span>` : ""}</td>
-    <td class="act"><button class="icon-btn sm" type="button" onclick="tdbOpenForm(${i})" aria-label="Edit ${esc(tdbName(r.komponen))} di ${esc(r.gi)}" title="Edit"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button></td></tr>`).join("");
+    <td class="act"><button class="btn ghost sm" type="button" onclick="tdbOpenDetail(${i})" aria-label="Detail ${esc(tdbName(r.komponen))} di ${esc(r.gi)}">Detail</button><button class="icon-btn sm" type="button" onclick="tdbOpenForm(${i})" aria-label="Edit ${esc(tdbName(r.komponen))} di ${esc(r.gi)}" title="Edit"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button></td></tr>`).join("");
 
   /* saran isian untuk form */
   const uniq = k => [...new Set(rows.map(r => r[k]).filter(Boolean))].sort();
-  [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"], ["tdbUptList", "upt"], ["tdbGiList", "gi"], ["tdbAsetList", "namaAset"], ["tdbAnomList", "statusAnomali"]]
+  [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"], ["tdbUptList", "upt"], ["tdbGiList", "gi"], ["tdbAsetList", "namaAset"]]
     .forEach(([id, k]) => { $("#" + id).innerHTML = uniq(k).map(v => `<option value="${esc(v)}"></option>`).join(""); });
 
   tdbFilter();
@@ -481,7 +483,9 @@ async function tdbLoad() {
 function tdbBuildForm() {
   $("#tdbFields").innerHTML = TDB_FIELDS.map(([k, label, type, o = {}]) => {
     const attrs = `id="f_${k}" name="${k}"${o.required ? " required" : ""}${o.list ? ` list="${o.list}"` : ""}${o.inputmode ? ` inputmode="${o.inputmode}"` : ""}${o.pattern ? ` pattern="${o.pattern}"` : ""}${o.placeholder ? ` placeholder="${esc(o.placeholder)}"` : ""}`;
-    const input = type === "select"
+    const input = type === "select-anom"
+      ? `<select ${attrs}><option value="">— Tidak ada / belum diisi —</option>${TDB_ANOM.map(v => `<option>${v}</option>`).join("")}</select>`
+      : type === "select"
       ? `<select ${attrs}>${Object.keys(TDB_STATUS).map(s => `<option value="${s === "BELUM DIPASTIKAN" ? "" : s}">${tdbSt(s).label}</option>`).join("")}</select>`
       : type === "textarea" ? `<textarea ${attrs} rows="3"></textarea>` : `<input type="text" ${attrs} autocomplete="off">`;
     return `<label class="fld${o.wide ? " wide" : ""}" data-f="${k}"><span>${label}${o.required ? ' <em>*</em>' : ""}</span>${input}<small class="hint"></small></label>`;
@@ -497,6 +501,13 @@ function tdbOpenForm(i) {
   $("#tdbFormSub").textContent = r ? `${tdbName(r.komponen)} · ${r.gi}` : "Baris baru akan ditambahkan di akhir sheet 2. TRAFO MOBILE";
   TDB_FIELDS.forEach(([k, , , o = {}]) => {
     const el = $("#f_" + k);
+    if (k === "statusAnomali") {
+      el.querySelectorAll("option[data-extra]").forEach(o => o.remove());
+      const cur = r && r.statusAnomali;
+      if (cur && !TDB_ANOM.some(v => v.toLowerCase() === cur.toLowerCase())) el.insertAdjacentHTML("beforeend", `<option data-extra>${esc(cur)}</option>`);
+      el.value = cur ? (TDB_ANOM.find(v => v.toLowerCase() === cur.toLowerCase()) || cur) : "";
+      return;
+    }
     el.value = r ? (k === "status" ? (r.status === "BELUM DIPASTIKAN" ? "" : r.status) : (r[k] ?? "")) : (k === "status" ? "OPERASI" : "");
     const wrap = el.closest(".fld");
     const lock = !!(r && o.addOnly);
@@ -555,6 +566,62 @@ async function tdbSubmit(ev) {
 }
 function tdbErr(msg) { const el = $("#tdbFormErr"); el.textContent = msg; el.hidden = false; }
 
+/* ---------- Pop-up detail ---------- */
+const tdbRp = v => {
+  if (!v) return null;
+  const n = Number(String(v).replace(/[^\d]/g, ""));
+  return n ? "Rp " + fmt(n) : String(v);
+};
+const tdbNilai = (v, ref) => v || ref ? `${v ? `<b class="dval">${esc(tdbRp(v))}</b>` : ""}${ref ? `<span class="dref">${esc(ref)}</span>` : ""}` : null;
+const tdbUrl = v => /^https?:\/\//i.test(v || "");
+function tdbDl(items) {
+  return `<dl class="dgrid">${items.map(([l, v, o = {}]) => `<div class="${o.wide ? "wide" : o.span2 ? "span2" : ""}"><dt>${l}</dt><dd class="${v ? "" : "nil"}${o.pre ? " pre" : ""}">${v ? (o.html ? v : esc(v)) : "—"}</dd></div>`).join("")}</dl>`;
+}
+function tdbLink(v, label) {
+  if (!v) return null;
+  return tdbUrl(v) ? `<a class="btn ghost sm" href="${esc(v)}" target="_blank" rel="noopener">${label} <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>` : esc(v);
+}
+function tdbOpenDetail(i) {
+  const r = TDB.rows[i]; if (!r) return;
+  TDB.detail = i;
+  const st = tdbSt(r.status);
+  $("#tdbDetailTitle").textContent = tdbName(r.komponen);
+  $("#tdbDetailSub").innerHTML = `${esc(r.gi)} · ${esc(r.upt)} <span class="badge ${st.tone}">${st.label}</span>${tdbOutside(r) ? ' <span class="badge warn">Di luar UIT JBM</span>' : ""}`;
+  const riw = (r.riwayat || []);
+  const sec = (t, body, ic) => `<section class="dsec"><h4>${icon(ic, "ic xs")}${t}</h4>${body}</section>`;
+  $("#tdbDetailBody").innerHTML =
+    sec("Identitas komponen", tdbDl([
+      ["Komponen", r.komponen], ["No", r.no], ["Serial number", r.sn], ["Merk", r.merk],
+      ["Tegangan", r.kv && r.kv + " kV"], ["Kapasitas", r.mva && r.mva + " MVA"], ["Tahun buatan", r.tahun], ["Identitas", r.identitas]
+    ]), "transformer") +
+    sec("Lokasi & status", tdbDl([
+      ["UPT", r.upt], ["Gardu induk", r.gi], ["Status", r.status === "BELUM DIPASTIKAN" ? null : st.label], ["Tanggal dioperasikan", r.tanggalOperasi],
+      ["Nama aset", r.namaAset], ["Lokasi awal", r.lokasiAwal], ["Keterangan", r.keterangan, { wide: true, pre: true }]
+    ]), "location") +
+    sec("Informasi aset", tdbDl([
+      ["Nomor TID", r.nomorTid], ["Nomor asset", r.nomorAsset],
+      ["Nilai aset (referensi 1)", tdbNilai(r.nilaiAset1, r.refAset1), { html: true, span2: true }],
+      ["Nilai aset (referensi 2)", tdbNilai(r.nilaiAset2, r.refAset2), { html: true, span2: true }]
+    ]), "doc") +
+    sec("Anomali", tdbDl([
+      ["Status anomali", r.statusAnomali && `<span class="badge ${anomTone(r.statusAnomali)}">${esc(r.statusAnomali)}</span>`, { html: true }],
+      ["Dokumen pendukung", tdbLink(r.dokumenAnomali, "Buka dokumen"), { html: true }],
+      ["Uraian anomali", r.anomali, { wide: true, pre: true }], ["Tindak lanjut & mitigasi", r.tindakLanjut, { wide: true, pre: true }]
+    ]), "alert") +
+    sec("Dokumentasi", tdbDl([
+      ["Foto peralatan", tdbLink(r.linkFoto, "Lihat foto"), { html: true }],
+      ["Nameplate", tdbLink(r.linkNameplate, "Lihat nameplate"), { html: true }],
+      ["Pemeliharaan", tdbLink(r.linkPemeliharaan, "Lihat data"), { html: true }],
+      ["Kesesuaian dengan Power Inspect", r.powerInspect ? `<span class="badge ok">${icon("check", "ic xs")}Sesuai</span>` : null, { html: true }]
+    ]), "search") +
+    sec("Riwayat lokasi", riw.some(x => x.lokasi || x.ba)
+      ? `<div class="table-wrap flat"><table class="table"><thead><tr><th>Tahun</th><th>Lokasi</th><th>BA</th></tr></thead><tbody>${riw.map(x => `<tr><td><b>${x.tahun}</b></td><td>${esc(x.lokasi || "—")}</td><td>${tdbLink(x.ba, "Lihat BA") || "—"}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="dnil">Belum ada riwayat lokasi 2020–2025 yang tercatat.</p>`, "rotate");
+  $("#tdbDetail").showModal();
+}
+function tdbCloseDetail() { $("#tdbDetail").close(); }
+function tdbDetailEdit() { const i = TDB.detail; tdbCloseDetail(); tdbOpenForm(i); }
+
 function initTrafoDb() {
   if (!$("#page-trafodb")) return;
   tdbBuildForm();
@@ -567,6 +634,7 @@ function initTrafoDb() {
   });
   $("#tdbForm").addEventListener("submit", tdbSubmit);
   $("#tdbDialog").addEventListener("click", e => { if (e.target === $("#tdbDialog")) tdbCloseForm(); });
+  $("#tdbDetail").addEventListener("click", e => { if (e.target === $("#tdbDetail")) tdbCloseDetail(); });
   renderTrafoDb();
   tdbLoad();
 }

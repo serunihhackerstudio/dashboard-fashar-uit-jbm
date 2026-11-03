@@ -467,15 +467,15 @@ function renderTrafoDb() {
 
 /* Filter + paginasi (10 baris per halaman) */
 const TDB_PER_PAGE = 10;
-let tdbPage = 1;
+let tdbPage = 1, tdbShowAll = false;
 function tdbFilter(keepPage) {
   if (keepPage !== true) tdbPage = 1;
   const q = $("#tdbSearch").value.trim().toLowerCase(), loc = $("#tdbLoc").value, st = $("#tdbStatus .on")?.dataset.v || "";
   const trs = [...document.querySelectorAll("#tdbRows tr")];
   const match = trs.filter(tr => (!q || tr.textContent.toLowerCase().includes(q)) && (!loc || tr.dataset.key === loc) && (!st || tr.dataset.st === st));
-  const n = match.length, pages = Math.max(1, Math.ceil(n / TDB_PER_PAGE));
+  const n = match.length, per = tdbShowAll ? Math.max(n, 1) : TDB_PER_PAGE, pages = Math.max(1, Math.ceil(n / per));
   tdbPage = Math.min(Math.max(1, tdbPage), pages);
-  const from = (tdbPage - 1) * TDB_PER_PAGE, to = Math.min(from + TDB_PER_PAGE, n);
+  const from = (tdbPage - 1) * per, to = Math.min(from + per, n);
   const show = new Set(match.slice(from, to));
   trs.forEach(tr => { tr.hidden = !show.has(tr); });
   $("#tdbEmpty").hidden = n > 0;
@@ -483,6 +483,14 @@ function tdbFilter(keepPage) {
     ? `Menampilkan ${from + 1}–${to} dari ${n} komponen${n < TDB.rows.length ? ` (difilter dari ${TDB.rows.length})` : ""}`
     : `Menampilkan 0 dari ${TDB.rows.length} komponen`;
   tdbPager(pages);
+  const all = $("#tdbAll");
+  all.hidden = n <= TDB_PER_PAGE;
+  all.textContent = tdbShowAll ? `Tampilkan ${TDB_PER_PAGE} per halaman` : `Tampilkan semua (${n})`;
+  all.setAttribute("aria-pressed", tdbShowAll);
+}
+function tdbToggleAll() {
+  tdbShowAll = !tdbShowAll; tdbPage = 1; tdbFilter(true);
+  if (!tdbShowAll) { const t = $("#tdbSearch").closest(".card"); if (t && t.getBoundingClientRect().top < 0) t.scrollIntoView({ behavior: "smooth", block: "start" }); }
 }
 function tdbPager(pages) {
   const el = $("#tdbPager");

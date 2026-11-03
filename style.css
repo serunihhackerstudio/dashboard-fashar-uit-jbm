@@ -209,6 +209,7 @@ svg{display:block}
 /* ---------- Map ---------- */
 .map{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:12px}
 .map svg{width:100%;height:auto}
+#mapTrafo .map svg{height:320px}
 .m-sea{fill:color-mix(in srgb,var(--p3) 9%,var(--surface))}
 .m-dot{fill:color-mix(in srgb,var(--p3) 22%,transparent)}
 .m-land{fill:var(--surface);stroke:color-mix(in srgb,var(--p3) 30%,var(--border));stroke-width:1.5}

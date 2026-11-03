@@ -325,6 +325,108 @@ function toast(msg) {
 }
 
 /* =========================================================
+   DATABASE TRAFO MOBILE (sumber: data/trafo-mobile-db.js)
+   ========================================================= */
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const TDB_STATUS = {
+  "OPERASI": { label: "Operasi", tone: "ok", color: "var(--ok)" },
+  "STANDBY": { label: "Standby", tone: "info", color: "var(--primary)" },
+  "RUSAK": { label: "Rusak", tone: "bad", color: "var(--p1)" },
+  "BELUM DIPASTIKAN": { label: "Belum dipastikan", tone: "muted", color: "var(--text-3)" }
+};
+const tdbSt = s => TDB_STATUS[s] || TDB_STATUS["BELUM DIPASTIKAN"];
+const tdbName = k => title(k.replace(/^MOBILE\s+/i, "")).replace(/\(([^)]*)\)/, (m, x) => "(" + x.toLowerCase() + ")");
+const tdbKey = r => (r.gi || "-").replace(/\s+/g, "").toUpperCase();
+const tdbOutside = r => /^UIP3B/i.test(r.upt || "");
+
+function renderTrafoDb() {
+  const DB = window.TRAFO_DB;
+  if (!DB || !$("#page-trafodb")) return;
+  const rows = DB.rows;
+
+  /* Kelompok lokasi (nama GI yang ejaannya beda digabung) */
+  const groups = new Map();
+  rows.forEach(r => {
+    const k = tdbKey(r);
+    if (!groups.has(k)) groups.set(k, { key: k, names: {}, upt: r.upt, rows: [] });
+    const g = groups.get(k); g.rows.push(r); g.names[r.gi] = (g.names[r.gi] || 0) + 1;
+  });
+  groups.forEach(g => g.name = Object.entries(g.names).sort((a, b) => b[1] - a[1])[0][0]);
+  const locs = [...groups.values()];
+
+  /* KPI */
+  const cnt = s => rows.filter(r => r.status === s).length;
+  const outside = locs.filter(g => tdbOutside(g.rows[0])).length;
+  $("#tdbKpi").innerHTML = [
+    [`Total Komponen`, rows.length, "transformer", "primary", `${locs.length} lokasi · ${outside} di luar UIT JBM`],
+    ["Operasi", cnt("OPERASI"), "check", "ok"],
+    ["Standby", cnt("STANDBY"), "pulse", "p3"],
+    ["Rusak", cnt("RUSAK"), "x", "p1", cnt("BELUM DIPASTIKAN") ? `${cnt("BELUM DIPASTIKAN")} komponen belum dipastikan` : ""]
+  ].map(([l, v, ic, tone, sub]) => `<div class="card kpi tone-${tone}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${fmt(v)}</div>${sub ? `<div class="kpi-sub">${esc(sub)}</div>` : ""}</div></div>`).join("");
+
+  /* Kartu per lokasi */
+  $("#tdbLokasi").innerHTML = locs.map(g => {
+    const out = tdbOutside(g.rows[0]);
+    const counts = Object.keys(TDB_STATUS).map(s => [s, g.rows.filter(r => r.status === s).length]).filter(x => x[1]);
+    const ket = [...new Set(g.rows.map(r => r.keterangan).filter(Boolean))];
+    const asal = [...new Set(g.rows.map(r => r.namaAset).filter(Boolean))];
+    return `<div class="card tdb-loc">
+      <div class="card-head"><div><h3>${esc(g.name)}</h3><p>${esc(g.upt)}</p></div>${out ? '<span class="badge warn">Di luar UIT JBM</span>' : ""}</div>
+      <div class="tdb-chips">${counts.map(([s, n]) => `<span class="badge ${tdbSt(s).tone}">${n} ${tdbSt(s).label}</span>`).join("")}</div>
+      <ul class="tdb-parts">${g.rows.map(r => `<li>
+        <i class="dot" style="background:${tdbSt(r.status).color}" title="${tdbSt(r.status).label}"></i>
+        <div><b>${esc(tdbName(r.komponen))}</b><span>${[r.merk, r.kv && r.kv + " kV", r.mva && r.mva + " MVA", r.tahun].filter(Boolean).map(esc).join(" · ") || "Data belum lengkap"}</span></div>
+        <code>${r.sn ? esc(r.sn) : "—"}</code></li>`).join("")}</ul>
+      ${ket.length || asal.length ? `<div class="card-foot tdb-note">${ket.length ? `<p>${ket.map(esc).join("<br>").replace(/\n/g, "<br>")}</p>` : ""}${asal.length ? `<p class="muted">Nama aset: ${asal.map(esc).join(", ")}</p>` : ""}</div>` : ""}
+    </div>`;
+  }).join("");
+
+  /* Anomali */
+  const an = rows.filter(r => r.anomali);
+  $("#tdbAnomali").innerHTML = an.length ? an.map(r => `<div class="card tdb-anom">
+    <div class="card-head"><div><h3>${esc(tdbName(r.komponen))}</h3><p>${esc(r.gi)} · ${esc(r.upt)}</p></div><span class="badge ${/open/i.test(r.statusAnomali || "") ? "bad" : r.statusAnomali ? "ok" : "warn"}">${esc(r.statusAnomali || "Belum ada status")}</span></div>
+    <div class="card-body"><div class="tdb-field"><span>Uraian anomali</span><p>${esc(r.anomali)}</p></div>
+      ${r.tindakLanjut ? `<details class="tdb-field"><summary>Tindak lanjut &amp; mitigasi</summary><p>${esc(r.tindakLanjut)}</p></details>` : ""}</div>
+  </div>`).join("") : `<div class="card"><div class="card-body empty">Tidak ada anomali tercatat.</div></div>`;
+
+  /* Tabel + filter */
+  $("#tdbSource").textContent = `Sumber: ${DB.source} · ${rows.length} baris`;
+  $("#tdbLoc").innerHTML = `<option value="">Semua lokasi</option>` + locs.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join("");
+  $("#tdbStatus").innerHTML = [["", "Semua", rows.length], ...Object.keys(TDB_STATUS).map(s => [s, tdbSt(s).label, cnt(s)]).filter(x => x[2])]
+    .map(([v, l, n], i) => `<button type="button" data-v="${esc(v)}" class="${i ? "" : "on"}" aria-pressed="${!i}">${l} <small>${n}</small></button>`).join("");
+  $("#tdbRows").innerHTML = rows.map(r => `<tr data-key="${esc(tdbKey(r))}" data-st="${esc(r.status)}">
+    <td class="muted">${esc(r.no || "—")}</td><td><b>${esc(tdbName(r.komponen))}</b></td><td><code>${esc(r.sn || "—")}</code></td>
+    <td>${esc(r.merk || "—")}</td><td class="num">${esc(r.kv || "—")}</td><td class="num">${esc(r.mva || "—")}</td>
+    <td>${esc(r.gi)}<div class="muted sm">${esc(r.upt)}</div></td><td class="num">${esc(r.tahun || "—")}</td>
+    <td><span class="badge ${tdbSt(r.status).tone}">${tdbSt(r.status).label}</span></td>
+    <td class="ket">${esc(r.keterangan || "—")}</td><td>${r.powerInspect ? `<span class="pi-ok" title="Sesuai dengan Power Inspect">${icon("check", "ic xs")}</span>` : ""}</td></tr>`).join("");
+
+  $("#tdbSearch").addEventListener("input", tdbFilter);
+  $("#tdbLoc").addEventListener("change", tdbFilter);
+  $("#tdbStatus").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $("#tdbStatus").querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
+    tdbFilter();
+  });
+  tdbFilter();
+}
+function tdbFilter() {
+  const q = $("#tdbSearch").value.trim().toLowerCase(), loc = $("#tdbLoc").value, st = $("#tdbStatus .on")?.dataset.v || "";
+  let n = 0;
+  document.querySelectorAll("#tdbRows tr").forEach(tr => {
+    const ok = (!q || tr.textContent.toLowerCase().includes(q)) && (!loc || tr.dataset.key === loc) && (!st || tr.dataset.st === st);
+    tr.hidden = !ok; if (ok) n++;
+  });
+  $("#tdbEmpty").hidden = n > 0;
+  $("#tdbCount").textContent = `Menampilkan ${n} dari ${window.TRAFO_DB.rows.length} komponen`;
+}
+function tdbReset() {
+  $("#tdbSearch").value = ""; $("#tdbLoc").value = "";
+  $("#tdbStatus button")?.click();
+}
+renderTrafoDb();
+
+/* =========================================================
    NAVIGATION (hash routing: bisa di-bookmark & tombol back)
    ========================================================= */
 const PAGES = {
@@ -334,7 +436,8 @@ const PAGES = {
   jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
-  trafo: ["Peralatan ERS", "Trafo Mobile", "Status, lokasi, dan peminjaman trafo mobile"]
+  trafo: ["Peralatan ERS", "Trafo Mobile", "Status, lokasi, dan peminjaman trafo mobile"],
+  trafodb: ["Peralatan ERS", "Database Trafo Mobile", "Data komponen trafo mobile dari Database Alat Berat UIT JBM"]
 };
 function route() {
   const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "kinerja";

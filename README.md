@@ -9,8 +9,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 4. Asesmen JAR
 5. Asesmen GI
 6. Tower Emergency
-7. Trafo Mobile
-8. Database Trafo Mobile (data sheet `2. TRAFO MOBILE`, bisa ditambah & diedit)
+7. Trafo Mobile (data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)
 
 ## Status
 Prototype frontend. Data saat ini masih statis/mock berdasarkan dashboard existing.

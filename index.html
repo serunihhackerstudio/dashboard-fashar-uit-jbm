@@ -40,8 +40,7 @@
 
   <div class="nav-group">Peralatan ERS</div>
   <a class="nav-item" href="#tower" data-page="tower" title="Tower Emergency"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M7 13h10M5 21h14"/></svg><span>Tower Emergency</span></a>
-  <a class="nav-item" href="#trafo" data-page="trafo" title="Trafo Mobile"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5M7 20a1.5 1.5 0 1 0 0-.01M17 20a1.5 1.5 0 1 0 0-.01M7 9V6M12 9V6"/></svg><span>Trafo Mobile</span></a>
-  <a class="nav-item" href="#trafodb" data-page="trafodb" title="Database Trafo Mobile"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><span>Database Trafo Mobile</span></a>
+  <a class="nav-item" href="#trafodb" data-page="trafodb" title="Trafo Mobile"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5M7 20a1.5 1.5 0 1 0 0-.01M17 20a1.5 1.5 0 1 0 0-.01M7 9V6M12 9V6"/></svg><span>Trafo Mobile</span></a>
  </nav>
 
  <div class="sidebar-foot">
@@ -133,25 +132,6 @@
    <div class="grid g3" id="materialTables"></div>
   </section>
 
-  <!-- TRAFO MOBILE -->
-  <section id="page-trafo" class="page">
-   <div class="grid g4" id="trafoKpi"></div>
-   <div class="card map-card mt">
-     <div class="card-head"><div><h3>Persebaran Aset Trafo Mobile</h3><p>Lokasi penempatan trafo mobile saat ini</p></div></div>
-     <div class="card-body" id="mapTrafo"></div>
-     <div class="card-foot link-foot">
-      <div><b>Hasil pengujian rutin trafo mobile</b><span>bit.ly/trafo-mobile-uit-jbm</span></div>
-      <div class="link-actions">
-       <button class="btn ghost" type="button" onclick="copyLink(this)">Salin</button>
-       <a class="btn primary" href="https://bit.ly/trafo-mobile-uit-jbm" target="_blank" rel="noopener">Buka tautan <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
-      </div>
-     </div>
-   </div>
-   <div class="section-head"><h2>Di Wilayah UIT JBM</h2><p>Trafo mobile yang ditempatkan di UPT</p></div>
-   <div class="grid g4" id="trafoUptCards"></div>
-   <div class="section-head"><h2>Dipinjam &amp; Tidak Beroperasi</h2><p>Trafo mobile di luar UIT JBM (dipinjam) serta unit rusak</p></div>
-   <div class="grid g4" id="trafoLoanCards"></div>
-  </section>
 
   <!-- DATABASE TRAFO MOBILE -->
   <section id="page-trafodb" class="page">
@@ -199,8 +179,8 @@
    <button class="icon-btn" type="button" onclick="tdbCloseForm()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
   <div class="modal-body">
    <div class="callout warn" id="tdbFormWarn" hidden></div>
-   <div class="form-grid" id="tdbFields"></div>
    <section class="dsec ph-sec ph-form" id="phSecForm"></section>
+   <div class="form-grid" id="tdbFields"></div>
   </div>
   <footer class="modal-foot">
    <div class="fld token" id="tdbTokenWrap">

@@ -1,173 +1,368 @@
-const units=["SURABAYA","GRESIK","MALANG","MADIUN","PROBOLINGGO","BALI"];
-function bars(el,vals,blue=false){
- document.getElementById(el).innerHTML=units.map((u,i)=>`<div class="bar-row"><span>${u}</span><div class="bar"><div class="fill ${blue?'bluef':''}" style="width:${Math.min(vals[i],100)}%"></div></div><b>${vals[i]}</b></div>`).join("")
-}
-bars("b1",[100,94,90,87,92,98]); bars("b2",[96,88,72,95,91,70]); bars("b3",[100,83,104,88,92,90]);
-bars("b4",[105,96,92,78,87,95],true); bars("b5",[95,120,70,84,46,100],true); bars("b6",[98,92,99,101,75,90],true);
-document.getElementById("cert").innerHTML=["LEVEL 2 JAR","LEVEL 2 GI","LEVEL 3 JAR","LEVEL 3 GI","LEVEL 4","LEVEL 5"].map((x,i)=>`<div class="bar-row"><span>${x}</span><div class="bar"><div class="fill" style="width:${[78,82,79,66,42,15][i]}%;background:#2FAF75"></div></div><b>${[48,50,47,40,25,6][i]}</b></div>`).join("");
+/* =========================================================
+   Dashboard FASHAR UIT JBM — data (mock) & rendering
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = n => n.toLocaleString("id-ID");
+const fmt1 = n => n.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const sum = a => a.reduce((x, y) => x + y, 0);
+const title = s => s.charAt(0) + s.slice(1).toLowerCase();
 
-const cats=["ISOLATOR","ACCESSORIES COLD","ACCESSORIES HOT","ACCESSORIES GSW"];
-function healthCards(target,vals){
- document.getElementById(target).innerHTML=cats.map((c,i)=>`<div class="card"><div class="card-h red">${c}</div><div class="card-b"><div class="donut"></div><div class="priority"><div class="p1">P1<br>${vals[i][0]}</div><div class="p2">P2<br>${vals[i][1]}</div><div class="p3">P3<br>${vals[i][2]}</div></div></div></div>`).join("")
-}
-healthCards("healthJar",[[207,807,16059],[222,1098,8049],[471,1976,10563],[415,1027,4229]]);
-healthCards("healthGI",[[47,437,2502],[9,107,1675],[97,462,1914],[81,386,1846]]);
+const UNITS = ["SURABAYA", "GRESIK", "MALANG", "MADIUN", "PROBOLINGGO", "BALI"];
+const CATS = ["ISOLATOR", "ACCESSORIES COLD", "ACCESSORIES HOT", "ACCESSORIES GSW"];
+const C = { gi: "var(--gi)", jar: "var(--jar)", p1: "var(--p1)", p2: "var(--p2)", p3: "var(--p3)", ok: "var(--ok)" };
+const TARGET = 115, GAUGE_MAX = 150;
 
-function assess(target,title){
- document.getElementById(target).innerHTML=units.map((u,idx)=>`<div class="card"><div class="card-h red">UPT ${u}</div><div class="card-b"><div class="legend"><span><i class="dot" style="background:#E84A3C"></i>P1</span><span><i class="dot" style="background:#F6C945"></i>P2</span><span><i class="dot" style="background:#2588E6"></i>P3</span></div>${cats.map((c,j)=>`<div class="bar-row"><span>${c}</span><div class="bar"><div class="fill bluef" style="width:${[72,58,83,66][(idx+j)%4]}%"></div></div><b>${[120,620,1500,2800][(idx+j)%4]}</b></div>`).join("")}</div></div>`).join("")
-}
-assess("jarGrid","JAR"); assess("giGrid","GI");
+/* ---------- Icons ---------- */
+const ICON = {
+  location: '<path d="M12 21s-7-5.2-7-11a7 7 0 1 1 14 0c0 5.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
+  doc: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+  transformer: '<rect x="5" y="7" width="14" height="10" rx="2"/><path d="M9 7V4M15 7V4M9 20v-3M15 20v-3"/>',
+  rotate: '<path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/>',
+  gear: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+  tower: '<path d="M12 3v18M5 8l7-5 7 5M7 13h10M5 21h14"/>',
+  out: '<path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+  x: '<circle cx="12" cy="12" r="9"/><path d="m15 9-6 6M9 9l6 6"/>',
+  truck: '<rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5"/><circle cx="7" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  wrench: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5 2.5-2.5Z"/>',
+  shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+  pulse: '<path d="M3 12h4l2-5 4 10 2-5h6"/>'
+};
+const icon = (k, cls = "ic") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 
-const mats={
- "LINDSEY":[
-  ["POST INSULATOR SUPPORT",3],
-  ["TOWER GIMBAL",8],
-  ["4-WAY GUY PLATE",19],
-  ["GUY PLATE",17],
-  ["OVERHEAD GROUND WIRE BRACKET",3],
-  ["ANCHOR BRACKET (MOCK)",12],
-  ["CROSS ARM SUPPORT (MOCK)",7],
-  ["INSULATOR CLAMP (MOCK)",21],
-  ["GUY WIRE FITTING (MOCK)",14],
-  ["STRUCTURE CONNECTOR (MOCK)",9]
- ],
- "TOWER SOLUTION":[
-  ["Transfer Rod",324],
-  ["Tower Section",72],
-  ["Base Pivot",15],
-  ["Bolt Assembly",498],
-  ["Universal attachment",30],
-  ["Extension Mast (MOCK)",18],
-  ["Support Bracket (MOCK)",42],
-  ["Pivot Connector (MOCK)",24],
-  ["Guy Assembly (MOCK)",36],
-  ["Foundation Plate (MOCK)",11]
- ],
- "SBB":[
-  ["Mast Section",22],
-  ["Universal Bracket",27],
-  ["Line Post Insulator Bracket",6],
-  ["Bolt 3/4",180],
-  ["Hex Nut 3/4",374],
-  ["Diagonal Brace (MOCK)",34],
-  ["Base Plate (MOCK)",16],
-  ["Lock Washer 3/4 (MOCK)",210],
-  ["Connecting Plate (MOCK)",28],
-  ["Support Clamp (MOCK)",13]
- ]
-}
-document.getElementById("materialTables").innerHTML=Object.entries(mats).map(([k,rows],idx)=>`
-<div class="card material-card" data-material-card="${idx}">
-  <div class="card-h red">${k}</div>
-  <div class="material-search-wrap">
-    <input class="material-search" type="search" placeholder="Cari material..." aria-label="Cari material ${k}" oninput="filterMaterialTable(${idx}, this.value)">
-  </div>
-  <div class="card-b">
-    <table class="table">
-      <thead><tr><th>MATERIAL</th><th>JUMLAH</th></tr></thead>
-      <tbody>${rows.map(r=>`<tr data-material-row><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody>
-    </table>
-    <div class="material-empty" style="display:none">Material tidak ditemukan.</div>
-  </div>
-</div>`).join("");
-
-function filterMaterialTable(cardIndex, query){
-  const card=document.querySelector(`[data-material-card="${cardIndex}"]`);
-  if(!card) return;
-  const q=(query||"").trim().toLowerCase();
-  const rows=[...card.querySelectorAll("[data-material-row]")];
-  let visible=0;
-  rows.forEach(row=>{
-    const match=row.textContent.toLowerCase().includes(q);
-    row.style.display=match?"":"none";
-    if(match) visible++;
-  });
-  const empty=card.querySelector(".material-empty");
-  if(empty) empty.style.display=visible?"none":"block";
-}
-
-const trafoIcons={
- location:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.2-7-11a7 7 0 1 1 14 0c0 5.8-7 11-7 11Z" fill="white"/><circle cx="12" cy="10" r="2.8" fill="#8A867A"/></svg>`,
- doc:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" fill="white"/><rect x="7" y="8" width="10" height="1.8" rx=".9" fill="#8A867A"/><rect x="7" y="12" width="8" height="1.8" rx=".9" fill="#8A867A"/></svg>`,
- transformer:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="5" y="7" width="14" height="10" rx="2" fill="white"/><rect x="8" y="4" width="2" height="3" fill="white"/><rect x="14" y="4" width="2" height="3" fill="white"/><rect x="8" y="17" width="2" height="3" fill="white"/><rect x="14" y="17" width="2" height="3" fill="white"/></svg>`,
- rotate:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v-5h5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 9a7 7 0 0 1 11-2" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M17 15a7 7 0 0 1-11 2" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
- gear:`<svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z" fill="white"/><path d="M12 2l1.3 2.6 2.9.5-.9 2.8 2 2-2 2 .9 2.8-2.9.5L12 22l-1.3-2.6-2.9-.5.9-2.8-2-2 2-2-.9-2.8 2.9-.5L12 2Z" stroke="white" stroke-width="1.4" stroke-linejoin="round"/></svg>`
+/* =========================================================
+   DATA (statis / mock — siap diganti data Google Sheets)
+   ========================================================= */
+const DATA = {
+  optimTotal: { gi: 120.8, jar: 115.3 },
+  bars: {
+    gi: [
+      ["Preventive Action", [100, 94, 90, 87, 92, 98]],
+      ["Corrective Action", [96, 88, 72, 95, 91, 70]],
+      ["Program Keandalan", [100, 83, 104, 88, 92, 90]]
+    ],
+    jar: [
+      ["Preventive Action", [105, 96, 92, 78, 87, 95]],
+      ["Corrective Action", [95, 120, 70, 84, 46, 100]],
+      ["Program Keandalan", [98, 92, 99, 101, 75, 90]]
+    ]
+  },
+  cert: [["Level 2 JAR", 48, 78], ["Level 2 GI", 50, 82], ["Level 3 JAR", 47, 79], ["Level 3 GI", 40, 66], ["Level 4", 25, 42], ["Level 5", 6, 15]],
+  optimUpt: [
+    ["SURABAYA", 108.7, 122.8], ["MADIUN", 108.7, 114.2], ["GRESIK", 116.5, 129.5],
+    ["PROBOLINGGO", 124.1, 96.8], ["MALANG", 126.0, 112.0], ["BALI", 122.1, 116.8]
+  ],
+  realisasi: [
+    ["Preventive Action", 755, 2533, "shield"],
+    ["Corrective Action", 270, 227, "wrench"],
+    ["Program Keandalan Transmisi", 492, 1094, "pulse"]
+  ],
+  healthJar: [[207, 807, 16059], [222, 1098, 8049], [471, 1976, 10563], [415, 1027, 4229]],
+  healthGI: [[47, 437, 2502], [9, 107, 1675], [97, 462, 1914], [81, 386, 1846]],
+  mapErs: [
+    { x: 110, y: 128, c: "var(--p2)", l: "Tower Emergency" },
+    { x: 280, y: 140, c: "var(--p3)", l: "Trafo Mobile" },
+    { x: 370, y: 146, c: "var(--p1)", l: "DC Mobile" },
+    { x: 420, y: 150, c: "var(--violet)", l: "Crane 22 Ton" }
+  ],
+  towerKpi: [
+    ["Total Aset Tower ERS", 18, "tower", "primary"],
+    ["ERS Dipinjam", 9, "out", "p1"],
+    ["Standby Lengkap", 3, "check", "ok"],
+    ["Standby Tidak Lengkap", 6, "alert", "p2"]
+  ],
+  mapTower: [
+    { x: 110, y: 128, c: "var(--ok)", l: "Standby lengkap" },
+    { x: 285, y: 142, c: "var(--p2)", l: "Standby tidak lengkap" },
+    { x: 390, y: 148, c: "var(--p1)", l: "Dipinjam" }
+  ],
+  materials: {
+    "LINDSEY": [["Post Insulator Support", 3], ["Tower Gimbal", 8], ["4-Way Guy Plate", 19], ["Guy Plate", 17], ["Overhead Ground Wire Bracket", 3], ["Anchor Bracket (MOCK)", 12], ["Cross Arm Support (MOCK)", 7], ["Insulator Clamp (MOCK)", 21], ["Guy Wire Fitting (MOCK)", 14], ["Structure Connector (MOCK)", 9]],
+    "TOWER SOLUTION": [["Transfer Rod", 324], ["Tower Section", 72], ["Base Pivot", 15], ["Bolt Assembly", 498], ["Universal Attachment", 30], ["Extension Mast (MOCK)", 18], ["Support Bracket (MOCK)", 42], ["Pivot Connector (MOCK)", 24], ["Guy Assembly (MOCK)", 36], ["Foundation Plate (MOCK)", 11]],
+    "SBB": [["Mast Section", 22], ["Universal Bracket", 27], ["Line Post Insulator Bracket", 6], ["Bolt 3/4", 180], ["Hex Nut 3/4", 374], ["Diagonal Brace (MOCK)", 34], ["Base Plate (MOCK)", 16], ["Lock Washer 3/4 (MOCK)", 210], ["Connecting Plate (MOCK)", 28], ["Support Clamp (MOCK)", 13]]
+  },
+  trafoKpi: [
+    ["Total Aset Trafo Mobile", 8, "truck", "primary"],
+    ["Beroperasi", 4, "check", "ok"],
+    ["Dipinjam", 2, "out", "p2"],
+    ["Rusak", 2, "x", "p1"]
+  ],
+  mapTrafo: [
+    { x: 110, y: 128, c: "var(--p3)", l: "GIS 150 kV Tandes" },
+    { x: 400, y: 158, c: "var(--p3)", l: "GI 150 kV Ngoro" },
+    { x: 430, y: 150, c: "var(--p3)", l: "GISTET 500 kV Paiton" },
+    { x: 455, y: 146, c: "var(--p3)", l: "GI 150 kV New Tulungagung" },
+    { x: 525, y: 158, c: "var(--p3)", l: "GI 150 kV Gianyar" }
+  ],
+  trafoUpt: [
+    { title: "UPT Malang", items: ["GI 150 kV Ngoro", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Extension trafo AI 2024 rencana onsite 2027", "Trafo, MTU, Kubikel, Kontrol"] },
+    { title: "UPT Probolinggo", items: ["GISTET 500 kV Paiton", "Perkuatan trafo TFT karena hanya 1 bay trafo", "CG Pauwels - 30 MVA (Standby)", "Rencana perbaikan 2026", "Trafo, MTU, Kubikel, Kontrol"] },
+    { title: "UPT Bali", items: ["GI 150 kV Gianyar", "Perkuatan GI Ngoro (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Belum ada ekstension trafo karena terkendala pembebasan lahan", "Trafo, MTU, Kubikel"] },
+    { title: "UPT Madiun", items: ["GI 150 kV New Tulungagung", "Perkuatan GI New Tul (Pertumbuhan beban)", "CG Pauwels - 30 MVA (Berbeban)", "Hanya 1 trafo", "Trafo, MTU, Kubikel, Kontrol"] }
+  ],
+  trafoLoan: [
+    { title: "IKN", status: "Dipinjam", items: ["IKN", "Pendukung Pembangunan IKN", "CG Pauwels - 30 MVA", "-", "Trafo, MTU, Kubikel, Kontrol"] },
+    { title: "GI 150 kV Garuda Sakti", status: "Dipinjam", items: ["GI 150 kV Garuda Sakti", "Program High Quality Growth 2024", "Fuji Electric - 20 MVA", "-", "Trafo, MTU, Kubikel"] },
+    { title: "UPT Gresik", status: "Rusak", items: ["GIS 150 kV Tandes", "Kondisi Tidak Layak Operasi / Rusak Berat", "ABB (Rusak)", "Rencana ATTB", "MTU, Kubikel"] },
+    { title: "UPT Surabaya", status: "Rusak", items: ["GI 150 kV Kalisari", "Hasil uji buruk pada belitan HV to Ground, OLTC rusak dan hasil uji winding buruk", "ABB - 30 MVA (Rusak)", "Rencana ATTB", "Trafo, MTU, Kubikel"] }
+  ]
 };
 
-const trafoUptData=[
- {title:"UPT MALANG",tone:"green",items:[
-  {icon:"location",text:"GI 150 kV Ngoro"},
-  {icon:"doc",text:"Perkuatan GI Ngoro (Pertumbuhan beban)"},
-  {icon:"transformer",text:"CG Pauwels - 30 MVA (Berbeban)"},
-  {icon:"rotate",text:"Extension trafo AI 2024 rencana onsite 2027"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]},
- {title:"UPT PROBOLINGGO",tone:"green",items:[
-  {icon:"location",text:"GISTET 500 kV Paiton"},
-  {icon:"doc",text:"Perkuatan trafo TFT karena hanya 1 bay trafo"},
-  {icon:"transformer",text:"CG Pauwels - 30 MVA (Standby)"},
-  {icon:"rotate",text:"Rencana perbaikan 2026"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]},
- {title:"UPT BALI",tone:"green",items:[
-  {icon:"location",text:"GI 150 kV Gianyar"},
-  {icon:"doc",text:"Perkuatan GI Ngoro (Pertumbuhan beban)"},
-  {icon:"transformer",text:"CG Pauwels - 30 MVA (Berbeban)"},
-  {icon:"rotate",text:"Belum ada ekstension trafo karena terkendala pembebasan lahan"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel"}]},
- {title:"UPT MADIUN",tone:"green",items:[
-  {icon:"location",text:"GI 150 kV New Tulungagung"},
-  {icon:"doc",text:"Perkuatan GI New Tul (Pertumbuhan beban)"},
-  {icon:"transformer",text:"CG Pauwels - 30 MVA (Berbeban)"},
-  {icon:"rotate",text:"Hanya 1 trafo"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]}
-];
-
-const trafoLoanData=[
- {title:"IKN",tone:"amber",items:[
-  {icon:"location",text:"IKN"},
-  {icon:"doc",text:"Pendukung Pembangunan IKN"},
-  {icon:"transformer",text:"CG Pauwels - 30 MVA"},
-  {icon:"rotate",text:"-"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel, Kontrol"}]},
- {title:"GI 150 kV GARUDA SAKTI",tone:"amber",items:[
-  {icon:"location",text:"GI 150 kV Garuda Sakti"},
-  {icon:"doc",text:"Program High Quality Growth 2024"},
-  {icon:"transformer",text:"Fuji Electric - 20 MVA"},
-  {icon:"rotate",text:"-"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel"}]},
- {title:"UPT GRESIK",tone:"red",items:[
-  {icon:"location",text:"GIS 150 kV Tandes"},
-  {icon:"doc",text:"Kondisi Tidak Layak Operasi / Rusak Berat"},
-  {icon:"transformer",text:"ABB (Rusak)"},
-  {icon:"rotate",text:"Rencana ATTB"},
-  {icon:"gear",text:"MTU, Kubikel"}]},
- {title:"UPT SURABAYA",tone:"red",items:[
-  {icon:"location",text:"GI 150 kV Kalisari"},
-  {icon:"doc",text:"Hasil uji buruk pada belitan HV to Ground, OLTC rusak dan hasil uji winding buruk"},
-  {icon:"transformer",text:"ABB - 30 MVA (Rusak)"},
-  {icon:"rotate",text:"Rencana ATTB"},
-  {icon:"gear",text:"Trafo, MTU, Kubikel"}]}
-];
-
-function renderTrafoCard(card,loan=false){
- return `<div class="${loan?'loan-card':'trafo-asset-card'}">
-  <div class="trafo-asset-head ${card.tone||''}">${card.title}</div>
-  <div class="${loan?'loan-body':'trafo-asset-body'}">
-   <div class="info-list">
-    ${card.items.map(item=>`<div class="info-row">${trafoIcons[item.icon]}<div class="info-text">${item.text}</div></div>`).join("")}
-   </div>
-  </div>
- </div>`;
+/* =========================================================
+   COMPONENTS
+   ========================================================= */
+function gaugeSvg(value, color, size = "lg") {
+  const r = 80, cx = 100, cy = 100;
+  const pct = Math.min(value / GAUGE_MAX, 1) * 100;
+  const a = Math.PI * (1 - TARGET / GAUGE_MAX);
+  const p = (rr) => `${(cx + rr * Math.cos(a)).toFixed(1)} ${(cy - rr * Math.sin(a)).toFixed(1)}`;
+  const arc = `M${cx - r} ${cy} A${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+  return `<svg class="gauge gauge-${size}" viewBox="0 0 200 122" role="img" aria-label="${fmt1(value)} persen dari target ${TARGET} persen">
+    <path d="${arc}" class="g-track" pathLength="100"/>
+    <path d="${arc}" class="g-fill" pathLength="100" style="stroke:${color};stroke-dashoffset:${100 - pct}"/>
+    <path d="M${p(r - 13)} L${p(r + 13)}" class="g-target"/>
+    <text x="100" y="92" class="g-value">${fmt1(value)}<tspan class="g-unit" dx="2">%</tspan></text>
+    <text x="${cx - r}" y="120" class="g-scale">0</text>
+    <text x="${cx + r}" y="120" class="g-scale">${GAUGE_MAX}</text>
+  </svg>`;
 }
-document.getElementById("trafoUptCards").innerHTML=trafoUptData.map(c=>renderTrafoCard(c,false)).join("");
-document.getElementById("trafoLoanCards").innerHTML=trafoLoanData.map(c=>renderTrafoCard(c,true)).join("");
 
-function go(id,el){
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- document.getElementById(id).classList.add("active");
- document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active")); el.classList.add("active");
- const titles={kinerja:"Kinerja PDKB <span>UIT JBM Tahun 2026</span>",optimalisasi:"Optimalisasi PDKB <span>GI & Jaringan</span>",health:"Health Index <span>Aset Jaringan dan Gardu Induk</span>",jar:"Asesmen JAR",gi:"Asesmen GI",tower:"Tower Emergency",trafo:"Trafo Mobile"};
- document.getElementById("pageTitle").innerHTML=titles[id];
- if(innerWidth<760) document.getElementById("sidebar").classList.remove("mobile-open");
+function targetBadge(v) {
+  const d = v - TARGET;
+  return d >= 0
+    ? `<span class="badge ok">${icon("check", "ic xs")}Tercapai · +${fmt1(d)}</span>`
+    : `<span class="badge bad">${icon("alert", "ic xs")}Di bawah target · ${fmt1(d)}</span>`;
 }
-function toggleSidebar(){ if(innerWidth>=760) document.getElementById("sidebar").classList.toggle("collapsed"); else mobileSidebar() }
-function mobileSidebar(){document.getElementById("sidebar").classList.toggle("mobile-open")}
+
+function barList(labels, values, color, max = 120) {
+  return `<ul class="bars">${labels.map((l, i) => `
+    <li><span class="bl">${l}</span>
+      <span class="bt"><i style="width:${Math.min(values[i] / max * 100, 100)}%;background:${color}"></i></span>
+      <b>${values[i]}</b></li>`).join("")}</ul>`;
+}
+
+function donut(vals) {
+  const total = sum(vals), colors = [C.p1, C.p2, C.p3];
+  let acc = 0;
+  const segs = vals.map((v, i) => {
+    const p = v / total * 100, gap = p > 1.5 ? 0.8 : 0;
+    const s = `<circle cx="50" cy="50" r="40" pathLength="100" style="stroke:${colors[i]};stroke-dasharray:${Math.max(p - gap, 0.4)} ${100 - p + gap};stroke-dashoffset:${-acc}"/>`;
+    acc += p; return s;
+  }).join("");
+  return `<svg class="donut" viewBox="0 0 100 100" role="img" aria-label="Total ${fmt(total)} temuan">
+    <circle cx="50" cy="50" r="40" class="d-track"/>${segs}
+    <text x="50" y="49" class="d-total">${fmt(total)}</text><text x="50" y="61" class="d-cap">temuan</text></svg>`;
+}
+
+function mapSvg(pins, legend = true) {
+  return `<div class="map"><svg viewBox="0 0 600 240" role="img" aria-label="Peta skematis Jawa Timur dan Bali">
+    <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" class="m-dot"/></pattern></defs>
+    <rect width="600" height="240" class="m-sea"/><rect width="600" height="240" fill="url(#dots)"/>
+    <path class="m-land" d="M16 128C40 104 92 96 150 104C200 111 240 98 296 104C346 110 392 116 436 130C462 140 466 178 440 190C392 206 336 200 282 196C220 192 162 198 108 192C62 188 26 178 14 160C8 150 8 138 16 128Z"/>
+    <path class="m-land" d="M292 82C326 66 384 64 420 72C434 80 428 96 400 100C364 106 326 104 300 98C288 94 284 88 292 82Z"/>
+    <path class="m-land" d="M478 146C500 132 538 134 566 146C580 156 572 176 548 182C528 196 506 192 494 176C480 170 470 158 478 146Z"/>
+    <text x="230" y="226" class="m-label">JAWA TIMUR</text><text x="358" y="56" class="m-label">MADURA</text><text x="524" y="214" class="m-label">BALI</text>
+    ${pins.map(p => `<g class="pin" tabindex="0"><title>${p.l}</title><circle cx="${p.x}" cy="${p.y}" r="14" style="fill:${p.c}" class="pin-halo"/><circle cx="${p.x}" cy="${p.y}" r="6.5" style="fill:${p.c}" class="pin-dot"/></g>`).join("")}
+  </svg></div>
+  ${legend ? `<div class="legend">${[...new Map(pins.map(p => [p.l, p.c])).entries()].slice(0, 5).map(([l, c]) => `<span><i class="swatch" style="background:${c}"></i>${l}</span>`).join("")}</div>` : ""}`;
+}
+
+function kpi([label, value, ic, tone]) {
+  return `<div class="card kpi tone-${tone}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${label}</div><div class="kpi-value">${fmt(value)}</div></div></div>`;
+}
+
+/* =========================================================
+   RENDER — Kinerja
+   ========================================================= */
+[["gaugeGI", "Optimalisasi PDKB Gardu Induk", DATA.optimTotal.gi, C.gi], ["gaugeJAR", "Optimalisasi PDKB Jaringan", DATA.optimTotal.jar, C.jar]]
+  .forEach(([id, t, v, c]) => {
+    $("#" + id).innerHTML = `<div class="card-head"><div><h3>${t}</h3><p>Capaian UIT JBM tahun berjalan</p></div></div>
+      <div class="card-body gauge-wrap">${gaugeSvg(v, c)}</div>
+      <div class="card-foot"><span class="muted">Target ${TARGET}%</span>${targetBadge(v)}</div>`;
+  });
+$("#mapKinerja").innerHTML = mapSvg(DATA.mapErs);
+
+const uptLabels = UNITS.map(title);
+["gi", "jar"].forEach(k => {
+  $(k === "gi" ? "#barsGI" : "#barsJAR").innerHTML = DATA.bars[k].map(([t, vals]) => {
+    const avg = sum(vals) / vals.length;
+    return `<div class="card"><div class="card-head"><div><h3>${t}</h3><p>Rata-rata <b>${fmt1(avg)}</b></p></div></div>
+      <div class="card-body">${barList(uptLabels, vals, C[k])}</div></div>`;
+  }).join("");
+});
+
+$("#cert").innerHTML = `<div class="legend"><span><i class="swatch" style="background:var(--ok)"></i>Aktif</span><span><i class="swatch" style="background:var(--p1)"></i>Kadaluarsa</span></div>
+  <ul class="bars stacked cert-bars">${DATA.cert.map(([l, aktif, pct]) => {
+    const total = Math.round(aktif / pct * 100), exp = total - aktif;
+    return `<li><span class="bl">${l}</span><span class="bt"><i style="width:${pct}%;background:var(--ok)"></i><i style="width:${100 - pct}%;background:var(--p1)"></i></span>
+      <b>${aktif}<small> / ${total}</small></b><span class="exp">${exp} kadaluarsa</span></li>`;
+  }).join("")}</ul>`;
+
+/* ---------- Optimalisasi ---------- */
+$("#realisasi").innerHTML = DATA.realisasi.map(([t, gi, jar, ic]) => `
+  <div class="card stat">
+    <div class="stat-head"><span class="kpi-icon sm">${icon(ic)}</span><h3>Realisasi ${t}</h3></div>
+    <div class="stat-split">
+      <div><span class="stat-l"><i class="swatch gi"></i>Gardu Induk</span><span class="stat-n">${fmt(gi)}</span></div>
+      <div><span class="stat-l"><i class="swatch jar"></i>Jaringan</span><span class="stat-n">${fmt(jar)}</span></div>
+    </div>
+    <div class="split-bar"><i style="flex:${gi};background:var(--gi)"></i><i style="flex:${jar};background:var(--jar)"></i></div>
+  </div>`).join("");
+
+$("#optimGrid").innerHTML = DATA.optimUpt.map(([u, gi, jar]) => {
+  const ok = gi >= TARGET && jar >= TARGET;
+  return `<div class="card">
+    <div class="card-head"><div><h3>UPT ${title(u)}</h3></div>${ok ? '<span class="badge ok">Semua tercapai</span>' : '<span class="badge warn">Perlu perhatian</span>'}</div>
+    <div class="card-body optim-pair">
+      <div>${gaugeSvg(gi, C.gi, "sm")}<div class="optim-l"><i class="swatch gi"></i>GI ${gi < TARGET ? '<em class="neg">' + fmt1(gi - TARGET) + '</em>' : ''}</div></div>
+      <div>${gaugeSvg(jar, C.jar, "sm")}<div class="optim-l"><i class="swatch jar"></i>Jaringan ${jar < TARGET ? '<em class="neg">' + fmt1(jar - TARGET) + '</em>' : ''}</div></div>
+    </div></div>`;
+}).join("");
+
+/* ---------- Health Index ---------- */
+function healthCards(target, rows) {
+  $(target).innerHTML = CATS.map((c, i) => {
+    const v = rows[i], t = sum(v);
+    return `<div class="card health-card"><div class="card-head"><div><h3>${title(c)}</h3></div></div>
+      <div class="card-body">${donut(v)}
+        <ul class="plist">${["P1", "P2", "P3"].map((p, j) => `<li><i class="swatch p${j + 1}"></i><span>${p}</span><b>${fmt(v[j])}</b><em>${(v[j] / t * 100).toFixed(1).replace(".", ",")}%</em></li>`).join("")}</ul>
+      </div></div>`;
+  }).join("");
+}
+healthCards("#healthJar", DATA.healthJar);
+healthCards("#healthGI", DATA.healthGI);
+
+/* ---------- Asesmen JAR / GI (mock per UPT) ---------- */
+function assessData(scale) {
+  return UNITS.map((u, i) => ({
+    upt: u,
+    rows: CATS.map((c, j) => {
+      const total = Math.round([120, 620, 1500, 2800][(i + j) % 4] * scale);
+      const p1 = Math.round(total * (0.03 + ((i + j * 2) % 5) * 0.012));
+      const p2 = Math.round(total * (0.12 + ((i * 3 + j) % 4) * 0.03));
+      return { cat: c, p: [p1, p2, total - p1 - p2] };
+    })
+  }));
+}
+function renderAssess(grid, summary, data) {
+  const tot = [0, 1, 2].map(k => sum(data.flatMap(d => d.rows.map(r => r.p[k]))));
+  const names = ["Prioritas 1 (P1)", "Prioritas 2 (P2)", "Prioritas 3 (P3)"];
+  $(summary).innerHTML = tot.map((t, k) => `<div class="card kpi tone-p${k + 1}"><div class="kpi-icon">${icon(["alert", "pulse", "check"][k])}</div><div><div class="kpi-label">Total ${names[k]}</div><div class="kpi-value">${fmt(t)}</div></div><span class="kpi-share">${(t / sum(tot) * 100).toFixed(1).replace(".", ",")}%</span></div>`).join("");
+  $(grid).innerHTML = data.map(d => {
+    const max = Math.max(...d.rows.map(r => sum(r.p)));
+    return `<div class="card"><div class="card-head"><div><h3>UPT ${title(d.upt)}</h3><p>${fmt(sum(d.rows.map(r => r.p[0])))} temuan P1</p></div></div>
+      <div class="card-body"><ul class="bars stacked">${d.rows.map(r => {
+        const t = sum(r.p), w = t / max * 100;
+        return `<li title="P1 ${fmt(r.p[0])} · P2 ${fmt(r.p[1])} · P3 ${fmt(r.p[2])}"><span class="bl">${title(r.cat)}</span>
+          <span class="bt"><span class="seg" style="width:${w}%">${r.p.map((v, k) => `<i style="flex:${v};background:var(--p${k + 1})"></i>`).join("")}</span></span><b>${fmt(t)}</b></li>`;
+      }).join("")}</ul></div></div>`;
+  }).join("");
+}
+renderAssess("#jarGrid", "#jarSummary", assessData(1));
+renderAssess("#giGrid", "#giSummary", assessData(0.55));
+
+/* ---------- Tower Emergency ---------- */
+$("#towerKpi").innerHTML = DATA.towerKpi.map(kpi).join("");
+$("#mapTower").innerHTML = mapSvg(DATA.mapTower);
+$("#materialTables").innerHTML = Object.entries(DATA.materials).map(([k, rows], idx) => `
+  <div class="card material-card" data-material-card="${idx}">
+    <div class="card-head"><div><h3>${k}</h3><p><span class="count">${rows.length}</span> jenis material · ${fmt(sum(rows.map(r => r[1])))} unit</p></div></div>
+    <div class="search">${icon("search")}<input type="search" placeholder="Cari material…" aria-label="Cari material ${k}" oninput="filterMaterialTable(${idx}, this.value)"></div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Material</th><th class="num">Jumlah</th></tr></thead>
+      <tbody>${rows.map(r => `<tr data-material-row><td>${r[0]}</td><td class="num">${fmt(r[1])}</td></tr>`).join("")}</tbody>
+    </table><div class="empty" hidden>Material tidak ditemukan.</div></div>
+  </div>`).join("");
+
+function filterMaterialTable(cardIndex, query) {
+  const card = $(`[data-material-card="${cardIndex}"]`);
+  if (!card) return;
+  const q = (query || "").trim().toLowerCase();
+  let visible = 0;
+  card.querySelectorAll("[data-material-row]").forEach(row => {
+    const match = row.textContent.toLowerCase().includes(q);
+    row.hidden = !match; if (match) visible++;
+  });
+  card.querySelector(".empty").hidden = visible > 0;
+  card.querySelector(".count").textContent = visible;
+}
+
+/* ---------- Trafo Mobile ---------- */
+$("#trafoKpi").innerHTML = DATA.trafoKpi.map(kpi).join("");
+$("#mapTrafo").innerHTML = mapSvg(DATA.mapTrafo, false);
+
+const FIELD = [["location", "Lokasi"], ["doc", "Keterangan"], ["transformer", "Spesifikasi"], ["rotate", "Rencana"], ["gear", "Kelengkapan"]];
+function trafoStatus(card) {
+  if (card.status) return card.status;
+  const spec = card.items[2];
+  return /Rusak/i.test(spec) ? "Rusak" : /Standby/i.test(spec) ? "Standby" : "Berbeban";
+}
+const STATUS_TONE = { Berbeban: "ok", Standby: "info", Dipinjam: "warn", Rusak: "bad" };
+function renderTrafoCard(card) {
+  const st = trafoStatus(card);
+  return `<div class="card trafo-card st-${STATUS_TONE[st]}">
+    <div class="card-head"><div><h3>${card.title}</h3></div><span class="badge ${STATUS_TONE[st]}">${st}</span></div>
+    <dl class="info-list">${card.items.map((t, i) => `<div class="info-row">${icon(FIELD[i][0])}<dt>${FIELD[i][1]}</dt><dd>${t}</dd></div>`).join("")}</dl>
+  </div>`;
+}
+$("#trafoUptCards").innerHTML = DATA.trafoUpt.map(renderTrafoCard).join("");
+$("#trafoLoanCards").innerHTML = DATA.trafoLoan.map(renderTrafoCard).join("");
+
+function copyLink(btn) {
+  const url = "https://bit.ly/trafo-mobile-uit-jbm";
+  const done = () => toast("Tautan disalin ke clipboard");
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => toast(url));
+  else toast(url);
+}
+let toastTimer;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/* =========================================================
+   NAVIGATION (hash routing: bisa di-bookmark & tombol back)
+   ========================================================= */
+const PAGES = {
+  kinerja: ["PDKB", "Kinerja PDKB", "Rekap kinerja PDKB UIT JBM tahun 2026"],
+  optimalisasi: ["PDKB", "Optimalisasi PDKB", "Capaian optimalisasi Gardu Induk & Jaringan per UPT"],
+  health: ["Kondisi Aset", "Health Index", "Sebaran prioritas temuan aset Jaringan dan Gardu Induk"],
+  jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
+  gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
+  tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
+  trafo: ["Peralatan ERS", "Trafo Mobile", "Status, lokasi, dan peminjaman trafo mobile"]
+};
+function route() {
+  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "kinerja";
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + id));
+  document.querySelectorAll(".nav-item").forEach(n => {
+    const on = n.dataset.page === id;
+    n.classList.toggle("active", on);
+    on ? n.setAttribute("aria-current", "page") : n.removeAttribute("aria-current");
+  });
+  const [g, t, s] = PAGES[id];
+  $("#pageGroup").textContent = g; $("#pageTitle").textContent = t; $("#pageSub").textContent = s;
+  document.title = `${t} · Dashboard FASHAR UIT JBM`;
+  closeDrawer();
+  window.scrollTo({ top: 0 });
+}
+addEventListener("hashchange", route);
+route();
+
+function openDrawer() { document.body.classList.add("drawer-open"); }
+function closeDrawer() { document.body.classList.remove("drawer-open"); }
+addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+function toggleCollapse() {
+  const on = document.documentElement.classList.toggle("nav-collapsed");
+  store("fashar-collapsed", on ? "1" : "0");
+}
+function toggleTheme() {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  store("fashar-theme", root.dataset.theme);
+}

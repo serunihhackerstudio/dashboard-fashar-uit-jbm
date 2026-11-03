@@ -159,7 +159,7 @@ function donut(vals) {
 function mapSvg(pins, legend = true) {
   return `<div class="map"><svg viewBox="0 0 600 240" role="img" aria-label="Peta skematis Jawa Timur dan Bali">
     <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" class="m-dot"/></pattern></defs>
-    <rect width="600" height="240" class="m-sea"/><rect width="600" height="240" fill="url(#dots)"/>
+    <rect x="-1200" y="-600" width="3000" height="1440" class="m-sea"/><rect x="-1200" y="-600" width="3000" height="1440" fill="url(#dots)"/>
     <path class="m-land" d="M16 128C40 104 92 96 150 104C200 111 240 98 296 104C346 110 392 116 436 130C462 140 466 178 440 190C392 206 336 200 282 196C220 192 162 198 108 192C62 188 26 178 14 160C8 150 8 138 16 128Z"/>
     <path class="m-land" d="M292 82C326 66 384 64 420 72C434 80 428 96 400 100C364 106 326 104 300 98C288 94 284 88 292 82Z"/>
     <path class="m-land" d="M478 146C500 132 538 134 566 146C580 156 572 176 548 182C528 196 506 192 494 176C480 170 470 158 478 146Z"/>

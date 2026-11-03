@@ -29,9 +29,6 @@
  </div>
 
  <nav class="nav">
-  <div class="nav-group">PDKB</div>
-  <a class="nav-item" href="#kinerja" data-page="kinerja" title="Kinerja PDKB"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>Kinerja PDKB</span></a>
-  <a class="nav-item" href="#optimalisasi" data-page="optimalisasi" title="Optimalisasi PDKB"><svg viewBox="0 0 24 24"><path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/></svg><span>Optimalisasi PDKB</span></a>
 
   <div class="nav-group">Kondisi Aset</div>
   <a class="nav-item" href="#health" data-page="health" title="Health Index"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg><span>Health Index</span></a>
@@ -55,9 +52,9 @@
  <header class="topbar">
   <button class="icon-btn menu-btn" type="button" onclick="openDrawer()" aria-label="Buka menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   <div class="title-block">
-   <div class="eyebrow" id="pageGroup">PDKB</div>
-   <h1 id="pageTitle">Kinerja PDKB</h1>
-   <p id="pageSub">Rekap kinerja PDKB UIT JBM tahun 2026</p>
+   <div class="eyebrow" id="pageGroup">Kondisi Aset</div>
+   <h1 id="pageTitle">Health Index</h1>
+   <p id="pageSub">Sebaran prioritas temuan aset Jaringan dan Gardu Induk</p>
   </div>
   <div class="top-actions">
    <!-- Filter sementara disembunyikan -->
@@ -76,37 +73,6 @@
  </header>
 
  <div class="content" id="content" tabindex="-1">
-
-  <!-- KINERJA PDKB -->
-  <section id="page-kinerja" class="page">
-   <div class="grid kinerja-top">
-    <div class="card" id="gaugeGI"></div>
-    <div class="card" id="gaugeJAR"></div>
-    <div class="card map-card">
-     <div class="card-head"><div><h3>Persebaran Peralatan ERS</h3><p>Lokasi peralatan emergency di wilayah UIT JBM</p></div></div>
-     <div class="card-body" id="mapKinerja"></div>
-    </div>
-   </div>
-
-   <div class="section-head"><h2><i class="swatch gi"></i>Gardu Induk</h2><p>Realisasi per UPT</p></div>
-   <div class="grid g3" id="barsGI"></div>
-
-   <div class="section-head"><h2><i class="swatch jar"></i>Jaringan</h2><p>Realisasi per UPT</p></div>
-   <div class="grid g3" id="barsJAR"></div>
-
-   <div class="section-head"><h2>Sertifikat &amp; Kompetensi PDKB</h2><p>Status sertifikat personel per level</p></div>
-   <div class="card"><div class="card-body" id="cert"></div></div>
-  </section>
-
-  <!-- OPTIMALISASI -->
-  <section id="page-optimalisasi" class="page">
-   <div class="grid g3" id="realisasi"></div>
-   <div class="section-head">
-    <h2>Optimalisasi per UPT</h2>
-    <div class="legend"><span><i class="swatch gi"></i>Gardu Induk</span><span><i class="swatch jar"></i>Jaringan</span><span><i class="tick"></i>Target 115%</span></div>
-   </div>
-   <div class="grid g3" id="optimGrid"></div>
-  </section>
 
   <!-- HEALTH INDEX -->
   <section id="page-health" class="page">
@@ -181,6 +147,7 @@
    <div class="callout warn" id="tdbFormWarn" hidden></div>
    <section class="dsec ph-sec ph-form" id="phSecForm"></section>
    <div class="form-grid" id="tdbFields"></div>
+   <section class="dsec mv-sec" id="mvSecForm" hidden></section>
   </div>
   <footer class="modal-foot">
    <div class="fld token" id="tdbTokenWrap">

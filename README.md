@@ -62,3 +62,11 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 ### Peta Lokasi Penempatan
 - Peta memakai [Leaflet](https://leafletjs.com) (disimpan di `vendor/leaflet`, lisensi BSD-2) dengan latar peta © OpenStreetMap (tanpa API key; mode gelap memakai filter warna).
 - Koordinat tiap gardu induk adalah **perkiraan** dan disimpan di `TDB_COORDS` pada `app.js` (kunci = nama GI tanpa jenis/tegangan, mis. `KALISARI`, `PAITON`). Lokasi baru yang belum punya koordinat tetap tampil di daftar dengan keterangan "belum ada titik peta".
+
+### Foto komponen (Google Drive)
+- Di pop-up **Detail** setiap komponen ada galeri foto: **Tambah foto** (beberapa sekaligus, maks. 10 per unggahan), **Ganti**, **Keterangan**, dan **Hapus**. Klik foto untuk memperbesar.
+- Foto disimpan di folder Google Drive `PHOTO_ROOT_ID` pada `apps-script/Code.gs` (bisa diganti lewat Script Property `PHOTO_FOLDER_ID`). Setiap komponen mendapat subfolder sendiri; link subfolder ditulis otomatis ke kolom **LINK FOTO PERALATAN** (kolom Y).
+- Foto diperkecil di browser (sisi terpanjang 1920 px, JPEG) sebelum diunggah. Foto yang diganti/dihapus dipindahkan ke **Sampah** Google Drive dan masih bisa dipulihkan.
+- Mengunggah/mengubah foto memakai kode akses edit yang sama.
+- **Setup:** tempel ulang `apps-script/Code.gs`, lalu **Deploy → Manage deployments → Edit → New version**. Saat diminta, izinkan akses Google Drive. Akun pemilik skrip harus punya akses edit ke folder foto.
+- Agar foto tampil di dashboard untuk semua pengguna, folder foto perlu dibagikan **"Siapa saja yang memiliki link — Viewer"**.

@@ -5,8 +5,13 @@
  * (Extensions → Apps Script), lalu deploy sebagai Web app.
  * Panduan lengkap: README.md bagian "Edit Database Trafo Mobile".
  *
- * GET  <url>              → daftar komponen (JSON)
- * POST <url> (text/plain) → {token, action:"add"|"update", row, expect, data}
+ * GET  <url>                         → daftar komponen (JSON)
+ * GET  <url>?action=photos&row=N      → daftar foto komponen di baris N
+ * POST <url> (text/plain) → {token, action, row, expect, ...}
+ *      action: "add" | "update" | "photo_upload" | "photo_replace" | "photo_caption" | "photo_delete"
+ *
+ * Foto disimpan di Google Drive: satu subfolder per komponen di dalam folder PHOTO_ROOT_ID.
+ * Link subfolder ditulis otomatis ke kolom LINK FOTO PERALATAN (kolom Y).
  *
  * GET mengirim semua kolom (termasuk informasi aset & riwayat lokasi) untuk
  * pop-up Detail. POST hanya mengubah kolom di EDITABLE.
@@ -27,9 +32,18 @@ const EDITABLE = ['no', 'komponen', 'sn', 'merk', 'kv', 'mva', 'upt', 'gi', 'tah
 const NUMERIC = ['no', 'mva', 'tahun'];
 const TEXT = ['sn', 'kv', 'identitas']; // dipaksa teks agar "150/20" / "0119…" tidak diubah Sheets
 const STATUSES = ['OPERASI', 'STANDBY', 'RUSAK', ''];
+// Folder Google Drive tempat foto. Bisa diganti lewat Script Properties: PHOTO_FOLDER_ID
+const PHOTO_ROOT_ID = '1JdXBnRUftLg5WbQxzbCKCTg_CkUIUZCi';
+const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
 
-function doGet() {
+function doGet(e) {
   try {
+    const p = (e && e.parameter) || {};
+    if (p.action === 'photos') {
+      const sh = sheet_(), r = checkRow_(sh, p.row, p.expect);
+      const folder = photoFolder_(sh, r, false);
+      return json_({ ok: true, folder: folder ? folder.getUrl() : null, photos: folder ? listPhotos_(folder) : [] });
+    }
     return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: readRows_() });
   } catch (err) {
     return json_({ ok: false, error: String(err.message || err) });
@@ -59,6 +73,8 @@ function doPost(e) {
       return json_({ ok: true, row: readRow_(sh, r) });
     }
 
+    if (String(req.action || '').indexOf('photo_') === 0) return json_(photoAction_(sh, req));
+
     if (req.action === 'add') {
       const r = lastDataRow_(sh) + 1;
       EDITABLE.forEach(k => { if (k in data) write_(sh, r, k, data[k]); });
@@ -70,6 +86,108 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* ---------- foto (Google Drive) ---------- */
+function checkRow_(sh, row, expect) {
+  const r = Number(row);
+  if (!(r > HEADER_ROWS && r <= sh.getLastRow())) throw new Error('Baris tidak valid.');
+  const current = sh.getRange(r, COLS.komponen).getDisplayValue().trim();
+  if (expect != null && expect !== '' && current !== String(expect).trim()) {
+    throw new Error('Baris ini sudah berubah di spreadsheet. Muat ulang data lalu coba lagi.');
+  }
+  return r;
+}
+
+function photoRoot_() {
+  const id = PropertiesService.getScriptProperties().getProperty('PHOTO_FOLDER_ID') || PHOTO_ROOT_ID;
+  return DriveApp.getFolderById(id);
+}
+
+/* Subfolder foto komponen: dibaca dari kolom LINK FOTO, dibuat bila belum ada (create = true). */
+function photoFolder_(sh, r, create) {
+  const cell = sh.getRange(r, COLS.linkFoto);
+  const rt = cell.getRichTextValue();
+  const url = String((rt && rt.getLinkUrl()) || cell.getDisplayValue() || '').trim();
+  const m = url.match(/folders\/([\w-]+)/);
+  if (m) {
+    try { return DriveApp.getFolderById(m[1]); }
+    catch (err) { throw new Error('Folder foto pada kolom LINK FOTO PERALATAN tidak dapat diakses oleh skrip.'); }
+  }
+  if (url) throw new Error('Kolom LINK FOTO PERALATAN sudah berisi tautan lain (bukan folder Google Drive). Kosongkan dulu bila ingin memakai fitur foto.');
+  if (!create) return null;
+  const v = sh.getRange(r, 1, 1, COLS.gi).getDisplayValues()[0];
+  const name = ['Baris ' + r, v[COLS.komponen - 1], v[COLS.sn - 1] && 'SN ' + v[COLS.sn - 1], v[COLS.gi - 1]].filter(String).join(' - ');
+  const folder = photoRoot_().createFolder(name);
+  write_(sh, r, 'linkFoto', folder.getUrl());
+  return folder;
+}
+
+function photoInfo_(f) {
+  const id = f.getId();
+  return {
+    id: id, name: f.getName(), caption: f.getDescription() || '', created: f.getDateCreated().toISOString(),
+    updated: f.getLastUpdated().toISOString(), size: f.getSize(),
+    thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w480',
+    full: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600',
+    view: f.getUrl()
+  };
+}
+
+function listPhotos_(folder) {
+  const out = [], it = folder.getFiles();
+  while (it.hasNext()) {
+    const f = it.next();
+    if (/^image\//.test(f.getMimeType())) out.push(photoInfo_(f));
+  }
+  return out.sort((a, b) => a.created < b.created ? -1 : 1);
+}
+
+function photoBlob_(req) {
+  const mime = String(req.mime || '');
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(mime)) throw new Error('Format file harus berupa gambar (JPG/PNG/WEBP).');
+  const bytes = Utilities.base64Decode(String(req.data || ''));
+  if (!bytes.length) throw new Error('File foto kosong.');
+  if (bytes.length > PHOTO_MAX_BYTES) throw new Error('Ukuran foto melebihi 10 MB.');
+  const base = String(req.name || 'foto').replace(/[^\w.\- ]+/g, '_').slice(0, 80);
+  const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd-HHmmss');
+  return Utilities.newBlob(bytes, mime, stamp + '_' + base);
+}
+
+function photoInFolder_(folder, fileId) {
+  const f = DriveApp.getFileById(String(fileId || ''));
+  const parents = f.getParents();
+  while (parents.hasNext()) if (parents.next().getId() === folder.getId()) return f;
+  throw new Error('Foto tidak ditemukan di folder komponen ini.');
+}
+
+function photoAction_(sh, req) {
+  const r = checkRow_(sh, req.row, req.expect);
+  const caption = String(req.caption == null ? '' : req.caption).trim().slice(0, 500);
+  if (req.action === 'photo_upload') {
+    const folder = photoFolder_(sh, r, true);
+    const f = folder.createFile(photoBlob_(req));
+    if (caption) f.setDescription(caption);
+    return { ok: true, folder: folder.getUrl(), photo: photoInfo_(f) };
+  }
+  const folder = photoFolder_(sh, r, false);
+  if (!folder) throw new Error('Komponen ini belum memiliki folder foto.');
+  const old = photoInFolder_(folder, req.fileId);
+  if (req.action === 'photo_replace') {
+    const f = folder.createFile(photoBlob_(req));
+    f.setDescription(req.caption == null ? (old.getDescription() || '') : caption);
+    old.setTrashed(true); // foto lama dipindah ke Sampah Drive (bisa dipulihkan)
+    return { ok: true, folder: folder.getUrl(), photo: photoInfo_(f), replaced: old.getId() };
+  }
+  if (req.action === 'photo_caption') {
+    old.setDescription(caption);
+    return { ok: true, photo: photoInfo_(old) };
+  }
+  if (req.action === 'photo_delete') {
+    old.setTrashed(true); // dipindah ke Sampah Drive (bisa dipulihkan 30 hari)
+    return { ok: true, deleted: old.getId() };
+  }
+  return { ok: false, error: 'Aksi foto tidak dikenal.' };
 }
 
 /* ---------- helpers ---------- */

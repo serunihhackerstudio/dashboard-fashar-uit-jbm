@@ -220,6 +220,13 @@
   <footer class="modal-foot"><div class="modal-btns"><button class="btn ghost" type="button" onclick="tdbCloseDetail()">Tutup</button><button class="btn primary" type="button" onclick="tdbDetailEdit()">Edit komponen</button></div></footer>
  </div>
 </dialog>
+<dialog class="pv" id="phViewer" aria-label="Foto komponen">
+ <div class="pv-top"><span id="phViewCount"></span><a id="phViewOpen" target="_blank" rel="noopener">Buka di Google Drive</a><button class="icon-btn" type="button" onclick="$('#phViewer').close()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+ <img id="phViewImg" alt="">
+ <p id="phViewCap"></p>
+ <button class="pv-nav prev" type="button" onclick="phView(PH.view-1)" aria-label="Foto sebelumnya">‹</button>
+ <button class="pv-nav next" type="button" onclick="phView(PH.view+1)" aria-label="Foto berikutnya">›</button>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js"></script>

@@ -193,7 +193,15 @@
    <div class="modal-btns"><button class="btn ghost" type="button" onclick="tdbCloseForm()">Batal</button><button class="btn primary" type="submit" id="tdbSave">Simpan</button></div>
   </footer>
  </form>
- <datalist id="tdbKomponenList"></datalist><datalist id="tdbMerkList"></datalist><datalist id="tdbUptList"></datalist><datalist id="tdbGiList"></datalist><datalist id="tdbAsetList"></datalist><datalist id="tdbAnomList"></datalist>
+ <datalist id="tdbKomponenList"></datalist><datalist id="tdbMerkList"></datalist><datalist id="tdbUptList"></datalist><datalist id="tdbGiList"></datalist><datalist id="tdbAsetList"></datalist>
+</dialog>
+<dialog class="modal modal-lg" id="tdbDetail" aria-labelledby="tdbDetailTitle">
+ <div class="modal-wrap">
+  <header class="modal-head"><div><h3 id="tdbDetailTitle">Detail komponen</h3><p id="tdbDetailSub"></p></div>
+   <button class="icon-btn" type="button" onclick="tdbCloseDetail()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="modal-body" id="tdbDetailBody"></div>
+  <footer class="modal-foot"><div class="modal-btns"><button class="btn ghost" type="button" onclick="tdbCloseDetail()">Tutup</button><button class="btn primary" type="button" onclick="tdbDetailEdit()">Edit komponen</button></div></footer>
+ </div>
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="config.js"></script>

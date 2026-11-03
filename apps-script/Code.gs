@@ -8,15 +8,20 @@
  * GET  <url>              → daftar komponen (JSON)
  * POST <url> (text/plain) → {token, action:"add"|"update", row, expect, data}
  *
- * Kolom nilai aset & referensi kontrak TIDAK pernah dikirim/diubah.
+ * GET mengirim semua kolom (termasuk informasi aset & riwayat lokasi) untuk
+ * pop-up Detail. POST hanya mengubah kolom di EDITABLE / ADD_ONLY.
  */
 const SHEET_NAME = '2. TRAFO MOBILE';
 const HEADER_ROWS = 2;
 // nomor kolom (1 = A) sesuai header sheet
 const COLS = {
   no: 1, komponen: 2, sn: 3, merk: 4, kv: 5, mva: 6, upt: 7, gi: 8, tahun: 9, status: 10,
-  keterangan: 11, anomali: 12, tindakLanjut: 13, statusAnomali: 14, namaAset: 16, identitas: 23, powerInspect: 28
+  keterangan: 11, anomali: 12, tindakLanjut: 13, statusAnomali: 14, dokumenAnomali: 15, namaAset: 16,
+  nomorTid: 17, nomorAsset: 18, nilaiAset1: 19, refAset1: 20, nilaiAset2: 21, refAset2: 22, identitas: 23,
+  tanggalOperasi: 24, linkFoto: 25, linkNameplate: 26, linkPemeliharaan: 27, powerInspect: 28, lokasiAwal: 29
 };
+const LINKS = ['linkFoto', 'linkNameplate', 'linkPemeliharaan', 'dokumenAnomali'];
+const RIWAYAT_COL = 30, TAHUN = [2020, 2021, 2022, 2023, 2024, 2025]; // AD.. : (LOKASI, BA) per tahun
 const EDITABLE = ['no', 'komponen', 'sn', 'merk', 'kv', 'mva', 'upt', 'gi', 'tahun', 'status',
   'keterangan', 'anomali', 'tindakLanjut', 'statusAnomali', 'identitas'];
 const ADD_ONLY = ['namaAset']; // kolom ini berupa sel gabungan, hanya diisi saat tambah baris
@@ -114,9 +119,10 @@ function readRows_() {
   const sh = sheet_();
   const last = lastDataRow_(sh);
   if (last <= HEADER_ROWS) return [];
-  const width = Math.max.apply(null, Object.keys(COLS).map(k => COLS[k]));
+  const width = RIWAYAT_COL - 1 + TAHUN.length * 2;
   const range = sh.getRange(HEADER_ROWS + 1, 1, last - HEADER_ROWS, width);
   const vals = range.getDisplayValues();
+  const rich = range.getRichTextValues();
   // isi nilai sel gabungan ke semua baris dalam rentangnya
   range.getMergedRanges().forEach(m => {
     const r0 = m.getRow() - HEADER_ROWS - 1, c0 = m.getColumn() - 1;
@@ -125,7 +131,11 @@ function readRows_() {
       if (vals[r0 + r] && c0 + c < width) vals[r0 + r][c0 + c] = top;
     }
   });
-  return vals.map((v, i) => toRec_(v, HEADER_ROWS + 1 + i)).filter(r => r.komponen);
+  return vals.map((v, i) => {
+    const rec = toRec_(v, HEADER_ROWS + 1 + i);
+    LINKS.forEach(k => { const rt = rich[i][COLS[k] - 1]; const url = rt && rt.getLinkUrl(); if (url) rec[k] = url; });
+    return rec;
+  }).filter(r => r.komponen);
 }
 
 function readRow_(sh, r) {
@@ -141,6 +151,11 @@ function toRec_(v, rowNum) {
   rec.status = (rec.status || 'BELUM DIPASTIKAN').toUpperCase();
   if (rec.namaAset) rec.namaAset = rec.namaAset.replace(/–/g, '-');
   rec.powerInspect = rec.powerInspect === '✅';
+  rec.riwayat = TAHUN.map((t, i) => ({
+    tahun: t,
+    lokasi: String(v[RIWAYAT_COL - 1 + i * 2] || '').trim() || null,
+    ba: String(v[RIWAYAT_COL + i * 2] || '').trim() || null
+  }));
   return rec;
 }
 

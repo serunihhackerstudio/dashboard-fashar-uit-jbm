@@ -452,6 +452,7 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 @media (max-width:520px){ .tdb-mapwrap{min-height:320px} .map-tools{left:12px;right:auto;top:auto;bottom:28px} }
 
 /* ---------- Foto komponen ---------- */
+.ph-form{margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
 .ph-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .ph-head h4{margin:0}
 .ph-head h4 small{font-size:11px;color:var(--text-2);background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:1px 8px;letter-spacing:0}

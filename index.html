@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="style.css">
 <script>
  /* Terapkan tema & status sidebar sebelum render agar tidak berkedip */
@@ -159,8 +160,17 @@
     <div class="tdb-actions"><button class="btn ghost" type="button" onclick="tdbLoad()" id="tdbReload"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/></svg>Muat ulang</button><button class="btn primary" type="button" onclick="tdbOpenForm()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah komponen</button></div>
    </div>
    <div class="grid g4" id="tdbKpi"></div>
-   <div class="section-head"><h2>Per Lokasi Penempatan</h2><p>Komponen trafo mobile di setiap gardu induk</p></div>
-   <div class="grid g3" id="tdbLokasi"></div>
+   <div class="section-head"><div><h2>Peta Lokasi Penempatan</h2><p>Klik tanda pada peta untuk melihat komponen di lokasi tersebut. Angka = jumlah komponen.</p></div>
+    <div class="legend"><span><i class="swatch" style="background:var(--ok)"></i>Semua operasi</span><span><i class="swatch" style="background:var(--primary)"></i>Ada standby</span><span><i class="swatch" style="background:var(--p1)"></i>Ada rusak</span><span><i class="swatch" style="background:var(--text-3)"></i>Belum dipastikan</span></div></div>
+   <div class="card tdb-mapcard">
+    <div class="tdb-mapwrap">
+     <div id="tdbMap" role="region" aria-label="Peta lokasi penempatan trafo mobile"></div>
+     <div class="map-tools" id="tdbMapTools"><button type="button" class="pg on" data-area="all">Semua lokasi</button><button type="button" class="pg" data-area="jatim">Jawa Timur &amp; Bali</button></div>
+     <p class="map-fallback" id="tdbMapFallback" hidden>Peta tidak dapat dimuat. Gunakan daftar lokasi di samping.</p>
+     <span class="map-note">Posisi titik perkiraan</span>
+    </div>
+    <aside class="tdb-locpanel" id="tdbLocPanel" aria-live="polite"></aside>
+   </div>
    <div class="section-head"><h2>Anomali &amp; Tindak Lanjut</h2><p>Temuan anomali yang tercatat pada database</p></div>
    <div class="grid g2" id="tdbAnomali"></div>
    <div class="section-head"><div><h2>Daftar Komponen</h2><p id="tdbSource"></p></div>
@@ -211,6 +221,7 @@
  </div>
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js"></script>
 <script src="data/trafo-mobile-db.js"></script>
 <script src="data/gi-uit-jbm.js"></script>

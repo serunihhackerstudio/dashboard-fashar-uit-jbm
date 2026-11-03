@@ -58,3 +58,7 @@ Data cadangan (dipakai bila Google Sheets tidak terhubung) dibuat dari file xlsx
 ```bash
 python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 ```
+
+### Peta Lokasi Penempatan
+- Peta memakai [Leaflet](https://leafletjs.com) (disimpan di `vendor/leaflet`, lisensi BSD-2) dengan latar peta © OpenStreetMap © CARTO.
+- Koordinat tiap gardu induk adalah **perkiraan** dan disimpan di `TDB_COORDS` pada `app.js` (kunci = nama GI tanpa jenis/tegangan, mis. `KALISARI`, `PAITON`). Lokasi baru yang belum punya koordinat tetap tampil di daftar dengan keterangan "belum ada titik peta".

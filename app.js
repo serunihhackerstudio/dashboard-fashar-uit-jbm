@@ -438,7 +438,9 @@ function renderTrafoDb() {
       ${r.tindakLanjut ? `<details class="tdb-field"><summary>Tindak lanjut &amp; mitigasi</summary><p>${esc(r.tindakLanjut)}</p></details>` : ""}</div>
   </div>`).join("") : `<div class="card"><div class="card-body empty">Tidak ada anomali tercatat.</div></div>`;
 
-  $("#tdbSource").textContent = `Sumber: ${TDB.source} · ${rows.length} baris`;
+  $("#tdbSource").innerHTML = `Sumber: ${esc(TDB.source)} · ${rows.length} baris · ${TDB.live
+    ? '<b class="src-live">● Live dari Google Sheets</b>'
+    : '<b class="src-static">● Data statis (cadangan)</b>'}`;
   const loc = $("#tdbLoc").value;
   $("#tdbLoc").innerHTML = `<option value="">Semua lokasi</option>` + locs.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join("");
   if (locs.some(g => g.key === loc)) $("#tdbLoc").value = loc;

@@ -462,18 +462,43 @@ function renderTrafoDb() {
   [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"]]
     .forEach(([id, k]) => { $("#" + id).innerHTML = uniq(k).map(v => `<option value="${esc(v)}"></option>`).join(""); });
 
-  tdbFilter();
+  tdbFilter(true); // pertahankan halaman setelah simpan / muat ulang
 }
 
-function tdbFilter() {
+/* Filter + paginasi (10 baris per halaman) */
+const TDB_PER_PAGE = 10;
+let tdbPage = 1;
+function tdbFilter(keepPage) {
+  if (keepPage !== true) tdbPage = 1;
   const q = $("#tdbSearch").value.trim().toLowerCase(), loc = $("#tdbLoc").value, st = $("#tdbStatus .on")?.dataset.v || "";
-  let n = 0;
-  document.querySelectorAll("#tdbRows tr").forEach(tr => {
-    const ok = (!q || tr.textContent.toLowerCase().includes(q)) && (!loc || tr.dataset.key === loc) && (!st || tr.dataset.st === st);
-    tr.hidden = !ok; if (ok) n++;
-  });
+  const trs = [...document.querySelectorAll("#tdbRows tr")];
+  const match = trs.filter(tr => (!q || tr.textContent.toLowerCase().includes(q)) && (!loc || tr.dataset.key === loc) && (!st || tr.dataset.st === st));
+  const n = match.length, pages = Math.max(1, Math.ceil(n / TDB_PER_PAGE));
+  tdbPage = Math.min(Math.max(1, tdbPage), pages);
+  const from = (tdbPage - 1) * TDB_PER_PAGE, to = Math.min(from + TDB_PER_PAGE, n);
+  const show = new Set(match.slice(from, to));
+  trs.forEach(tr => { tr.hidden = !show.has(tr); });
   $("#tdbEmpty").hidden = n > 0;
-  $("#tdbCount").textContent = `Menampilkan ${n} dari ${TDB.rows.length} komponen`;
+  $("#tdbCount").textContent = n
+    ? `Menampilkan ${from + 1}–${to} dari ${n} komponen${n < TDB.rows.length ? ` (difilter dari ${TDB.rows.length})` : ""}`
+    : `Menampilkan 0 dari ${TDB.rows.length} komponen`;
+  tdbPager(pages);
+}
+function tdbPager(pages) {
+  const el = $("#tdbPager");
+  if (pages <= 1) { el.innerHTML = ""; return; }
+  const nums = [];
+  for (let p = 1; p <= pages; p++) {
+    if (p === 1 || p === pages || Math.abs(p - tdbPage) <= 1) nums.push(p);
+    else if (nums[nums.length - 1] !== "…") nums.push("…");
+  }
+  el.innerHTML = `<button type="button" class="pg" data-p="${tdbPage - 1}" ${tdbPage === 1 ? "disabled" : ""} aria-label="Halaman sebelumnya">‹</button>` +
+    nums.map(p => p === "…" ? `<span class="pg-gap">…</span>` : `<button type="button" class="pg${p === tdbPage ? " on" : ""}" data-p="${p}" aria-label="Halaman ${p}"${p === tdbPage ? ' aria-current="page"' : ""}>${p}</button>`).join("") +
+    `<button type="button" class="pg" data-p="${tdbPage + 1}" ${tdbPage === pages ? "disabled" : ""} aria-label="Halaman berikutnya">›</button>`;
+}
+function tdbGoPage(p) {
+  tdbPage = p; tdbFilter(true);
+  const t = $("#tdbSearch").closest(".card"); if (t && t.getBoundingClientRect().top < 0) t.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function tdbReset() {
   $("#tdbSearch").value = ""; $("#tdbLoc").value = "";
@@ -760,8 +785,9 @@ function tdbDetailEdit() { const i = TDB.detail; tdbCloseDetail(); tdbOpenForm(i
 function initTrafoDb() {
   if (!$("#page-trafodb")) return;
   tdbBuildForm();
-  $("#tdbSearch").addEventListener("input", tdbFilter);
-  $("#tdbLoc").addEventListener("change", tdbFilter);
+  $("#tdbSearch").addEventListener("input", () => tdbFilter());
+  $("#tdbLoc").addEventListener("change", () => tdbFilter());
+  $("#tdbPager").addEventListener("click", e => { const b = e.target.closest("button[data-p]"); if (b && !b.disabled) tdbGoPage(+b.dataset.p); });
   $("#tdbStatus").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
     $("#tdbStatus").querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });

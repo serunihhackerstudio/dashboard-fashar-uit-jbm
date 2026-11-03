@@ -758,6 +758,7 @@ function tdbOpenForm(i) {
   tdbTokenUi();
   $("#tdbFormErr").hidden = true;
   $("#tdbDialog").showModal();
+  phOpen(r, true);
   setTimeout(() => $("#f_komponen").focus(), 30);
 }
 function tdbCloseForm() { $("#tdbDialog").close(); }
@@ -882,18 +883,19 @@ function tdbOpenDetail(i) {
       ? `<div class="table-wrap flat"><table class="table"><thead><tr><th>Tahun</th><th>Lokasi</th><th>BA</th></tr></thead><tbody>${riw.map(x => `<tr><td><b>${x.tahun}</b></td><td>${esc(x.lokasi || "—")}</td><td>${tdbLink(x.ba, "Lihat BA") || "—"}</td></tr>`).join("")}</tbody></table></div>`
       : `<p class="dnil">Belum ada riwayat lokasi 2020–2025 yang tercatat.</p>`, "rotate");
   $("#tdbDetail").showModal();
-  phOpen(r);
+  phOpen(r, false);
 }
 function tdbCloseDetail() { $("#tdbDetail").close(); }
 
 /* =========================================================
    FOTO KOMPONEN (Google Drive via Apps Script)
    ========================================================= */
-const PH = { r: null, list: [], loading: false, busy: "", err: "", editCap: null, view: 0, needToken: false, tok: "" };
+/* Mode: edit = true di form Edit komponen (kelola foto), false di pop-up Detail (lihat saja) */
+const PH = { r: null, list: [], loading: false, busy: "", err: "", editCap: null, view: 0, needToken: false, tok: "", edit: false };
 const PH_MAX_SIDE = 1920, PH_QUALITY = .85, PH_MAX_FILES = 10;
 const phCan = r => !!TDB_API && TDB.live && !!(r && r._row);
-function phOpen(r) {
-  PH.r = r; PH.list = []; PH.err = ""; PH.busy = ""; PH.editCap = null; PH.needToken = false;
+function phOpen(r, edit) {
+  PH.r = r; PH.edit = !!edit; PH.list = []; PH.err = ""; PH.busy = ""; PH.editCap = null; PH.needToken = false; PH.tok = "";
   if (!phCan(r)) { PH.loading = false; phRender(); return; }
   phLoad();
 }
@@ -909,17 +911,19 @@ async function phLoad() {
   if (PH.r === r) { PH.loading = false; phRender(); }
 }
 function phRender() {
-  const el = $("#phSec"); if (!el) return;
-  const r = PH.r, can = phCan(r), n = PH.list.length;
+  const el = $(PH.edit ? "#phSecForm" : "#phSec"); if (!el) return;
+  const r = PH.r, can = phCan(r), n = PH.list.length, ed = PH.edit && can;
   const head = `<div class="ph-head"><h4>${icon("camera", "ic xs")}Foto komponen${n ? ` <small>${n}</small>` : ""}</h4>
-    ${can ? `<label class="btn primary sm${PH.busy ? " disabled" : ""}"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah foto
+    ${ed ? `<label class="btn primary sm${PH.busy ? " disabled" : ""}"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah foto
       <input type="file" accept="image/*" multiple hidden ${PH.busy ? "disabled" : ""} onchange="phUpload(this.files); this.value=''"></label>` : ""}</div>`;
   let body;
   if (!can) {
-    body = `<p class="dnil">${!TDB_API ? "Hubungkan Google Sheets untuk melihat dan mengelola foto." : !TDB.live ? "Data belum termuat dari Google Sheets — muat ulang halaman untuk mengelola foto." : "Simpan komponen ini terlebih dahulu."}
+    body = `<p class="dnil">${!TDB_API ? "Hubungkan Google Sheets untuk melihat dan mengelola foto." : !TDB.live ? "Data belum termuat dari Google Sheets — muat ulang halaman untuk melihat foto." : "Simpan komponen baru ini terlebih dahulu, lalu buka <b>Edit</b> lagi untuk menambahkan foto."}
       ${r && tdbUrl(r.linkFoto) ? ` <a href="${esc(r.linkFoto)}" target="_blank" rel="noopener">Buka folder foto</a>` : ""}</p>`;
   } else if (PH.loading) {
     body = `<div class="ph-grid">${"<div class='ph-tile sk'></div>".repeat(3)}</div>`;
+  } else if (!n && !ed) {
+    body = `<p class="dnil">Belum ada foto. Foto dapat ditambahkan lewat <button type="button" class="linkbtn" onclick="tdbDetailEdit()">Edit komponen</button>.</p>`;
   } else if (!n) {
     body = `<label class="ph-empty">${icon("camera")}<b>Belum ada foto</b><span>Klik untuk memilih foto (bisa beberapa sekaligus, maks. ${PH_MAX_FILES} per unggahan).</span>
       <input type="file" accept="image/*" multiple hidden ${PH.busy ? "disabled" : ""} onchange="phUpload(this.files); this.value=''"></label>`;
@@ -928,7 +932,7 @@ function phRender() {
       <button type="button" class="ph-img" onclick="phView(${i})" aria-label="Perbesar foto ${i + 1}">
         <img src="${esc(p.thumb)}" alt="${esc(p.caption || p.name)}" loading="lazy" onerror="this.closest('.ph-img').classList.add('broken')">
         <span class="ph-broken">Foto tidak dapat ditampilkan.<br>Periksa izin berbagi folder Drive.</span></button>
-      <figcaption>${PH.editCap === p.id
+      <figcaption>${!ed ? `<span class="ph-cap${p.caption ? "" : " nil"}">${esc(p.caption || "Tanpa keterangan")}</span>` : PH.editCap === p.id
         ? `<input type="text" id="phCapInput" value="${esc(p.caption)}" maxlength="500" placeholder="Keterangan foto" onkeydown="if(event.key==='Enter'){event.preventDefault();phSaveCaption('${esc(p.id)}')}if(event.key==='Escape'){event.stopPropagation();PH.editCap=null;phRender()}">
            <div class="ph-act"><button type="button" class="linkbtn" onclick="phSaveCaption('${esc(p.id)}')">Simpan</button><button type="button" class="linkbtn muted" onclick="PH.editCap=null;phRender()">Batal</button></div>`
         : `<span class="ph-cap${p.caption ? "" : " nil"}">${esc(p.caption || "Tanpa keterangan")}</span>
@@ -938,21 +942,26 @@ function phRender() {
              <button type="button" class="linkbtn danger" ${PH.busy ? "disabled" : ""} onclick="phDelete('${esc(p.id)}')">Hapus</button></div>`}
       </figcaption></figure>`).join("")}</div>`;
   }
-  const tokenField = can && (PH.needToken || !tokenGet())
+  const tokenField = false
     ? `<label class="fld ph-token"><span>Kode akses edit <small>(diperlukan untuk mengunggah/mengubah foto)</small></span><input type="password" id="phToken" placeholder="Kode dari admin" autocomplete="current-password" value="${esc(PH.tok)}" oninput="PH.tok=this.value.trim()"></label>` : "";
   el.innerHTML = head + body +
     (PH.busy ? `<p class="ph-status"><i class="spin"></i>${esc(PH.busy)}</p>` : "") +
     (PH.err ? `<p class="form-err ph-err" role="alert">${esc(PH.err)}</p>` : "") + tokenField +
+    (ed ? `<p class="ph-foot">Perubahan foto langsung tersimpan ke Google Drive (tidak perlu menekan Simpan).</p>` : "") +
     (can && r.linkFoto && tdbUrl(r.linkFoto) ? `<p class="ph-foot">Disimpan di Google Drive · <a href="${esc(r.linkFoto)}" target="_blank" rel="noopener">Buka folder foto komponen</a></p>` : "");
 }
+/* Kode akses: yang tersimpan di perangkat, atau yang diketik di kolom kode akses form Edit */
 function phToken() {
-  if ($("#phToken")) PH.tok = $("#phToken").value.trim();
-  const t = tokenGet() || PH.tok || "";
-  if (!t) { PH.needToken = true; PH.err = "Masukkan kode akses edit untuk mengelola foto."; phRender(); setTimeout(() => $("#phToken")?.focus(), 20); }
+  PH.tok = ($("#f_token") && $("#f_token").value.trim()) || "";
+  const t = tokenGet() || PH.tok;
+  if (!t) {
+    PH.needToken = true; PH.err = "Masukkan kode akses edit di bagian bawah form untuk mengelola foto."; phRender();
+    setTimeout(() => $("#f_token")?.focus(), 20);
+  }
   return t;
 }
 async function phPost(action, payload) {
-  const r = PH.r, token = tokenGet() || PH.tok; if (!token) { phToken(); return null; }
+  const r = PH.r, token = phToken(); if (!token) return null;
   const res = await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action, row: r._row, expect: r.komponen, ...payload }) });
   const j = await res.json();
   if (!j.ok) {
@@ -960,6 +969,7 @@ async function phPost(action, payload) {
     throw new Error(j.error || "Gagal menyimpan foto");
   }
   tokenSave(token); PH.needToken = false; PH.tok = "";
+  if ($("#tdbDialog").open) tdbTokenUi();
   if (j.folder) r.linkFoto = j.folder;
   return j;
 }
@@ -1051,7 +1061,7 @@ function initTrafoDb() {
   $("#tdbForm").addEventListener("submit", tdbSubmit);
   $("#tdbDialog").addEventListener("click", e => { if (e.target === $("#tdbDialog")) tdbCloseForm(); });
   $("#tdbDetail").addEventListener("click", e => { if (e.target === $("#tdbDetail")) tdbCloseDetail(); });
-  $("#tdbDetail").addEventListener("cancel", e => { if (PH.editCap) { e.preventDefault(); PH.editCap = null; phRender(); } });
+  ["#tdbDetail", "#tdbDialog"].forEach(d => $(d).addEventListener("cancel", e => { if (PH.editCap) { e.preventDefault(); PH.editCap = null; phRender(); } }));
   $("#phViewer").addEventListener("click", e => { if (e.target === $("#phViewer")) $("#phViewer").close(); });
   $("#phViewer").addEventListener("keydown", e => { if (e.key === "ArrowLeft") phView(PH.view - 1); if (e.key === "ArrowRight") phView(PH.view + 1); });
   renderTrafoDb();

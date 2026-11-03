@@ -64,7 +64,7 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Koordinat tiap gardu induk adalah **perkiraan** dan disimpan di `TDB_COORDS` pada `app.js` (kunci = nama GI tanpa jenis/tegangan, mis. `KALISARI`, `PAITON`). Lokasi baru yang belum punya koordinat tetap tampil di daftar dengan keterangan "belum ada titik peta".
 
 ### Foto komponen (Google Drive)
-- Di pop-up **Detail** setiap komponen ada galeri foto: **Tambah foto** (beberapa sekaligus, maks. 10 per unggahan), **Ganti**, **Keterangan**, dan **Hapus**. Klik foto untuk memperbesar.
+- Foto dikelola di form **Edit komponen**: **Tambah foto** (beberapa sekaligus, maks. 10 per unggahan), **Ganti**, **Keterangan**, dan **Hapus**; perubahan foto langsung tersimpan ke Drive. Pop-up **Detail** menampilkan foto untuk dilihat saja. Klik foto untuk memperbesar.
 - Foto disimpan di folder Google Drive `PHOTO_ROOT_ID` pada `apps-script/Code.gs` (bisa diganti lewat Script Property `PHOTO_FOLDER_ID`). Setiap komponen mendapat subfolder sendiri; link subfolder ditulis otomatis ke kolom **LINK FOTO PERALATAN** (kolom Y).
 - Foto diperkecil di browser (sisi terpanjang 1920 px, JPEG) sebelum diunggah. Foto yang diganti/dihapus dipindahkan ke **Sampah** Google Drive dan masih bisa dipulihkan.
 - Mengunggah/mengubah foto memakai kode akses edit yang sama.

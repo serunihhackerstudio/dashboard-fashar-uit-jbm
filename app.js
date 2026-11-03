@@ -415,21 +415,8 @@ function renderTrafoDb() {
     ["Rusak", cnt("RUSAK"), "x", "p1", cnt("BELUM DIPASTIKAN") ? `${cnt("BELUM DIPASTIKAN")} komponen belum dipastikan` : ""]
   ].map(([l, v, ic, tone, sub]) => `<div class="card kpi tone-${tone}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${fmt(v)}</div>${sub ? `<div class="kpi-sub">${esc(sub)}</div>` : ""}</div></div>`).join("");
 
-  $("#tdbLokasi").innerHTML = locs.map(g => {
-    const out = tdbOutside(g.rows[0]);
-    const counts = Object.keys(TDB_STATUS).map(s => [s, g.rows.filter(r => r.status === s).length]).filter(x => x[1]);
-    const ket = [...new Set(g.rows.map(r => r.keterangan).filter(Boolean))];
-    const asal = [...new Set(g.rows.map(r => r.namaAset).filter(Boolean))];
-    return `<div class="card tdb-loc">
-      <div class="card-head"><div><h3>${esc(g.name)}</h3><p>${esc(g.upt)}</p></div>${out ? '<span class="badge warn">Di luar UIT JBM</span>' : ""}</div>
-      <div class="tdb-chips">${counts.map(([s, n]) => `<span class="badge ${tdbSt(s).tone}">${n} ${tdbSt(s).label}</span>`).join("")}</div>
-      <ul class="tdb-parts">${g.rows.map(r => `<li>
-        <i class="dot" style="background:${tdbSt(r.status).color}" title="${tdbSt(r.status).label}"></i>
-        <div><b>${esc(tdbName(r.komponen))}</b><span>${[r.merk, r.kv && r.kv + " kV", r.mva && r.mva + " MVA", r.tahun].filter(Boolean).map(esc).join(" · ") || "Data belum lengkap"}</span></div>
-        <code>${r.sn ? esc(r.sn) : "—"}</code></li>`).join("")}</ul>
-      ${ket.length || asal.length ? `<div class="card-foot tdb-note">${ket.length ? `<p>${ket.map(esc).join("<br>").replace(/\n/g, "<br>")}</p>` : ""}${asal.length ? `<p class="muted">Nama aset: ${asal.map(esc).join(", ")}</p>` : ""}</div>` : ""}
-    </div>`;
-  }).join("");
+  TDB.locs = locs;
+  tdbRenderMap();
 
   const an = rows.filter(r => r.anomali);
   $("#tdbAnomali").innerHTML = an.length ? an.map(r => `<div class="card tdb-anom">
@@ -463,6 +450,111 @@ function renderTrafoDb() {
     .forEach(([id, k]) => { $("#" + id).innerHTML = uniq(k).map(v => `<option value="${esc(v)}"></option>`).join(""); });
 
   tdbFilter(true); // pertahankan halaman setelah simpan / muat ulang
+}
+
+/* =========================================================
+   PETA LOKASI PENEMPATAN (Leaflet, vendor/leaflet)
+   ========================================================= */
+/* Koordinat perkiraan per gardu induk (kunci = nama GI tanpa jenis/tegangan) */
+const TDB_COORDS = {
+  KALISARI: [-7.268, 112.794], TANDES: [-7.250, 112.676], NGORO: [-7.556, 112.627], PAITON: [-7.716, 113.574],
+  GIANYAR: [-8.535, 115.330], NEWTULUNGAGUNG: [-8.091, 111.917], GARUDASAKTIRIAU: [0.465, 101.380], IKN: [-0.970, 116.700],
+  MANGGARSARIBALIKPAPAN: [-1.236, 116.855]
+};
+const tdbCoord = g => TDB_COORDS[giParts(g.name).name] || null;
+function tdbLocTone(g) {
+  const has = s => g.rows.some(r => r.status === s);
+  return has("RUSAK") ? "RUSAK" : has("STANDBY") ? "STANDBY" : has("OPERASI") ? "OPERASI" : "BELUM DIPASTIKAN";
+}
+const TDB_MAP = { map: null, layer: null, tiles: null, markers: {}, sel: null };
+function tdbIsDark() {
+  const t = document.documentElement.dataset.theme;
+  return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function tdbTiles() {
+  if (!TDB_MAP.map) return;
+  if (TDB_MAP.tiles) TDB_MAP.map.removeLayer(TDB_MAP.tiles);
+  TDB_MAP.tiles = L.tileLayer(`https://{s}.basemaps.cartocdn.com/${tdbIsDark() ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`, {
+    subdomains: "abcd", maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }).addTo(TDB_MAP.map);
+}
+function tdbMapInit() {
+  if (TDB_MAP.map || !window.L || !$("#tdbMap")) return !!TDB_MAP.map;
+  TDB_MAP.map = L.map("tdbMap", { zoomControl: true, scrollWheelZoom: false, attributionControl: true, minZoom: 4 }).setView([-4, 115], 5);
+  tdbTiles();
+  TDB_MAP.layer = L.layerGroup().addTo(TDB_MAP.map);
+  TDB_MAP.map.on("click", () => tdbSelectLoc(null));
+  return true;
+}
+function tdbFit(area) {
+  const m = TDB_MAP.map; if (!m) return;
+  const pts = (TDB.locs || []).map(tdbCoord).filter(Boolean);
+  if (area === "jatim") m.fitBounds([[-6.6, 110.9], [-8.9, 115.8]], { padding: [20, 20] });
+  else if (pts.length) m.fitBounds(pts, { padding: [40, 40], maxZoom: 7 });
+  document.querySelectorAll("#tdbMapTools .pg").forEach(b => b.classList.toggle("on", b.dataset.area === (area || "all")));
+}
+function tdbMapResize() { if (TDB_MAP.map) { TDB_MAP.map.invalidateSize(); if (!TDB_MAP.fitted) { tdbFit(); TDB_MAP.fitted = true; } } }
+function tdbRenderMap() {
+  const locs = TDB.locs || [];
+  const ok = tdbMapInit();
+  $("#tdbMapFallback").hidden = ok;
+  if (ok) {
+    TDB_MAP.layer.clearLayers(); TDB_MAP.markers = {};
+    locs.forEach(g => {
+      const c = tdbCoord(g); if (!c) return;
+      const st = tdbSt(tdbLocTone(g));
+      const icon = L.divIcon({ className: "tm-icon", iconSize: [34, 34], iconAnchor: [17, 17],
+        html: `<span class="tm-pin${TDB_MAP.sel === g.key ? " sel" : ""}" style="--c:${st.color}">${g.rows.length}</span>` });
+      const mk = L.marker(c, { icon, title: `${g.name} · ${g.rows.length} komponen`, keyboard: true, riseOnHover: true })
+        .on("click", e => { L.DomEvent.stopPropagation(e); tdbSelectLoc(g.key, true); })
+        .bindTooltip(`<b>${esc(g.name)}</b><br>${esc(g.upt)} · ${g.rows.length} komponen`, { direction: "top", offset: [0, -16] });
+      mk.addTo(TDB_MAP.layer); TDB_MAP.markers[g.key] = mk;
+    });
+  }
+  if (TDB_MAP.sel && !locs.some(g => g.key === TDB_MAP.sel)) TDB_MAP.sel = null;
+  tdbRenderPanel();
+}
+function tdbSelectLoc(key, fromMap) {
+  TDB_MAP.sel = key;
+  Object.entries(TDB_MAP.markers).forEach(([k, mk]) => { const el = mk.getElement && mk.getElement(); if (el) el.querySelector(".tm-pin")?.classList.toggle("sel", k === key); });
+  if (key && TDB_MAP.map && !fromMap) {
+    const g = TDB.locs.find(x => x.key === key), c = g && tdbCoord(g);
+    if (c) TDB_MAP.map.flyTo(c, Math.max(TDB_MAP.map.getZoom(), 10), { duration: .6 });
+  }
+  tdbRenderPanel();
+}
+function tdbRenderPanel() {
+  const el = $("#tdbLocPanel"), locs = TDB.locs || [];
+  const g = TDB_MAP.sel && locs.find(x => x.key === TDB_MAP.sel);
+  if (!g) {
+    el.innerHTML = `<div class="lp-head"><h3>${locs.length} lokasi penempatan</h3><p>Klik tanda pada peta atau pilih lokasi di bawah.</p></div>
+      <ul class="lp-list">${locs.map(x => {
+        const st = tdbSt(tdbLocTone(x));
+        return `<li><button type="button" data-k="${esc(x.key)}"><i class="dot" style="background:${st.color}"></i>
+          <span><b>${esc(x.name)}</b><small>${esc(x.upt)}${tdbOutside(x.rows[0]) ? " · di luar UIT JBM" : ""}${tdbCoord(x) ? "" : " · belum ada titik peta"}</small></span>
+          <em>${x.rows.length}</em></button></li>`;
+      }).join("")}</ul>`;
+    return;
+  }
+  const out = tdbOutside(g.rows[0]);
+  const counts = Object.keys(TDB_STATUS).map(s => [s, g.rows.filter(r => r.status === s).length]).filter(x => x[1]);
+  const ket = [...new Set(g.rows.map(r => r.keterangan).filter(Boolean))];
+  const asal = [...new Set(g.rows.map(r => r.namaAset).filter(Boolean))];
+  el.innerHTML = `<div class="lp-head"><button type="button" class="linkbtn lp-back" data-k="">‹ Semua lokasi</button>
+      <h3>${esc(g.name)}</h3><p>${esc(g.upt)}${out ? ' <span class="badge warn">Di luar UIT JBM</span>' : ""}</p>
+      <div class="tdb-chips flat">${counts.map(([s, n]) => `<span class="badge ${tdbSt(s).tone}">${n} ${tdbSt(s).label}</span>`).join("")}</div></div>
+    <ul class="tdb-parts lp-parts">${g.rows.map(r => `<li>
+      <i class="dot" style="background:${tdbSt(r.status).color}" title="${tdbSt(r.status).label}"></i>
+      <div><b>${esc(tdbName(r.komponen))}</b><span>${[r.merk, r.kv && r.kv + " kV", r.mva && r.mva + " MVA", r.tahun].filter(Boolean).map(esc).join(" · ") || "Data belum lengkap"}</span></div>
+      <button type="button" class="btn ghost sm" data-detail="${TDB.rows.indexOf(r)}">Detail</button></li>`).join("")}</ul>
+    ${ket.length || asal.length ? `<div class="lp-note">${ket.length ? `<p>${ket.map(esc).join("<br>").replace(/\n/g, "<br>")}</p>` : ""}${asal.length ? `<p class="muted">Nama aset: ${asal.map(esc).join(", ")}</p>` : ""}</div>` : ""}
+    <div class="lp-foot"><button type="button" class="btn ghost sm" data-table="${esc(g.key)}">Lihat di tabel komponen</button></div>`;
+}
+function tdbPanelClick(e) {
+  const k = e.target.closest("[data-k]"), d = e.target.closest("[data-detail]"), t = e.target.closest("[data-table]");
+  if (d) return tdbOpenDetail(+d.dataset.detail);
+  if (t) { $("#tdbLoc").value = t.dataset.table; tdbFilter(); $("#tdbSearch").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if (k) tdbSelectLoc(k.dataset.k || null);
 }
 
 /* Filter + paginasi (10 baris per halaman) */
@@ -795,6 +887,8 @@ function initTrafoDb() {
   tdbBuildForm();
   $("#tdbSearch").addEventListener("input", () => tdbFilter());
   $("#tdbLoc").addEventListener("change", () => tdbFilter());
+  $("#tdbLocPanel").addEventListener("click", tdbPanelClick);
+  $("#tdbMapTools").addEventListener("click", e => { const b = e.target.closest("[data-area]"); if (b) { tdbSelectLoc(null); tdbFit(b.dataset.area === "all" ? null : b.dataset.area); } });
   $("#tdbPager").addEventListener("click", e => { const b = e.target.closest("button[data-p]"); if (b && !b.disabled) tdbGoPage(+b.dataset.p); });
   $("#tdbStatus").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
@@ -835,6 +929,7 @@ function route() {
   document.title = `${t} · Dashboard FASHAR UIT JBM`;
   closeDrawer();
   window.scrollTo({ top: 0 });
+  if (id === "trafodb") setTimeout(tdbMapResize, 60);
 }
 addEventListener("hashchange", route);
 route();
@@ -853,4 +948,5 @@ function toggleTheme() {
   const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
   root.dataset.theme = dark ? "light" : "dark";
   store("fashar-theme", root.dataset.theme);
+  if (TDB_MAP.map) tdbTiles();
 }

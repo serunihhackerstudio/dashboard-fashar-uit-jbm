@@ -397,12 +397,13 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .tdb-foot{flex-wrap:wrap}
 .pager{display:flex;align-items:center;gap:4px;margin-left:auto}
 .pager:empty{display:none}
+.pager:empty + #tdbAll{margin-left:auto}
 .pg{min-width:34px;height:34px;padding:0 10px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .pg:hover:not(:disabled){background:var(--surface-2)}
 .pg.on{background:var(--primary);border-color:var(--primary);color:#fff}
 .pg:disabled{opacity:.4;cursor:not-allowed}
 .pg-gap{padding:0 4px;color:var(--text-3)}
-@media (max-width:720px){ .pager{margin-left:0;order:3;width:100%;justify-content:center} }
+@media (max-width:720px){ .pager{margin-left:0;order:3;width:100%;justify-content:center} .pager:empty + #tdbAll{margin-left:0} }
 
 /* ---------- Pemilih UPT & GI ---------- */
 .fld-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}

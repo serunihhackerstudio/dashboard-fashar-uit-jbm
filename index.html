@@ -175,7 +175,7 @@
      <thead><tr><th>No</th><th>Komponen</th><th>Serial Number</th><th>Merk</th><th class="num">kV</th><th class="num">MVA</th><th>Lokasi</th><th class="num">Tahun</th><th>Status</th><th>Keterangan</th><th title="Kesesuaian data dengan Power Inspect">PI</th><th><span class="sr-only">Aksi</span></th></tr></thead>
      <tbody id="tdbRows"></tbody>
     </table><div class="empty" id="tdbEmpty" hidden>Tidak ada komponen yang cocok dengan filter.</div></div>
-    <div class="card-foot tdb-foot"><span class="muted" id="tdbCount"></span><nav class="pager" id="tdbPager" aria-label="Halaman daftar komponen"></nav><button class="btn ghost" type="button" onclick="tdbReset()">Reset filter</button></div>
+    <div class="card-foot tdb-foot"><span class="muted" id="tdbCount"></span><nav class="pager" id="tdbPager" aria-label="Halaman daftar komponen"></nav><button class="btn ghost" type="button" id="tdbAll" onclick="tdbToggleAll()" aria-pressed="false" hidden>Tampilkan semua</button><button class="btn ghost" type="button" onclick="tdbReset()">Reset filter</button></div>
    </div>
   </section>
 

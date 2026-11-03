@@ -916,7 +916,7 @@ const PAGES = {
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
   trafo: ["Peralatan ERS", "Trafo Mobile", "Status, lokasi, dan peminjaman trafo mobile"],
-  trafodb: ["Peralatan ERS", "Database Trafo Mobile", "Data komponen trafo mobile dari Database Alat Berat UIT JBM"]
+  trafodb: ["Peralatan ERS", "Database Trafo Mobile", "Kumpulan data trafo mobile per trailer"]
 };
 function route() {
   const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "kinerja";

@@ -626,9 +626,8 @@ function tdbOpenForm(i) {
     ? "Google Sheets belum terhubung, jadi perubahan belum bisa disimpan. Ikuti panduan di README (bagian Edit Database Trafo Mobile)."
     : "Data belum termuat dari Google Sheets. Muat ulang halaman lalu coba lagi.";
   $("#tdbSave").disabled = !canSave;
-  let tok = ""; try { tok = sessionStorage.getItem("fashar-edit-token") || ""; } catch (e) { }
-  $("#f_token").value = tok;
   $("#tdbTokenWrap").hidden = !canSave;
+  tdbTokenUi();
   $("#tdbFormErr").hidden = true;
   $("#tdbDialog").showModal();
   setTimeout(() => $("#f_komponen").focus(), 30);
@@ -664,10 +663,10 @@ async function tdbSubmit(ev) {
     const res = await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: r ? "update" : "add", row: r && r._row, expect: r && r.komponen, data }) });
     const j = await res.json();
     if (!j.ok) {
-      if (j.code === "auth") { try { sessionStorage.removeItem("fashar-edit-token"); } catch (e) { } }
+      if (j.code === "auth") { tokenForget(true); }
       throw new Error(j.error || "Gagal menyimpan");
     }
-    try { sessionStorage.setItem("fashar-edit-token", token); } catch (e) { }
+    tokenSave(token);
     if (r) Object.assign(r, j.row || data); else TDB.rows.push(j.row);
     renderTrafoDb();
     tdbCloseForm();
@@ -678,6 +677,28 @@ async function tdbSubmit(ev) {
     btn.disabled = false; btn.textContent = "Simpan";
   }
 }
+/* Kode akses edit diingat permanen di browser ini (cukup dimasukkan sekali per perangkat) */
+const TOKEN_KEY = "fashar-edit-token";
+function tokenGet() {
+  try {
+    const legacy = sessionStorage.getItem(TOKEN_KEY); // versi lama menyimpan di sessionStorage
+    if (legacy) { localStorage.setItem(TOKEN_KEY, legacy); sessionStorage.removeItem(TOKEN_KEY); }
+    return localStorage.getItem(TOKEN_KEY) || "";
+  } catch (e) { return ""; }
+}
+function tokenSave(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) { } }
+function tokenForget(silent) {
+  try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch (e) { }
+  if ($("#tdbDialog").open) { $("#f_token").value = ""; tdbTokenUi(); }
+  if (!silent) toast("Kode akses dihapus dari perangkat ini");
+}
+function tdbTokenUi() {
+  const tok = tokenGet();
+  $("#f_token").value = tok;
+  $("#tokenInput").hidden = !!tok;
+  $("#tokenSaved").hidden = !tok;
+}
+
 function tdbErr(msg) { const el = $("#tdbFormErr"); el.textContent = msg; el.hidden = false; }
 
 /* ---------- Pop-up detail ---------- */

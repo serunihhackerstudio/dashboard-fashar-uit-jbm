@@ -10,6 +10,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 5. Asesmen GI
 6. Tower Emergency
 7. Trafo Mobile
+8. Database Trafo Mobile (data sheet `2. TRAFO MOBILE`, bisa ditambah & diedit)
 
 ## Status
 Prototype frontend. Data saat ini masih statis/mock berdasarkan dashboard existing.
@@ -20,3 +21,40 @@ Cukup buka `index.html` menggunakan browser modern.
 
 ## Deploy
 Struktur ini sudah siap untuk static hosting seperti Vercel.
+
+## Edit Database Trafo Mobile (Google Sheets)
+
+Menu **Database Trafo Mobile** bisa menambah dan mengedit komponen langsung ke sheet
+`2. TRAFO MOBILE` di spreadsheet **DATABASE ALAT BERAT UIT JBM**, melalui Google Apps Script.
+Tanpa langkah di bawah, halaman tetap tampil dengan data statis (`data/trafo-mobile-db.js`) dalam mode baca saja.
+
+### Setup (sekali saja, oleh pemilik spreadsheet)
+1. Buka spreadsheet → **Extensions → Apps Script**.
+2. Hapus isi `Code.gs`, lalu tempel seluruh isi file [`apps-script/Code.gs`](apps-script/Code.gs). Simpan.
+3. **Project Settings** (ikon roda gigi) → **Script Properties** → **Add script property**:
+   - Property: `EDIT_TOKEN`
+   - Value: kode akses edit yang hanya dibagikan ke petugas yang boleh mengedit.
+4. **Deploy → New deployment** → tipe **Web app**:
+   - *Execute as*: **Me**
+   - *Who has access*: **Anyone**
+   Klik **Deploy**, izinkan akses, lalu salin **Web app URL** (berakhiran `/exec`).
+5. Tempel URL tersebut ke `config.js`:
+   ```js
+   window.FASHAR_CONFIG = { trafoDbApi: "https://script.google.com/macros/s/XXXX/exec" };
+   ```
+   lalu commit & deploy ulang.
+
+Jika `Code.gs` diubah, gunakan **Deploy → Manage deployments → Edit → Version: New version** agar URL tetap sama.
+
+### Cara kerja & keamanan
+- Siapa pun yang membuka dashboard dapat **melihat** data (sama seperti sebelumnya). **Menyimpan** perubahan wajib memasukkan kode akses edit (`EDIT_TOKEN`); kode disimpan di browser hanya selama tab terbuka.
+- Kolom **nilai aset** dan **referensi kontrak** tidak pernah dikirim ke dashboard maupun diubah.
+- **Nama aset** berupa sel gabungan di spreadsheet, sehingga hanya bisa diisi saat menambah baris; perubahan untuk baris lama dilakukan langsung di Google Sheets.
+- Baris baru ditambahkan di bawah baris data terakhir. Sebelum mengedit, skrip memastikan isi baris belum berubah di spreadsheet (jika berubah, muat ulang halaman).
+- Untuk mengganti kode akses, ubah nilai `EDIT_TOKEN` di Script Properties.
+
+### Memperbarui data statis
+Data cadangan (dipakai bila Google Sheets tidak terhubung) dibuat dari file xlsx:
+```bash
+python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
+```

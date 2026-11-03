@@ -325,7 +325,9 @@ function toast(msg) {
 }
 
 /* =========================================================
-   DATABASE TRAFO MOBILE (sumber: data/trafo-mobile-db.js)
+   DATABASE TRAFO MOBILE
+   Sumber: Google Sheets (via Apps Script, bila config.js diisi)
+           atau data statis data/trafo-mobile-db.js
    ========================================================= */
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const TDB_STATUS = {
@@ -338,13 +340,35 @@ const tdbSt = s => TDB_STATUS[s] || TDB_STATUS["BELUM DIPASTIKAN"];
 const tdbName = k => title(k.replace(/^MOBILE\s+/i, "")).replace(/\(([^)]*)\)/, (m, x) => "(" + x.toLowerCase() + ")");
 const tdbKey = r => (r.gi || "-").replace(/\s+/g, "").toUpperCase();
 const tdbOutside = r => /^UIP3B/i.test(r.upt || "");
+const TDB_API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").trim();
+const TDB = {
+  rows: (window.TRAFO_DB && window.TRAFO_DB.rows) || [],
+  source: (window.TRAFO_DB && window.TRAFO_DB.source) || "",
+  live: false, editing: null
+};
+const TDB_FIELDS = [
+  ["komponen", "Komponen", "text", { required: true, list: "tdbKomponenList", wide: true }],
+  ["status", "Status", "select"],
+  ["no", "No", "text", { inputmode: "numeric" }],
+  ["sn", "Serial number", "text"],
+  ["merk", "Merk", "text", { list: "tdbMerkList" }],
+  ["kv", "Tegangan (kV)", "text", { placeholder: "mis. 150/20" }],
+  ["mva", "Kapasitas (MVA)", "text", { inputmode: "decimal" }],
+  ["tahun", "Tahun buatan", "text", { inputmode: "numeric", pattern: "\\d{4}", placeholder: "YYYY" }],
+  ["upt", "UPT", "text", { required: true, list: "tdbUptList" }],
+  ["gi", "Gardu induk", "text", { required: true, list: "tdbGiList" }],
+  ["identitas", "Identitas", "text"],
+  ["namaAset", "Nama aset", "text", { addOnly: true, list: "tdbAsetList" }],
+  ["keterangan", "Keterangan", "textarea", { wide: true }],
+  ["anomali", "Uraian anomali", "textarea", { wide: true }],
+  ["tindakLanjut", "Tindak lanjut & mitigasi", "textarea", { wide: true }],
+  ["statusAnomali", "Status anomali", "text", { list: "tdbAnomList" }]
+];
 
 function renderTrafoDb() {
-  const DB = window.TRAFO_DB;
-  if (!DB || !$("#page-trafodb")) return;
-  const rows = DB.rows;
+  if (!$("#page-trafodb")) return;
+  const rows = TDB.rows;
 
-  /* Kelompok lokasi (nama GI yang ejaannya beda digabung) */
   const groups = new Map();
   rows.forEach(r => {
     const k = tdbKey(r);
@@ -354,17 +378,15 @@ function renderTrafoDb() {
   groups.forEach(g => g.name = Object.entries(g.names).sort((a, b) => b[1] - a[1])[0][0]);
   const locs = [...groups.values()];
 
-  /* KPI */
   const cnt = s => rows.filter(r => r.status === s).length;
   const outside = locs.filter(g => tdbOutside(g.rows[0])).length;
   $("#tdbKpi").innerHTML = [
-    [`Total Komponen`, rows.length, "transformer", "primary", `${locs.length} lokasi · ${outside} di luar UIT JBM`],
+    ["Total Komponen", rows.length, "transformer", "primary", `${locs.length} lokasi · ${outside} di luar UIT JBM`],
     ["Operasi", cnt("OPERASI"), "check", "ok"],
     ["Standby", cnt("STANDBY"), "pulse", "p3"],
     ["Rusak", cnt("RUSAK"), "x", "p1", cnt("BELUM DIPASTIKAN") ? `${cnt("BELUM DIPASTIKAN")} komponen belum dipastikan` : ""]
   ].map(([l, v, ic, tone, sub]) => `<div class="card kpi tone-${tone}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${fmt(v)}</div>${sub ? `<div class="kpi-sub">${esc(sub)}</div>` : ""}</div></div>`).join("");
 
-  /* Kartu per lokasi */
   $("#tdbLokasi").innerHTML = locs.map(g => {
     const out = tdbOutside(g.rows[0]);
     const counts = Object.keys(TDB_STATUS).map(s => [s, g.rows.filter(r => r.status === s).length]).filter(x => x[1]);
@@ -381,7 +403,6 @@ function renderTrafoDb() {
     </div>`;
   }).join("");
 
-  /* Anomali */
   const an = rows.filter(r => r.anomali);
   $("#tdbAnomali").innerHTML = an.length ? an.map(r => `<div class="card tdb-anom">
     <div class="card-head"><div><h3>${esc(tdbName(r.komponen))}</h3><p>${esc(r.gi)} · ${esc(r.upt)}</p></div><span class="badge ${/open/i.test(r.statusAnomali || "") ? "bad" : r.statusAnomali ? "ok" : "warn"}">${esc(r.statusAnomali || "Belum ada status")}</span></div>
@@ -389,27 +410,31 @@ function renderTrafoDb() {
       ${r.tindakLanjut ? `<details class="tdb-field"><summary>Tindak lanjut &amp; mitigasi</summary><p>${esc(r.tindakLanjut)}</p></details>` : ""}</div>
   </div>`).join("") : `<div class="card"><div class="card-body empty">Tidak ada anomali tercatat.</div></div>`;
 
-  /* Tabel + filter */
-  $("#tdbSource").textContent = `Sumber: ${DB.source} · ${rows.length} baris`;
+  $("#tdbSource").textContent = `Sumber: ${TDB.source} · ${rows.length} baris`;
+  const loc = $("#tdbLoc").value;
   $("#tdbLoc").innerHTML = `<option value="">Semua lokasi</option>` + locs.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join("");
-  $("#tdbStatus").innerHTML = [["", "Semua", rows.length], ...Object.keys(TDB_STATUS).map(s => [s, tdbSt(s).label, cnt(s)]).filter(x => x[2])]
-    .map(([v, l, n], i) => `<button type="button" data-v="${esc(v)}" class="${i ? "" : "on"}" aria-pressed="${!i}">${l} <small>${n}</small></button>`).join("");
-  $("#tdbRows").innerHTML = rows.map(r => `<tr data-key="${esc(tdbKey(r))}" data-st="${esc(r.status)}">
+  if (locs.some(g => g.key === loc)) $("#tdbLoc").value = loc;
+  const st = $("#tdbStatus .on")?.dataset.v || "";
+  const stOpts = [["", "Semua", rows.length], ...Object.keys(TDB_STATUS).map(s => [s, tdbSt(s).label, cnt(s)]).filter(x => x[2])];
+  const curSt = stOpts.some(o => o[0] === st) ? st : "";
+  $("#tdbStatus").innerHTML = stOpts.map(([v, l, n]) => `<button type="button" data-v="${esc(v)}" class="${v === curSt ? "on" : ""}" aria-pressed="${v === curSt}">${l} <small>${n}</small></button>`).join("");
+
+  $("#tdbRows").innerHTML = rows.map((r, i) => `<tr data-key="${esc(tdbKey(r))}" data-st="${esc(r.status)}">
     <td class="muted">${esc(r.no || "—")}</td><td><b>${esc(tdbName(r.komponen))}</b></td><td><code>${esc(r.sn || "—")}</code></td>
     <td>${esc(r.merk || "—")}</td><td class="num">${esc(r.kv || "—")}</td><td class="num">${esc(r.mva || "—")}</td>
     <td>${esc(r.gi)}<div class="muted sm">${esc(r.upt)}</div></td><td class="num">${esc(r.tahun || "—")}</td>
     <td><span class="badge ${tdbSt(r.status).tone}">${tdbSt(r.status).label}</span></td>
-    <td class="ket">${esc(r.keterangan || "—")}</td><td>${r.powerInspect ? `<span class="pi-ok" title="Sesuai dengan Power Inspect">${icon("check", "ic xs")}</span>` : ""}</td></tr>`).join("");
+    <td class="ket">${esc(r.keterangan || "—")}</td><td>${r.powerInspect ? `<span class="pi-ok" title="Sesuai dengan Power Inspect">${icon("check", "ic xs")}</span>` : ""}</td>
+    <td class="act"><button class="icon-btn sm" type="button" onclick="tdbOpenForm(${i})" aria-label="Edit ${esc(tdbName(r.komponen))} di ${esc(r.gi)}" title="Edit"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button></td></tr>`).join("");
 
-  $("#tdbSearch").addEventListener("input", tdbFilter);
-  $("#tdbLoc").addEventListener("change", tdbFilter);
-  $("#tdbStatus").addEventListener("click", e => {
-    const b = e.target.closest("button"); if (!b) return;
-    $("#tdbStatus").querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
-    tdbFilter();
-  });
+  /* saran isian untuk form */
+  const uniq = k => [...new Set(rows.map(r => r[k]).filter(Boolean))].sort();
+  [["tdbKomponenList", "komponen"], ["tdbMerkList", "merk"], ["tdbUptList", "upt"], ["tdbGiList", "gi"], ["tdbAsetList", "namaAset"], ["tdbAnomList", "statusAnomali"]]
+    .forEach(([id, k]) => { $("#" + id).innerHTML = uniq(k).map(v => `<option value="${esc(v)}"></option>`).join(""); });
+
   tdbFilter();
 }
+
 function tdbFilter() {
   const q = $("#tdbSearch").value.trim().toLowerCase(), loc = $("#tdbLoc").value, st = $("#tdbStatus .on")?.dataset.v || "";
   let n = 0;
@@ -418,13 +443,134 @@ function tdbFilter() {
     tr.hidden = !ok; if (ok) n++;
   });
   $("#tdbEmpty").hidden = n > 0;
-  $("#tdbCount").textContent = `Menampilkan ${n} dari ${window.TRAFO_DB.rows.length} komponen`;
+  $("#tdbCount").textContent = `Menampilkan ${n} dari ${TDB.rows.length} komponen`;
 }
 function tdbReset() {
   $("#tdbSearch").value = ""; $("#tdbLoc").value = "";
   $("#tdbStatus button")?.click();
 }
-renderTrafoDb();
+
+function tdbSetSync(state, text) {
+  const el = $("#tdbSync");
+  el.className = "chip sync " + state;
+  el.innerHTML = `<i class="live-dot"></i>${esc(text)}`;
+}
+
+async function tdbLoad() {
+  if (!TDB_API) {
+    tdbSetSync("static", "Data statis · edit belum aktif");
+    $("#tdbSync").title = "Isi trafoDbApi di config.js dengan URL Apps Script agar data live & bisa diedit (lihat README).";
+    return;
+  }
+  tdbSetSync("loading", "Memuat dari Google Sheets…");
+  try {
+    const res = await fetch(TDB_API, { cache: "no-store" });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || "Gagal memuat");
+    TDB.rows = j.rows; TDB.source = j.source || TDB.source; TDB.live = true;
+    renderTrafoDb();
+    tdbSetSync("live", "Live · Google Sheets");
+  } catch (e) {
+    TDB.live = false;
+    tdbSetSync("error", "Gagal terhubung · menampilkan data statis");
+    $("#tdbSync").title = String(e.message || e);
+  }
+}
+
+/* ---------- Form tambah / edit ---------- */
+function tdbBuildForm() {
+  $("#tdbFields").innerHTML = TDB_FIELDS.map(([k, label, type, o = {}]) => {
+    const attrs = `id="f_${k}" name="${k}"${o.required ? " required" : ""}${o.list ? ` list="${o.list}"` : ""}${o.inputmode ? ` inputmode="${o.inputmode}"` : ""}${o.pattern ? ` pattern="${o.pattern}"` : ""}${o.placeholder ? ` placeholder="${esc(o.placeholder)}"` : ""}`;
+    const input = type === "select"
+      ? `<select ${attrs}>${Object.keys(TDB_STATUS).map(s => `<option value="${s === "BELUM DIPASTIKAN" ? "" : s}">${tdbSt(s).label}</option>`).join("")}</select>`
+      : type === "textarea" ? `<textarea ${attrs} rows="3"></textarea>` : `<input type="text" ${attrs} autocomplete="off">`;
+    return `<label class="fld${o.wide ? " wide" : ""}" data-f="${k}"><span>${label}${o.required ? ' <em>*</em>' : ""}</span>${input}<small class="hint"></small></label>`;
+  }).join("");
+}
+
+function tdbOpenForm(i) {
+  const r = i == null ? null : TDB.rows[i];
+  TDB.editing = r;
+  const f = $("#tdbForm");
+  f.reset();
+  $("#tdbFormTitle").textContent = r ? "Edit komponen" : "Tambah komponen";
+  $("#tdbFormSub").textContent = r ? `${tdbName(r.komponen)} · ${r.gi}` : "Baris baru akan ditambahkan di akhir sheet 2. TRAFO MOBILE";
+  TDB_FIELDS.forEach(([k, , , o = {}]) => {
+    const el = $("#f_" + k);
+    el.value = r ? (k === "status" ? (r.status === "BELUM DIPASTIKAN" ? "" : r.status) : (r[k] ?? "")) : (k === "status" ? "OPERASI" : "");
+    const wrap = el.closest(".fld");
+    const lock = !!(r && o.addOnly);
+    el.disabled = lock;
+    wrap.querySelector(".hint").textContent = lock ? "Sel gabungan di spreadsheet — ubah langsung di Google Sheets." : "";
+  });
+  const canSave = !!TDB_API && TDB.live && (!r || r._row);
+  $("#tdbFormWarn").hidden = canSave;
+  $("#tdbFormWarn").textContent = !TDB_API
+    ? "Google Sheets belum terhubung, jadi perubahan belum bisa disimpan. Ikuti panduan di README (bagian Edit Database Trafo Mobile)."
+    : "Data belum termuat dari Google Sheets. Muat ulang halaman lalu coba lagi.";
+  $("#tdbSave").disabled = !canSave;
+  let tok = ""; try { tok = sessionStorage.getItem("fashar-edit-token") || ""; } catch (e) { }
+  $("#f_token").value = tok;
+  $("#tdbTokenWrap").hidden = !canSave;
+  $("#tdbFormErr").hidden = true;
+  $("#tdbDialog").showModal();
+  setTimeout(() => $("#f_komponen").focus(), 30);
+}
+function tdbCloseForm() { $("#tdbDialog").close(); }
+
+async function tdbSubmit(ev) {
+  ev.preventDefault();
+  const f = $("#tdbForm"), r = TDB.editing;
+  if (!f.reportValidity()) return;
+  const data = {};
+  TDB_FIELDS.forEach(([k, , , o = {}]) => {
+    const el = $("#f_" + k);
+    if (el.disabled) return;
+    const v = el.value.trim();
+    if (r) { const old = k === "status" ? (r.status === "BELUM DIPASTIKAN" ? "" : r.status) : (r[k] ?? ""); if (v === String(old)) return; }
+    if (!r && !v) return;
+    data[k] = v;
+  });
+  if (r && !Object.keys(data).length) { tdbCloseForm(); toast("Tidak ada perubahan"); return; }
+  const token = $("#f_token").value.trim();
+  if (!token) { $("#f_token").focus(); return tdbErr("Masukkan kode akses edit."); }
+  const btn = $("#tdbSave"); btn.disabled = true; btn.textContent = "Menyimpan…";
+  try {
+    const res = await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: r ? "update" : "add", row: r && r._row, expect: r && r.komponen, data }) });
+    const j = await res.json();
+    if (!j.ok) {
+      if (j.code === "auth") { try { sessionStorage.removeItem("fashar-edit-token"); } catch (e) { } }
+      throw new Error(j.error || "Gagal menyimpan");
+    }
+    try { sessionStorage.setItem("fashar-edit-token", token); } catch (e) { }
+    if (r) Object.assign(r, j.row || data); else TDB.rows.push(j.row);
+    renderTrafoDb();
+    tdbCloseForm();
+    toast(r ? "Perubahan tersimpan ke Google Sheets" : "Komponen baru ditambahkan ke Google Sheets");
+  } catch (e) {
+    tdbErr(String(e.message || e));
+  } finally {
+    btn.disabled = false; btn.textContent = "Simpan";
+  }
+}
+function tdbErr(msg) { const el = $("#tdbFormErr"); el.textContent = msg; el.hidden = false; }
+
+function initTrafoDb() {
+  if (!$("#page-trafodb")) return;
+  tdbBuildForm();
+  $("#tdbSearch").addEventListener("input", tdbFilter);
+  $("#tdbLoc").addEventListener("change", tdbFilter);
+  $("#tdbStatus").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $("#tdbStatus").querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
+    tdbFilter();
+  });
+  $("#tdbForm").addEventListener("submit", tdbSubmit);
+  $("#tdbDialog").addEventListener("click", e => { if (e.target === $("#tdbDialog")) tdbCloseForm(); });
+  renderTrafoDb();
+  tdbLoad();
+}
+initTrafoDb();
 
 /* =========================================================
    NAVIGATION (hash routing: bisa di-bookmark & tombol back)

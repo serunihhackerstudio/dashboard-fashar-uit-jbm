@@ -143,6 +143,7 @@ svg{display:block}
 .section-head h2{font-size:16px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
 .section-head h2 small{font-size:12.5px;font-weight:600;color:var(--text-3)}
 .section-head p{font-size:12.5px;color:var(--text-2)}
+.section-head>div>p{margin-top:2px}
 
 /* ---------- Card ---------- */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;transition:box-shadow .2s,border-color .2s}
@@ -333,6 +334,52 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .tdb-table .ket{min-width:260px;max-width:340px;white-space:pre-line;color:var(--text-2);font-size:12.5px}
 .muted.sm{font-size:11.5px}
 .pi-ok{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+
+/* ---------- Edit Database Trafo Mobile ---------- */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tdb-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chip.sync.static .live-dot{background:var(--text-3);box-shadow:none}
+.chip.sync.loading .live-dot{background:var(--p2);box-shadow:none;animation:blink 1s infinite}
+.chip.sync.error .live-dot{background:var(--p1);box-shadow:none}
+.chip.sync.error{color:var(--p1)}
+@keyframes blink{50%{opacity:.3}}
+.icon-btn.sm{width:32px;height:32px;flex-basis:32px;border-radius:9px}
+.icon-btn.sm svg{width:16px;height:16px}
+.tdb-table td.act{position:sticky;right:0;background:var(--surface);padding:6px 10px}
+.tdb-table tbody tr:hover td.act{background:var(--surface-2)}
+.tdb-table th:last-child{position:sticky;right:0}
+.modal{border:0;padding:0;border-radius:18px;background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 32px)}
+.modal::backdrop{background:rgba(5,12,24,.5);backdrop-filter:blur(2px)}
+.modal form{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 22px 14px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-size:17px;font-weight:800}
+.modal-head p{font-size:12.5px;color:var(--text-2);margin-top:2px}
+.modal-body{padding:18px 22px;overflow:auto}
+.modal-foot{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;padding:14px 22px 18px;border-top:1px solid var(--border);background:var(--surface-2);border-radius:0 0 18px 18px}
+.modal-btns{display:flex;gap:8px;margin-left:auto}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 14px}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld>span{font-size:12px;font-weight:700;color:var(--text-2)}
+.fld em{color:var(--p1);font-style:normal}
+.fld input,.fld select,.fld textarea{width:100%;padding:9px 11px;border:1px solid var(--border-2);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font:inherit;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
+.fld textarea{resize:vertical;min-height:64px;line-height:1.5}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.fld input:disabled{background:var(--surface-2);color:var(--text-3)}
+.fld input:user-invalid{border-color:var(--p1)}
+.fld .hint{font-size:11px;color:var(--text-3)}
+.fld .hint:empty{display:none}
+.fld.token{width:220px}
+.callout{padding:11px 14px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:16px;line-height:1.5}
+.callout.warn{background:color-mix(in srgb,var(--p2) 16%,transparent);color:color-mix(in srgb,var(--p2) 55%,var(--text))}
+.form-err{flex-basis:100%;order:-1;margin:0;padding:9px 12px;border-radius:9px;background:color-mix(in srgb,var(--p1) 12%,transparent);color:var(--p1);font-size:12.5px;font-weight:600}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+@media (max-width:720px){
+  .form-grid{grid-template-columns:1fr 1fr}
+  .fld.token{width:100%}
+  .modal-btns{width:100%}
+  .modal-btns .btn{flex:1;justify-content:center}
+}
 
 /* ---------- Toast ---------- */
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:100;box-shadow:var(--shadow-lg)}

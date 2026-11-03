@@ -159,7 +159,8 @@
    <div class="grid g3" id="tdbLokasi"></div>
    <div class="section-head"><h2>Anomali &amp; Tindak Lanjut</h2><p>Temuan anomali yang tercatat pada database</p></div>
    <div class="grid g2" id="tdbAnomali"></div>
-   <div class="section-head"><h2>Daftar Komponen</h2><p id="tdbSource"></p></div>
+   <div class="section-head"><div><h2>Daftar Komponen</h2><p id="tdbSource"></p></div>
+    <div class="tdb-actions"><span class="chip sync" id="tdbSync"></span><button class="btn primary" type="button" onclick="tdbOpenForm()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah komponen</button></div></div>
    <div class="card">
     <div class="tdb-toolbar">
      <div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="tdbSearch" type="search" placeholder="Cari komponen, serial number, merk, lokasi…" aria-label="Cari komponen"></div>
@@ -167,7 +168,7 @@
      <div class="seg" id="tdbStatus" role="group" aria-label="Filter status"></div>
     </div>
     <div class="table-wrap tdb-table"><table class="table">
-     <thead><tr><th>No</th><th>Komponen</th><th>Serial Number</th><th>Merk</th><th class="num">kV</th><th class="num">MVA</th><th>Lokasi</th><th class="num">Tahun</th><th>Status</th><th>Keterangan</th><th title="Kesesuaian data dengan Power Inspect">PI</th></tr></thead>
+     <thead><tr><th>No</th><th>Komponen</th><th>Serial Number</th><th>Merk</th><th class="num">kV</th><th class="num">MVA</th><th>Lokasi</th><th class="num">Tahun</th><th>Status</th><th>Keterangan</th><th title="Kesesuaian data dengan Power Inspect">PI</th><th><span class="sr-only">Aksi</span></th></tr></thead>
      <tbody id="tdbRows"></tbody>
     </table><div class="empty" id="tdbEmpty" hidden>Tidak ada komponen yang cocok dengan filter.</div></div>
     <div class="card-foot"><span class="muted" id="tdbCount"></span><button class="btn ghost" type="button" onclick="tdbReset()">Reset filter</button></div>
@@ -177,7 +178,25 @@
  </div>
 </main>
 </div>
+
+<dialog class="modal" id="tdbDialog" aria-labelledby="tdbFormTitle">
+ <form id="tdbForm" novalidate>
+  <header class="modal-head"><div><h3 id="tdbFormTitle">Tambah komponen</h3><p id="tdbFormSub"></p></div>
+   <button class="icon-btn" type="button" onclick="tdbCloseForm()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="modal-body">
+   <div class="callout warn" id="tdbFormWarn" hidden></div>
+   <div class="form-grid" id="tdbFields"></div>
+  </div>
+  <footer class="modal-foot">
+   <label class="fld token" id="tdbTokenWrap"><span>Kode akses edit</span><input type="password" id="f_token" autocomplete="current-password" placeholder="Kode dari admin"></label>
+   <p class="form-err" id="tdbFormErr" role="alert" hidden></p>
+   <div class="modal-btns"><button class="btn ghost" type="button" onclick="tdbCloseForm()">Batal</button><button class="btn primary" type="submit" id="tdbSave">Simpan</button></div>
+  </footer>
+ </form>
+ <datalist id="tdbKomponenList"></datalist><datalist id="tdbMerkList"></datalist><datalist id="tdbUptList"></datalist><datalist id="tdbGiList"></datalist><datalist id="tdbAsetList"></datalist><datalist id="tdbAnomList"></datalist>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="config.js"></script>
 <script src="data/trafo-mobile-db.js"></script>
 <script src="app.js"></script>
 </body>

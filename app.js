@@ -474,8 +474,10 @@ function tdbIsDark() {
 function tdbTiles() {
   if (!TDB_MAP.map) return;
   if (TDB_MAP.tiles) TDB_MAP.map.removeLayer(TDB_MAP.tiles);
-  TDB_MAP.tiles = L.tileLayer(`https://{s}.basemaps.cartocdn.com/${tdbIsDark() ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`, {
-    subdomains: "abcd", maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  // OpenStreetMap (tanpa API key). Mode gelap memakai filter CSS pada tile (.tiles-dark).
+  TDB_MAP.tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18, className: tdbIsDark() ? "tiles-dark" : "",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
   }).addTo(TDB_MAP.map);
 }
 function tdbMapInit() {

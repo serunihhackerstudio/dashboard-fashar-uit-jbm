@@ -571,7 +571,8 @@ function tdbBuildForm() {
     if (type === "move") return `<div class="fld-group wide mv-box" id="mvBox" hidden>
         <div class="fld-group-h">${icon("rotate", "ic xs")}${label} <small>lokasi berubah — perpindahan akan dicatat ke riwayat</small></div>
         <label class="fld"><span>Tanggal pindah <em>*</em></span><input type="date" id="f_mvDate"></label>
-        <label class="fld"><span>No / link BA</span><input type="text" id="f_mvBa" placeholder="No. BA atau link dokumen" autocomplete="off"></label>
+        <label class="fld"><span>No. BA</span><input type="text" id="f_mvBa" placeholder="Nomor berita acara (opsional)" autocomplete="off"></label>
+        <label class="fld wide"><span>Dokumen BA <small>PDF / JPG / PNG / DOC, maks. 15 MB</small></span><input type="file" id="f_mvFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png"></label>
         <label class="fld wide"><span>Alasan / keterangan</span><input type="text" id="f_mvAlasan" placeholder="mis. Perkuatan GI karena pertumbuhan beban" autocomplete="off"></label>
         <label class="mv-set wide" id="mvSetWrap" hidden><input type="checkbox" id="f_mvSet" checked> <span id="mvSetLabel"></span></label></div>`;
     if (type === "aset") return `<div class="fld-group wide"><div class="fld-group-h">${label} <small>gabungan nama UPT dan gardu induk</small>
@@ -749,6 +750,13 @@ async function tdbSubmit(ev) {
   if (!token) { $("#f_token").focus(); return tdbErr("Masukkan kode akses edit."); }
   const btn = $("#tdbSave"); btn.disabled = true; btn.textContent = "Menyimpan…";
   try {
+    const baFile = move && $("#f_mvFile").files[0];
+    if (baFile) {
+      btn.textContent = "Mengunggah BA…";
+      const u = await baUpload(baFile, r.gi, loc.gi, token, r);
+      move.ba = baJoin(move.ba, u.url);
+      btn.textContent = "Menyimpan…";
+    }
     const res = await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: r ? "update" : "add", row: r && r._row, expect: r && r.komponen, data, move }) });
     const j = await res.json();
     if (!j.ok) {
@@ -1006,7 +1014,7 @@ function mvTimeline(r, editable) {
       <span class="mv-dot"></span>
       <div class="mv-body"><div class="mv-date">${esc(fmtD(m.tanggal))}${m.sumber ? ` <small>${esc(m.sumber)}</small>` : ""}</div>
         <div class="mv-route"><span>${esc(m.dariGi || "—")}${m.dariUpt ? ` <small>${esc(m.dariUpt)}</small>` : ""}</span><b>→</b><span>${esc(m.keGi || "—")}${m.keUpt ? ` <small>${esc(m.keUpt)}</small>` : ""}</span></div>
-        ${m.alasan ? `<p>${esc(m.alasan)}</p>` : ""}${m.ba ? `<p class="mv-ba">BA: ${tdbLink(m.ba, "Buka BA")}</p>` : ""}
+        ${m.alasan ? `<p>${esc(m.alasan)}</p>` : ""}${m.ba ? `<p class="mv-ba">BA: ${baHtml(m.ba)}</p>` : ""}
         ${editable ? `<button type="button" class="linkbtn danger" onclick="mvDelete('${esc(m.id)}')" ${MV.busy ? "disabled" : ""}>Hapus</button>` : ""}</div></li>`).join("");
   const now = `<li class="mv-item now"><span class="mv-dot"></span><div class="mv-body"><div class="mv-date">Saat ini</div>
       <div class="mv-route"><span><b>${esc(r.gi || "—")}</b> <small>${esc(r.upt || "")}</small></span></div></div></li>`;
@@ -1026,38 +1034,79 @@ function mvRender() {
     ${MV.adding ? `<div class="fld-group mv-add">
         <div class="fld-group-h">Tambah riwayat perpindahan <small>untuk perpindahan yang terjadi sebelum dicatat di dashboard</small></div>
         <label class="fld"><span>Tanggal pindah <em>*</em></span><input type="date" id="mv_date"></label>
-        <label class="fld"><span>No / link BA</span><input type="text" id="mv_ba" autocomplete="off"></label>
+        <label class="fld"><span>No. BA</span><input type="text" id="mv_ba" placeholder="Nomor berita acara (opsional)" autocomplete="off"></label>
+        <label class="fld wide"><span>Dokumen BA <small>PDF / JPG / PNG / DOC, maks. 15 MB</small></span><input type="file" id="mv_file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png"></label>
         <div class="fld-group-h sub">Dari</div>${locPickerHtml("mvf", false)}
         <div class="fld-group-h sub">Ke</div>${locPickerHtml("mvt", false)}
         <label class="fld wide"><span>Alasan / keterangan</span><input type="text" id="mv_alasan" autocomplete="off"></label>
         <div class="mv-add-btns wide"><button type="button" class="btn ghost sm" onclick="MV.adding=false;MV.err='';mvRender()">Batal</button>
-          <button type="button" class="btn primary sm" onclick="mvSave()" ${MV.busy ? "disabled" : ""}>${MV.busy ? "Menyimpan…" : "Simpan riwayat"}</button></div></div>` : ""}
-    ${MV.err ? `<p class="form-err ph-err" role="alert">${esc(MV.err)}</p>` : ""}
+          <button type="button" class="btn primary sm" id="mvSaveBtn" onclick="mvSave()">Simpan riwayat</button></div></div>` : ""}
+    <p class="form-err ph-err" id="mvErr" role="alert" ${MV.err ? "" : "hidden"}>${esc(MV.err)}</p>
     <p class="ph-foot">Riwayat langsung tersimpan ke sheet RIWAYAT LOKASI (tidak perlu menekan Simpan).</p>`;
   if (MV.adding) { locFill("mvf", "", ""); locFill("mvt", "", ""); }
 }
 function mvStartAdd() { MV.adding = true; MV.err = ""; mvRender(); setTimeout(() => $("#mv_date")?.focus(), 20); }
+/* Status form riwayat tanpa menggambar ulang (isian & file pilihan tetap) */
+function mvStatus(busyText, err) {
+  const b = $("#mvSaveBtn"); if (b) { b.disabled = !!busyText; b.textContent = busyText || "Simpan riwayat"; }
+  MV.err = err || ""; const e = $("#mvErr"); if (e) { e.hidden = !MV.err; e.textContent = MV.err; }
+}
+const mvTok = () => tokenGet() || ($("#f_token") && $("#f_token").value.trim()) || "";
 async function mvPost(action, payload) {
-  const r = TDB.editing, token = tokenGet() || ($("#f_token") && $("#f_token").value.trim());
-  if (!token) { MV.err = "Masukkan kode akses edit di bagian bawah form."; mvRender(); $("#f_token")?.focus(); return null; }
-  MV.busy = true; MV.err = ""; mvRender();
+  const r = TDB.editing, token = mvTok();
+  if (!token) { mvStatus("", "Masukkan kode akses edit di bagian bawah form."); $("#f_token")?.focus(); return null; }
+  MV.busy = true; mvStatus("Menyimpan…");
   try {
     const j = await (await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action, row: r._row, expect: r.komponen, ...payload }) })).json();
     if (!j.ok) { if (j.code === "auth") tokenForget(true); throw new Error(j.error || "Gagal menyimpan riwayat"); }
     tokenSave(token); if ($("#tdbDialog").open) tdbTokenUi();
     TDB.moves = j.moves || TDB.moves;
+    mvStatus("");
     return j;
-  } catch (e) { MV.err = String(e.message || e); return null; }
+  } catch (e) { mvStatus("", String(e.message || e)); return null; }
   finally { MV.busy = false; }
 }
 async function mvSave() {
+  if (MV.busy) return;
   const d = $("#mv_date").value, from = locGet("mvf"), to = locGet("mvt");
-  if (!d) { MV.err = "Isi tanggal pindah."; return mvRender(); }
-  if (!to.gi && !to.upt) { MV.err = "Isi lokasi tujuan (Ke)."; return mvRender(); }
-  const keep = { d, ba: $("#mv_ba").value, al: $("#mv_alasan").value };
-  const j = await mvPost("move_add", { move: { tanggal: d, dariUpt: from.upt, dariGi: from.gi, keUpt: to.upt, keGi: to.gi, alasan: keep.al.trim(), ba: keep.ba.trim() } });
-  if (j) { MV.adding = false; mvRender(); renderTrafoDb(); toast("Riwayat perpindahan tersimpan"); }
-  else { mvRender(); if ($("#mv_date")) { $("#mv_date").value = keep.d; $("#mv_ba").value = keep.ba; $("#mv_alasan").value = keep.al; } }
+  if (!d) return mvStatus("", "Isi tanggal pindah.");
+  if (!to.gi && !to.upt) return mvStatus("", "Isi lokasi tujuan (Ke).");
+  let ba = $("#mv_ba").value.trim();
+  const file = $("#mv_file").files[0];
+  if (file) {
+    const token = mvTok();
+    if (!token) { mvStatus("", "Masukkan kode akses edit di bagian bawah form."); $("#f_token")?.focus(); return; }
+    MV.busy = true; mvStatus("Mengunggah BA…");
+    try { ba = baJoin(ba, (await baUpload(file, from.gi, to.gi, token, TDB.editing)).url); }
+    catch (e) { MV.busy = false; return mvStatus("", String(e.message || e)); }
+    MV.busy = false;
+  }
+  const j = await mvPost("move_add", { move: { tanggal: d, dariUpt: from.upt, dariGi: from.gi, keUpt: to.upt, keGi: to.gi, alasan: $("#mv_alasan").value.trim(), ba } });
+  if (j) { MV.adding = false; MV.err = ""; mvRender(); renderTrafoDb(); toast(file ? "Riwayat & dokumen BA tersimpan" : "Riwayat perpindahan tersimpan"); }
+}
+
+/* ---------- Dokumen BA mobilisasi (Google Drive) ---------- */
+const BA_TYPES = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
+const BA_MAX = 15 * 1024 * 1024;
+const BA_CACHE = {}; // hindari unggah ulang file yang sama bila penyimpanan riwayat gagal lalu dicoba lagi
+const baJoin = (no, url) => [String(no || "").trim(), url].filter(Boolean).join(" · ");
+function baHtml(v) {
+  return String(v).split(/(https?:\/\/[^\s·]+)/).map((p, i) => i % 2
+    ? `<a class="btn ghost sm" href="${esc(p)}" target="_blank" rel="noopener">Buka dokumen BA <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>`
+    : esc(p).replace(/^\s*·\s*|\s*·\s*$/g, "")).join(" ");
+}
+async function baUpload(file, dariGi, keGi, token, r) {
+  const mime = BA_TYPES[(file.name.split(".").pop() || "").toLowerCase()];
+  if (!mime) throw new Error("Format dokumen BA harus PDF, JPG, PNG, DOC, atau DOCX.");
+  if (file.size > BA_MAX) throw new Error("Ukuran dokumen BA melebihi 15 MB.");
+  const key = [file.name, file.size, file.lastModified, dariGi, keGi].join("|");
+  if (BA_CACHE[key]) return BA_CACHE[key];
+  const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+  const j = await (await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: "ba_upload", row: r._row, expect: r.komponen, name: file.name, mime, data, dariGi, keGi }) })).json();
+  if (!j.ok) { if (j.code === "auth") tokenForget(true); throw new Error(j.error || "Gagal mengunggah dokumen BA"); }
+  tokenSave(token);
+  return (BA_CACHE[key] = j);
 }
 async function mvDelete(id) {
   if (!confirm("Hapus riwayat perpindahan ini dari sheet RIWAYAT LOKASI?")) return;

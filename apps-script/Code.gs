@@ -9,7 +9,10 @@
  * GET  <url>?action=photos&row=N      → daftar foto komponen di baris N
  * POST <url> (text/plain) → {token, action, row, expect, ...}
  *      action: "add" | "update" | "photo_upload" | "photo_replace" | "photo_caption" | "photo_delete"
- *              | "move_add" | "move_delete"
+ *              | "move_add" | "move_delete" | "ba_upload"
+ *
+ * Dokumen BA mobilisasi disimpan di folder BA_ROOT_ID dengan nama
+ * "BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]".
  *
  * Riwayat perpindahan disimpan di sheet MOVE_SHEET ("RIWAYAT LOKASI"), dibuat otomatis.
  * Setiap komponen diberi ID tetap (kolom ID DASHBOARD, kolom AP) sebagai penghubung riwayat.
@@ -44,6 +47,13 @@ const STATUSES = ['OPERASI', 'STANDBY', 'RUSAK', ''];
 // Folder Google Drive tempat foto. Bisa diganti lewat Script Properties: PHOTO_FOLDER_ID
 const PHOTO_ROOT_ID = '1JdXBnRUftLg5WbQxzbCKCTg_CkUIUZCi';
 const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
+// Folder Google Drive untuk dokumen BA mobilisasi. Bisa diganti lewat Script Properties: BA_FOLDER_ID
+const BA_ROOT_ID = '1x2GoZITJm-Pf-yARe2vpGm0FU3s28SwT';
+const BA_MAX_BYTES = 15 * 1024 * 1024;
+const BA_MIME = {
+  'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png',
+  'application/msword': '.doc', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx'
+};
 
 function doGet(e) {
   try {
@@ -87,6 +97,7 @@ function doPost(e) {
 
     if (String(req.action || '').indexOf('photo_') === 0) return json_(photoAction_(sh, req));
     if (req.action === 'move_add' || req.action === 'move_delete') return json_(moveAction_(sh, req));
+    if (req.action === 'ba_upload') return json_(baUpload_(sh, req));
 
     if (req.action === 'add') {
       const r = lastDataRow_(sh) + 1;
@@ -213,6 +224,25 @@ function moveAction_(sh, req) {
     }
   }
   throw new Error('Riwayat tidak ditemukan.');
+}
+
+/* ---------- dokumen BA mobilisasi (Google Drive) ---------- */
+function baUpload_(sh, req) {
+  checkRow_(sh, req.row, req.expect);
+  const mime = String(req.mime || '');
+  if (!BA_MIME[mime]) throw new Error('Format dokumen BA harus PDF, JPG, PNG, DOC, atau DOCX.');
+  const bytes = Utilities.base64Decode(String(req.data || ''));
+  if (!bytes.length) throw new Error('File dokumen BA kosong.');
+  if (bytes.length > BA_MAX_BYTES) throw new Error('Ukuran dokumen BA melebihi 15 MB.');
+  const part = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'TIDAK_DIKETAHUI';
+  const date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const base = 'BA_Mobilisasi_' + part(req.dariGi) + '_ke_' + part(req.keGi) + '_' + date, ext = BA_MIME[mime];
+  const id = PropertiesService.getScriptProperties().getProperty('BA_FOLDER_ID') || BA_ROOT_ID;
+  const folder = DriveApp.getFolderById(id);
+  let name = base + ext, n = 2;
+  while (folder.getFilesByName(name).hasNext()) name = base + '_' + (n++) + ext; // hindari nama ganda di hari yang sama
+  const f = folder.createFile(Utilities.newBlob(bytes, mime, name));
+  return { ok: true, url: f.getUrl(), name: name };
 }
 
 /* ---------- foto (Google Drive) ---------- */

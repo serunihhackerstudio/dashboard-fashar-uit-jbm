@@ -97,6 +97,15 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(MAP.map);
     MAP.layer = L.layerGroup().addTo(MAP.map);
     MAP.map.on("click", () => selectLok(""));
+    /* Tombol "Tampilan awal": kembalikan peta ke posisi semula (semua lokasi terlihat) */
+    const Home = L.Control.extend({ options: { position: "topleft" }, onAdd() {
+      const box = L.DomUtil.create("div", "leaflet-bar map-home");
+      box.innerHTML = `<a href="#" role="button" title="Kembalikan tampilan peta" aria-label="Kembalikan tampilan peta ke semula"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a>`;
+      L.DomEvent.disableClickPropagation(box);
+      L.DomEvent.on(box.querySelector("a"), "click", e => { L.DomEvent.preventDefault(e); mapHome(true); });
+      return box;
+    } });
+    MAP.map.addControl(new Home());
     return true;
   }
   function locGroups(base) {
@@ -146,7 +155,11 @@
   function mapResize() {
     if (!MAP.map) return;
     MAP.map.invalidateSize();
-    if (!MAP.fitted) { const pts = Object.values(AB.coords); if (pts.length) MAP.map.fitBounds(pts, { padding: [40, 40] }); MAP.fitted = true; }
+    if (!MAP.fitted) { mapHome(false); MAP.fitted = true; }
+  }
+  function mapHome(animate) {
+    const pts = Object.values(AB.coords); if (!MAP.map || !pts.length) return;
+    animate ? MAP.map.flyToBounds(pts, { padding: [40, 40], duration: .6 }) : MAP.map.fitBounds(pts, { padding: [40, 40] });
   }
   function photo(a, big) {
     return a.foto ? `<img src="${esc(a.foto)}" alt="${esc(a.nama)}" loading="lazy">`

@@ -585,6 +585,8 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 }
 
 #abMap{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
+.map-home a{display:grid!important;place-items:center}
+.map-home svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ab-mapcard{margin-top:16px;min-height:380px}
 .ab-mapcard .tdb-mapwrap{min-height:380px}
 .ab-mapcard .tdb-locpanel{max-height:440px}

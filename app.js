@@ -1197,4 +1197,5 @@ function toggleTheme() {
   root.dataset.theme = dark ? "light" : "dark";
   store("fashar-theme", root.dataset.theme);
   if (TDB_MAP.map) tdbTiles();
+  if (window.abMapTheme) window.abMapTheme();
 }

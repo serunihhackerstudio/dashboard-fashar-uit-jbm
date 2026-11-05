@@ -77,6 +77,6 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Setelah memperbarui `apps-script/Code.gs`, buat **New version** pada deployment.
 
 ### Alat Berat (data dummy)
-- Menu **Alat Berat** berisi tab **Daftar Alat** (filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, kartu alat, pop-up detail + riwayat peminjaman) dan tab **Peminjaman & Histori** (ringkasan, filter status, pengajuan baru, approval: setujui/tolak → serahkan → dikembalikan, histori approval).
-- Semua data masih **contoh**, dibuat di `data/alat-berat-dummy.js` (52 alat, 18 pengajuan). Perubahan hanya tersimpan sementara di browser. Logika tampilan ada di `alat-berat.js`.
+- Menu **Alat Berat** berisi tab **Daftar Alat** (filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, **peta lokasi penyimpanan** yang memfilter tabel, **tabel** 10 data/halaman dengan Tampilkan semua, atau tampilan kartu; pop-up detail + riwayat peminjaman) dan tab **Peminjaman & Histori** (ringkasan, filter status, pengajuan baru, approval: setujui/tolak → serahkan → dikembalikan, histori approval).
+- Semua data masih **contoh**, dibuat di `data/alat-berat-dummy.js` (52 alat, 18 pengajuan, koordinat perkiraan 7 lokasi). Perubahan hanya tersimpan sementara di browser. Logika tampilan ada di `alat-berat.js`.
 - Untuk data asli: ganti isi `window.ALAT_BERAT_DUMMY` dengan struktur yang sama (`alat[]`: id, kategori, nama, merk, kapasitas, tahun, noSeri, upt, lokasi, status, layak, kondisi, fungsi, suratIzin, foto; `peminjaman[]`: id, alatId, peminjam, pic, pekerjaan, tujuan, mulai, selesai, status, histori[]), atau sambungkan ke Google Sheets seperti menu Trafo Mobile.

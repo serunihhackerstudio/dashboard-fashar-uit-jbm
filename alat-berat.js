@@ -53,7 +53,6 @@
     $("#abKat").innerHTML = [["", "Semua", ALL_IC], ...Object.entries(KAT).map(([k, v]) => [k, v.label, v.ic])]
       .map(([k, l, ic]) => `<button type="button" class="ab-chip${AB.kat === k ? " on" : ""}" data-k="${k}" aria-pressed="${AB.kat === k}">${svg(ic)}<span>${l}</span><em>${cnt(k)}</em></button>`).join("");
     $("#abKondisi").innerHTML = KONDISI_OPT.map(([v, l, f]) => `<option value="${v}"${AB.kondisi === v ? " selected" : ""}>${l} (${inKat.filter(f).length})</option>`).join("");
-    $("#abCount").textContent = `${list.length} alat sesuai filter`;
     $("#abShown").innerHTML = `Menampilkan <b>${list.length}</b> alat${AB.lok ? ` di <b>${esc(AB.lok)}</b> <button type="button" class="linkbtn" data-clear-lok>hapus filter lokasi</button>` : ""}`;
     renderMap(base);
     // tampilan

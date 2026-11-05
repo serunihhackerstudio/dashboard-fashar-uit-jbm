@@ -27,6 +27,9 @@
  * Foto disimpan di Google Drive: satu subfolder per komponen di dalam folder PHOTO_ROOT_ID.
  * Link subfolder ditulis otomatis ke kolom LINK FOTO PERALATAN (kolom Y).
  *
+ * Respons GET dan setiap perubahan menyertakan "updated" (waktu perubahan terakhir, ISO)
+ * untuk tanggal "Diperbarui" di dashboard.
+ *
  * GET mengirim semua kolom (termasuk informasi aset & riwayat lokasi) untuk
  * pop-up Detail. POST hanya mengubah kolom di EDITABLE.
  */
@@ -109,7 +112,8 @@ function doGet(e) {
     }
     if (p.action === 'cui') return json_(cuiLatest_());
     ensureIds_(sheet_());
-    return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: readRows_(), moves: readMoves_() });
+    const rows = readRows_(), moves = readMoves_();
+    return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: rows, moves: moves, updated: syncUpdated_(rows, moves) });
   } catch (err) {
     return json_({ ok: false, error: String(err.message || err) });
   }
@@ -139,18 +143,18 @@ function doPost(e) {
       let moved = 0;
       if (req.move && ('upt' in data || 'gi' in data)) moved = moveLocation_(sh, r, data, req.move);
       EDITABLE.forEach(k => { if (k in data && !(moved && (k === 'upt' || k === 'gi'))) write_(sh, r, k, data[k]); });
-      return json_({ ok: true, row: readRow_(sh, r), moved: moved });
+      return json_(changed_({ ok: true, row: readRow_(sh, r), moved: moved }));
     }
 
-    if (String(req.action || '').indexOf('photo_') === 0) return json_(photoAction_(sh, req));
-    if (req.action === 'move_add' || req.action === 'move_delete') return json_(moveAction_(sh, req));
-    if (req.action === 'ba_upload') return json_(baUpload_(sh, req));
+    if (String(req.action || '').indexOf('photo_') === 0) return json_(changed_(photoAction_(sh, req)));
+    if (req.action === 'move_add' || req.action === 'move_delete') return json_(changed_(moveAction_(sh, req)));
+    if (req.action === 'ba_upload') return json_(changed_(baUpload_(sh, req)));
 
     if (req.action === 'add') {
       const r = lastDataRow_(sh) + 1;
       EDITABLE.forEach(k => { if (k in data) write_(sh, r, k, data[k]); });
       ensureIds_(sh);
-      return json_({ ok: true, row: readRow_(sh, r) });
+      return json_(changed_({ ok: true, row: readRow_(sh, r) }));
     }
     return json_({ ok: false, error: 'Aksi tidak dikenal.' });
   } catch (err) {
@@ -158,6 +162,45 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* ---------- Tanggal perubahan terakhir data Trafo Mobile ----------
+ * TRAFO_UPDATED (Script Property) = waktu perubahan terakhir, diperbarui saat:
+ *  - edit / tambah / foto / riwayat / BA lewat dashboard (changed_)
+ *  - sheet diedit langsung di Google Sheets (simple trigger onEdit)
+ *  - isi data berbeda dari pemuatan sebelumnya (sinkronisasi; dicek lewat hash di doGet)
+ */
+function markUpdated_() {
+  const now = new Date().toISOString();
+  PropertiesService.getScriptProperties().setProperties({ TRAFO_UPDATED: now, TRAFO_HASH_STALE: '1' });
+  return now;
+}
+function changed_(o) {
+  if (o && o.ok) o.updated = markUpdated_();
+  return o;
+}
+function syncUpdated_(rows, moves) {
+  const props = PropertiesService.getScriptProperties();
+  const hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, JSON.stringify([rows, moves]), Utilities.Charset.UTF_8));
+  const p = props.getProperties();
+  let updated = p.TRAFO_UPDATED;
+  if (p.TRAFO_HASH !== hash) {
+    // perubahan sudah tercatat (dashboard/onEdit) → cukup simpan hash baru; selain itu catat waktu sinkronisasi ini
+    if (!updated) updated = fileUpdated_() || new Date().toISOString(); // pertama kali: pakai waktu ubah file spreadsheet
+    else if (p.TRAFO_HASH && p.TRAFO_HASH_STALE !== '1') updated = new Date().toISOString();
+    props.setProperties({ TRAFO_HASH: hash, TRAFO_UPDATED: updated, TRAFO_HASH_STALE: '' });
+  }
+  return updated;
+}
+function fileUpdated_() {
+  try { return DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getLastUpdated().toISOString(); } catch (err) { return null; }
+}
+/* Simple trigger: berjalan otomatis saat sheet Trafo Mobile / riwayat diedit langsung di spreadsheet */
+function onEdit(e) {
+  try {
+    const name = e && e.range && e.range.getSheet().getName();
+    if (name === SHEET_NAME || name === MOVE_SHEET) markUpdated_();
+  } catch (err) { /* abaikan */ }
 }
 
 /* ---------- ID komponen & riwayat perpindahan ---------- */

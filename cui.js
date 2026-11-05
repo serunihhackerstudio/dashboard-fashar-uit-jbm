@@ -443,7 +443,7 @@
       if (!("doc" in j)) throw new Error(OUTDATED); // versi lama mengabaikan ?action=cui
       S.history = j.history || [];
       if (S.uploaded) { S.remote = j.doc ? "ok" : "empty"; renderFilters(); skeleton(); return; } // jangan timpa file yang sedang dilihat
-      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; render(); setUpdated("cui"); }
+      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; render(); }
     } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); if (S.rows.length) renderFilters(); else render(); }
     if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
   }

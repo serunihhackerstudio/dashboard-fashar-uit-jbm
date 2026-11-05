@@ -72,7 +72,7 @@
         <div class="hh-text">
           <span class="hh-kicker"><i class="live-dot"></i>${esc(today)}</span>
           <h2>${greet()}, Tim <span>PDKB &amp; FASHAR</span></h2>
-          <p>Satu dashboard untuk memantau kondisi aset, hasil inspeksi transmisi, kesiapan peralatan ERS, serta alat berat &amp; alat bantu HARTRANS UIT Jawa Bagian Timur.</p>
+          <p>Satu dashboard untuk memantau kondisi aset, hasil inspeksi transmisi, kesiapan peralatan ERS, serta alat berat &amp; alat bantu HARTRANS Unit Induk Transmisi Jawa Bagian Timur dan Bali.</p>
           <div class="hh-cta">
             <a class="btn hh-btn-primary" href="#health">${svg('<path d="M3 12h4l2-5 4 10 2-5h6"/>')}Lihat Health Index</a>
             <a class="btn hh-btn-ghost" href="#trafodb">${svg('<rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5"/>')}Trafo Mobile</a>

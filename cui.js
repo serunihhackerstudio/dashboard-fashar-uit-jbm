@@ -95,12 +95,13 @@
   function renderSummary(rows, towers) {
     const withT = towers.filter(towerHasTemuan).length, c = sevCount(rows, towers);
     $("#cuiKpi").innerHTML = [
-      ["Tower diinspeksi", fmt(towers.length), "tower", "primary", `${fmt(rows.length)} titik klem`],
-      ["Tower dengan temuan", fmt(withT), "alert", "p2", `${pct(withT, towers.length)} dari tower diinspeksi`],
-      ["Temuan kritis", fmt(c.kritis), "x", "p1", "Pecah, rantas, retak, ROW kritis"],
-      ["Korosi P1", fmt(c.p1), "alert", "p1", `P2 ${fmt(c.p2)} · P3 ${fmt(c.p3)}`],
-      ["Temuan lain", fmt(c.lain), "search", "p3", "Kotor, tidak ada, tidak standar, dll."]
-    ].map(([l, v, ic, tone, sub]) => `<div class="card kpi tone-${tone}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${esc(sub)}</div></div></div>`).join("");
+      ["tower", "Tower diinspeksi", fmt(towers.length), "tower", "primary", `${fmt(rows.length)} titik klem`],
+      ["temuan", "Tower dengan temuan", fmt(withT), "alert", "p2", `${pct(withT, towers.length)} dari tower diinspeksi`],
+      ["kritis", "Temuan kritis", fmt(c.kritis), "x", "p1", "Pecah, rantas, retak, ROW kritis"],
+      ["p1", "Korosi P1", fmt(c.p1), "alert", "p1", `P2 ${fmt(c.p2)} · P3 ${fmt(c.p3)}`],
+      ["lain", "Temuan lain", fmt(c.lain), "search", "p3", "Kotor, tidak ada, tidak standar, dll."]
+    ].map(([key, l, v, ic, tone, sub]) => `<div class="card kpi tone-${tone} cui-kpi" role="button" tabindex="0" data-kpi="${key}" aria-label="${l}: ${v}. Lihat detail">
+      <div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${esc(sub)}</div><span class="cui-more">Lihat detail ›</span></div></div>`).join("");
 
     // per UPT
     const ups = new Map(); towers.forEach(t => { const u = ups.get(t.upt) || { n: 0, t: 0 }; u.n++; if (towerHasTemuan(t)) u.t++; ups.set(t.upt, u); });
@@ -147,7 +148,10 @@
     const list = [...m.values()].map(p => { const c = sevCount(p.rows, p.towers); return { ...p, ...c, ratio: p.tt / p.tower, risk: c.kritis * 1000 + c.p1 * 100 + c.p2 }; });
     const { k, dir } = S.sort;
     list.sort((a, b) => (typeof a[k] === "string" ? a[k].localeCompare(b[k]) : a[k] - b[k]) * dir || b.tower - a.tower);
-    const th = (key, label, num) => `<th class="${num ? "num " : ""}sortable${k === key ? " on" : ""}" data-sort="${key}">${label}${k === key ? (dir < 0 ? " ▾" : " ▴") : ""}</th>`;
+    const TIP = { peng: "Nama jalur transmisi (penghantar)", upt: "UPT pengelola", tower: "Jumlah tower yang diinspeksi pada penghantar ini", klem: "Jumlah titik klem/fasa yang diinspeksi",
+      ratio: "Persentase tower yang memiliki minimal satu temuan", kritis: "Jumlah temuan kritis: isolator pecah, konduktor rantas, stub retak, ROW kritis",
+      p1: "Jumlah temuan korosi P1", p2: "Jumlah temuan korosi P2", p3: "Jumlah temuan korosi P3", lain: "Jumlah temuan lain: kotor, tidak ada, tidak standar, bahaya, hilang, dll." };
+    const th = (key, label, num) => `<th class="${num ? "num " : ""}sortable${k === key ? " on" : ""}" data-sort="${key}" title="${TIP[key]}. Item tingkat tower dihitung sekali per tower, item fasa per klem.">${label}${k === key ? (dir < 0 ? " ▾" : " ▴") : ""}</th>`;
     $("#cuiPengHead").innerHTML = `<tr>${th("peng", "Penghantar")}${th("upt", "UPT")}${th("tower", "Tower", 1)}${th("klem", "Klem", 1)}${th("ratio", "Tower bertemuan", 1)}${th("kritis", "Kritis", 1)}${th("p1", "P1", 1)}${th("p2", "P2", 1)}${th("p3", "P3", 1)}${th("lain", "Lain", 1)}</tr>`;
     $("#cuiPengRows").innerHTML = list.map(p => `<tr data-peng="${esc(p.peng)}" class="${S.f.peng === p.peng ? "sel" : ""}" tabindex="0"><td><b>${esc(p.peng)}</b></td><td>${esc(p.upt)}</td>
       <td class="num">${fmt(p.tower)}</td><td class="num">${fmt(p.klem)}</td><td class="num"><span class="cui-ratio"><i style="width:${p.ratio * 100}%"></i></span>${pct(p.tt, p.tower)}</td>
@@ -187,6 +191,72 @@
       it && `<span class="chip-f">${esc(ITEM[it.k].label)} = ${esc(it.v)} <button type="button" data-clear="item" aria-label="Hapus filter item">×</button></span>`,
       S.f.peng && `<span class="chip-f">${esc(S.f.peng)} <button type="button" data-clear="peng" aria-label="Hapus filter penghantar">×</button></span>`
     ].filter(Boolean).join("");
+  }
+
+  /* ---------- Pop-up detail kartu ringkasan ---------- */
+  const LIMIT = 300;
+  /* Semua kemunculan temuan: item tower dihitung sekali per tower (baris pertama), item klem per baris */
+  function occurrences(rows, towers, sevs) {
+    const out = [];
+    towers.forEach(t => ITEMS.filter(i => i.lvl === "tower").forEach(i => { const s = sev(t.first[i.k]); if (sevs.includes(s)) out.push({ s, i, v: t.first[i.k], r: t.first, tower: true }); }));
+    rows.forEach(r => ITEMS.filter(i => i.lvl === "klem").forEach(i => { const s = sev(r[i.k]); if (sevs.includes(s)) out.push({ s, i, v: r[i.k], r, tower: false }); }));
+    return out.sort((a, b) => SEV[b.s].rank - SEV[a.s].rank || b.r.tanggal.localeCompare(a.r.tanggal) || a.r.lokasi.localeCompare(b.r.lokasi));
+  }
+  const tbl = (head, body) => `<div class="table-wrap flat cui-kpi-tbl"><table class="table"><thead><tr>${head.map(h => `<th${h[1] ? ' class="num"' : ""}>${h[0]}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;
+  const limitNote = (n) => n > LIMIT ? `<p class="dnil">Menampilkan ${LIMIT} dari ${fmt(n)} data teratas. Persempit dengan filter UPT/ULTG/penghantar/tanggal untuk melihat data lainnya.</p>` : "";
+  function itemValueSummary(occ) {
+    const m = new Map();
+    occ.forEach(o => { const k = o.i.k + "|" + o.v; const x = m.get(k) || { i: o.i, v: o.v, s: o.s, n: 0 }; x.n++; m.set(k, x); });
+    const list = [...m.values()].sort((a, b) => SEV[b.s].rank - SEV[a.s].rank || b.n - a.n);
+    return tbl([["Bagian"], ["Item"], ["Nilai"], ["Jumlah", 1]], list.map(x => `<tr><td class="muted">${esc(SECTIONS[x.i.sec])}</td><td><b>${esc(x.i.label)}</b></td><td>${sevChip(x.s, x.v)}</td><td class="num"><b>${fmt(x.n)}</b></td></tr>`).join(""));
+  }
+  function occList(occ) {
+    const view = occ.slice(0, LIMIT);
+    return tbl([["No", 1], ["Tanggal"], ["Tower"], ["Klem / tingkat"], ["Item"], ["Nilai"], ["Penghantar"]], view.map((o, n) => `<tr data-i="${o.r._i}" tabindex="0">
+      <td class="num">${n + 1}</td><td>${fmtD(o.r.tanggal)}</td><td><b>${esc(o.r.lokasi)}</b></td><td class="wrap">${o.tower ? `<span class="muted">Seluruh tower</span>` : esc(o.r.clamp)}</td>
+      <td>${esc(o.i.label)}</td><td>${sevChip(o.s, o.v)}</td><td>${esc(o.r.penghantar)}<div class="muted sm">${esc(o.r.upt)}</div></td></tr>`).join("")) + limitNote(occ.length);
+  }
+  function openKpi(key) {
+    const rows = filtered(true), towers = towersOf(rows), f = S.f;
+    const scope = [f.upt, f.ultg, f.peng, f.from && "dari " + fmtD(f.from), f.to && "s.d. " + fmtD(f.to), f.q && `"${f.q}"`].filter(Boolean).join(" · ") || "Semua data";
+    let title = "", body = "";
+    if (key === "tower") {
+      title = "Tower diinspeksi";
+      const m = new Map();
+      towers.forEach(t => { const k = t.upt + "|" + t.ultg; const x = m.get(k) || { upt: t.upt, ultg: t.ultg, tw: 0, kl: 0, tt: 0, from: t.tanggal, to: t.tanggal }; x.tw++; x.kl += t.rows.length; if (towerHasTemuan(t)) x.tt++; if (t.tanggal < x.from) x.from = t.tanggal; if (t.tanggal > x.to) x.to = t.tanggal; m.set(k, x); });
+      const list = [...m.values()].sort((a, b) => a.upt.localeCompare(b.upt) || b.tw - a.tw);
+      const tipe = new Map(); towers.forEach(t => { const v = t.first.tipe && t.first.tipe !== "-" ? t.first.tipe : "Tidak diisi"; tipe.set(v, (tipe.get(v) || 0) + 1); });
+      body = `<div class="cui-kpi-chips">${[...tipe.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => `<span class="badge ${k === "Tidak diisi" ? "muted" : "info"}">${esc(k)}: ${fmt(n)} tower</span>`).join("")}</div>` +
+        tbl([["UPT"], ["ULTG"], ["Tower", 1], ["Klem", 1], ["Tower bertemuan", 1], ["Periode inspeksi"]], list.map(x => `<tr><td><b>${esc(x.upt)}</b></td><td>${esc(x.ultg)}</td><td class="num">${fmt(x.tw)}</td><td class="num">${fmt(x.kl)}</td>
+          <td class="num">${fmt(x.tt)} <span class="muted sm">(${pct(x.tt, x.tw)})</span></td><td>${fmtD(x.from)} – ${fmtD(x.to)}</td></tr>`).join("") +
+          `<tr class="tot"><td colspan="2"><b>Total</b></td><td class="num"><b>${fmt(towers.length)}</b></td><td class="num"><b>${fmt(rows.length)}</b></td><td class="num"><b>${fmt(towers.filter(towerHasTemuan).length)}</b></td><td></td></tr>`);
+    } else if (key === "temuan") {
+      title = "Tower dengan temuan";
+      const list = towers.filter(towerHasTemuan).map(t => { const occ = occurrences(t.rows, [t], ["kritis", "p1", "p2", "p3", "lain"]); return { t, occ, worst: occ[0].s }; })
+        .sort((a, b) => SEV[b.worst].rank - SEV[a.worst].rank || b.occ.length - a.occ.length);
+      const byWorst = ["kritis", "p1", "p2", "p3", "lain"].map(s => [s, list.filter(x => x.worst === s).length]);
+      body = `<p class="cui-kpi-note">Dikelompokkan menurut temuan terparah di tiap tower:</p><div class="cui-kpi-chips">${byWorst.map(([s, n]) => sevChip(s, `${SEV[s].label}: ${fmt(n)} tower`)).join("")}</div>` +
+        tbl([["No", 1], ["Tower"], ["Penghantar"], ["Tanggal"], ["Terparah"], ["Jumlah temuan", 1], ["Contoh temuan"]], list.slice(0, LIMIT).map((x, n) => `<tr data-i="${x.t.first._i}" tabindex="0">
+          <td class="num">${n + 1}</td><td><b>${esc(x.t.lokasi)}</b><div class="muted sm">${fmt(x.t.rows.length)} klem</div></td><td>${esc(x.t.penghantar)}<div class="muted sm">${esc(x.t.upt)}</div></td><td>${fmtD(x.t.tanggal)}</td>
+          <td>${sevChip(x.worst)}</td><td class="num"><b>${fmt(x.occ.length)}</b></td><td class="wrap">${x.occ.slice(0, 2).map(o => `${esc(o.i.label)}: ${sevChip(o.s, o.v)}`).join(" ")}</td></tr>`).join("")) + limitNote(list.length);
+    } else if (key === "p1") {
+      title = "Korosi P1";
+      const occ = occurrences(rows, towers, ["p1", "p2", "p3"]);
+      const items = ITEMS.map(i => ({ i, n: ["p1", "p2", "p3"].map(s => occ.filter(o => o.i === i && o.s === s).length) })).filter(x => x.n.some(Boolean)).sort((a, b) => b.n[0] - a.n[0] || b.n[1] - a.n[1]);
+      body = `<h5 class="cui-kpi-h">Sebaran korosi per item</h5>` + tbl([["Bagian"], ["Item"], ["P1", 1], ["P2", 1], ["P3", 1]], items.map(x => `<tr><td class="muted">${esc(SECTIONS[x.i.sec])}</td><td><b>${esc(x.i.label)}</b></td>
+          <td class="num">${x.n[0] ? sevChip("p1", fmt(x.n[0])) : "—"}</td><td class="num">${fmt(x.n[1])}</td><td class="num">${fmt(x.n[2])}</td></tr>`).join("")) +
+        `<h5 class="cui-kpi-h">Lokasi korosi P1 <small>klik baris untuk detail</small></h5>` + occList(occ.filter(o => o.s === "p1"));
+    } else {
+      const sevs = key === "kritis" ? ["kritis"] : ["lain"];
+      title = key === "kritis" ? "Temuan kritis" : "Temuan lain";
+      const occ = occurrences(rows, towers, sevs);
+      body = `<h5 class="cui-kpi-h">Rekap per item &amp; nilai</h5>` + itemValueSummary(occ) + `<h5 class="cui-kpi-h">Lokasi temuan <small>klik baris untuk detail</small></h5>` + occList(occ);
+    }
+    $("#cuiKpiTitle").textContent = title;
+    $("#cuiKpiSub").textContent = `Cakupan: ${scope}`;
+    $("#cuiKpiBody").innerHTML = body || `<p class="dnil">Tidak ada data.</p>`;
+    $("#cuiKpiDlg").showModal();
+    $("#cuiKpiBody").scrollTop = 0;
   }
 
   function openDetail(i) {
@@ -276,6 +346,11 @@
   $("#cuiActive").addEventListener("click", e => { const b = e.target.closest("[data-clear]"); if (b) setF(b.dataset.clear, b.dataset.clear === "item" ? null : ""); });
   $("#cuiFile").addEventListener("change", e => { onFile(e.target.files[0]); e.target.value = ""; });
   $("#cuiDetail").addEventListener("click", e => { if (e.target === $("#cuiDetail")) $("#cuiDetail").close(); });
+  $("#cuiKpi").addEventListener("click", e => { const c = e.target.closest("[data-kpi]"); if (c) openKpi(c.dataset.kpi); });
+  $("#cuiKpi").addEventListener("keydown", e => { const c = e.target.closest("[data-kpi]"); if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openKpi(c.dataset.kpi); } });
+  $("#cuiKpiBody").addEventListener("click", e => { const t = e.target.closest("tr[data-i]"); if (t) openDetail(+t.dataset.i); });
+  $("#cuiKpiBody").addEventListener("keydown", e => { const t = e.target.closest("tr[data-i]"); if (t && e.key === "Enter") openDetail(+t.dataset.i); });
+  $("#cuiKpiDlg").addEventListener("click", e => { if (e.target === $("#cuiKpiDlg")) $("#cuiKpiDlg").close(); });
 
   if (window.CUI_JARVIS) { load(window.CUI_JARVIS, false); render(); }
 })();

@@ -202,7 +202,7 @@
    </div>
    <div class="section-head"><div><h2>Kondisi per Item Inspeksi</h2><p>Klik segmen bar atau chip temuan untuk memfilter tabel data</p></div><div class="legend" id="cuiItemLegend"></div></div>
    <div class="card"><div class="card-body cui-items" id="cuiItems"></div></div>
-   <div class="section-head"><div><h2>Rekap per Penghantar</h2><p>Klik judul kolom untuk mengurutkan, klik baris untuk memfilter</p></div></div>
+   <div class="section-head"><div><h2>Rekap per Penghantar</h2><p>Ringkasan hasil CUI per jalur transmisi (penghantar): jumlah tower &amp; klem yang diinspeksi, persentase tower yang memiliki temuan, dan jumlah temuan per tingkat keparahan. Klik judul kolom untuk mengurutkan, klik baris untuk memfilter seluruh halaman.</p></div></div>
    <div class="card"><div class="table-wrap cui-table"><table class="table"><thead id="cuiPengHead"></thead><tbody id="cuiPengRows"></tbody></table><div class="empty" id="cuiPengEmpty" hidden>Tidak ada data.</div></div></div>
    <div class="section-head" id="cuiTableCard"><div><h2>Data Inspeksi per Klem</h2><p>Temuan diurutkan dari yang terparah</p></div>
     <div class="cui-tools"><span id="cuiActive"></span><label class="mv-set"><input type="checkbox" id="cuiOnly"> Hanya yang ada temuan</label></div></div>
@@ -259,6 +259,13 @@
   <header class="modal-head"><div><h3 id="abDetailTitle"></h3><p id="abDetailSub"></p></div><button class="icon-btn" type="button" onclick="$('#abDetail').close()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
   <div class="modal-body" id="abDetailBody"></div>
   <footer class="modal-foot"><div class="modal-btns"><button class="btn ghost" type="button" onclick="$('#abDetail').close()">Tutup</button></div></footer>
+ </div>
+</dialog>
+<dialog class="modal modal-lg" id="cuiKpiDlg" aria-labelledby="cuiKpiTitle">
+ <div class="modal-wrap">
+  <header class="modal-head"><div><h3 id="cuiKpiTitle"></h3><p id="cuiKpiSub"></p></div><button class="icon-btn" type="button" onclick="$('#cuiKpiDlg').close()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="modal-body" id="cuiKpiBody"></div>
+  <footer class="modal-foot"><div class="modal-btns"><button class="btn ghost" type="button" onclick="$('#cuiKpiDlg').close()">Tutup</button></div></footer>
  </div>
 </dialog>
 <dialog class="modal modal-lg" id="cuiDetail" aria-labelledby="cuiDetTitle">

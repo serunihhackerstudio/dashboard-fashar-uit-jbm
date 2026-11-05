@@ -1164,6 +1164,23 @@ const PAGES = {
   trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"],
   alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"]
 };
+/* Tanggal "Diperbarui" di topbar: halaman boleh mendaftarkan tanggalnya sendiri lewat window.PAGE_UPDATED[id]() */
+const UPDATED_DEFAULT = "3 Okt 2026";
+const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+function fmtTanggal(d) {
+  const m = String(d || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${+m[3]} ${BULAN[+m[2] - 1]} ${m[1]}` : String(d || "");
+}
+function setUpdated(id) {
+  id = id || (location.hash.slice(1) || "");
+  const fn = window.PAGE_UPDATED && window.PAGE_UPDATED[id];
+  const v = fn ? fn() : null;
+  const el = document.querySelector(".chip.updated");
+  if (el) {
+    el.innerHTML = `<i class="live-dot"></i>Diperbarui ${v ? fmtTanggal(v.date) : UPDATED_DEFAULT}`;
+    el.title = v && v.title ? v.title : "";
+  }
+}
 function route() {
   if (location.hash === "#trafo") { location.replace("#trafodb"); return; } // halaman lama Trafo Mobile dihapus
   const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "health"; // halaman awal (Kinerja & Optimalisasi PDKB dihapus)
@@ -1176,6 +1193,7 @@ function route() {
   const [g, t, s] = PAGES[id];
   $("#pageGroup").textContent = g; $("#pageTitle").textContent = t; $("#pageSub").textContent = s;
   document.title = `${t} · Dashboard FASHAR UIT JBM`;
+  setUpdated(id);
   closeDrawer();
   window.scrollTo({ top: 0 });
   if (id === "trafodb") setTimeout(tdbMapResize, 60);

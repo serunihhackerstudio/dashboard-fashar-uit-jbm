@@ -43,6 +43,7 @@
     const K = doc.keys;
     S.rows = doc.rows.map((r, i) => { const o = { _i: i }; K.forEach((k, j) => { o[k] = doc.dict[k][r[j]]; }); return o; });
     S.source = doc.source; S.periode = doc.periode; S.uploaded = !!uploaded;
+    S.diunggah = uploaded ? new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10) : (doc.diunggah || doc.generated || "");
     S.f = { upt: "", ultg: "", peng: "", from: "", to: "", q: "", only: false, item: null };
     S.rows.forEach(r => { r._t = temuanOf(r); r._worst = r._t.length ? r._t[0].s : "ok"; });
   }
@@ -87,7 +88,7 @@
     fillSelect("#cuiPeng", uniq(r2, "penghantar"), f.peng, "Semua penghantar");
     $("#cuiFrom").value = f.from; $("#cuiTo").value = f.to;
     if (S.periode) { $("#cuiFrom").min = $("#cuiTo").min = S.periode[0]; $("#cuiFrom").max = $("#cuiTo").max = S.periode[1]; }
-    $("#cuiSrc").innerHTML = `Sumber: <b>${esc(S.source)}</b> · periode ${fmtD(S.periode && S.periode[0])} – ${fmtD(S.periode && S.periode[1])} · ${fmt(S.rows.length)} klem` +
+    $("#cuiSrc").innerHTML = `Sumber: <b>${esc(S.source)}</b>${S.diunggah ? ` · diunggah ${fmtD(S.diunggah)}` : ""} · periode ${fmtD(S.periode && S.periode[0])} – ${fmtD(S.periode && S.periode[1])} · ${fmt(S.rows.length)} klem` +
       (S.uploaded ? ` <span class="badge warn">dimuat dari file — belum tersimpan permanen</span>` : "");
   }
 
@@ -316,7 +317,7 @@
     const btn = $("#cuiUploadLbl"); btn.classList.add("disabled"); $("#cuiUploadTxt").textContent = "Membaca file…";
     try {
       const doc = parseExport(await file.text(), file.name);
-      load(doc, true); render(); toast(`${fmt(doc.rows.length)} klem dimuat dari ${file.name}`);
+      load(doc, true); render(); setUpdated("cui"); toast(`${fmt(doc.rows.length)} klem dimuat dari ${file.name}`);
     } catch (e) { toast(String(e.message || e)); }
     finally { btn.classList.remove("disabled"); $("#cuiUploadTxt").textContent = "Muat file export Jarvis"; }
   }
@@ -352,5 +353,9 @@
   $("#cuiKpiBody").addEventListener("keydown", e => { const t = e.target.closest("tr[data-i]"); if (t && e.key === "Enter") openDetail(+t.dataset.i); });
   $("#cuiKpiDlg").addEventListener("click", e => { if (e.target === $("#cuiKpiDlg")) $("#cuiKpiDlg").close(); });
 
+  /* Tanggal "Diperbarui" di topbar = tanggal file export Jarvis diunggah */
+  window.PAGE_UPDATED = window.PAGE_UPDATED || {};
+  window.PAGE_UPDATED.cui = () => S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
   if (window.CUI_JARVIS) { load(window.CUI_JARVIS, false); render(); }
+  if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
 })();

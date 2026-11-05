@@ -1,7 +1,9 @@
 """Konversi export CUI Jarvis (.xls berformat HTML) -> data/cui-jarvis.js
 
 Pemakaian:
-    python3 tools/jarvis_to_js.py "Jarvis_per_5_Nov_2026.xls"
+    python3 tools/jarvis_to_js.py "Jarvis_per_5_Nov_2026.xls" [--tanggal YYYY-MM-DD]
+
+--tanggal = tanggal file diunggah (tampil sebagai "Diperbarui" di dashboard); default hari ini.
 
 Data disimpan ringkas (kode kamus per kolom) agar file kecil.
 """
@@ -37,7 +39,7 @@ def iso(v):
         except ValueError: pass
     return v.strip()
 
-def main(path, out="data/cui-jarvis.js"):
+def main(path, out="data/cui-jarvis.js", diunggah=None):
     p = Table(); p.feed(open(path, encoding="utf-8", errors="replace").read())
     head_i = next(i for i, r in enumerate(p.rows) if "Penghantar" in r and "Lokasi" in r)
     head = p.rows[head_i]
@@ -57,6 +59,7 @@ def main(path, out="data/cui-jarvis.js"):
         rows.append(enc)
     dates = sorted(dicts["tanggal"][x[keys.index("tanggal")]] for x in rows)
     doc = {"source": path.split("/")[-1], "generated": datetime.date.today().isoformat(),
+           "diunggah": diunggah or datetime.date.today().isoformat(),
            "periode": [dates[0], dates[-1]] if dates else None, "keys": keys, "dict": dicts, "rows": rows}
     with open(out, "w", encoding="utf-8") as f:
         f.write("/* Dibuat otomatis oleh tools/jarvis_to_js.py dari export CUI Jarvis. Jangan diedit manual. */\n")
@@ -64,4 +67,9 @@ def main(path, out="data/cui-jarvis.js"):
     print(f"{len(rows)} baris, {len(set(x[keys.index('lokasi')] for x in rows))} tower -> {out}")
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    args = sys.argv[1:]
+    tgl = None
+    if "--tanggal" in args:
+        i = args.index("--tanggal"); tgl = args[i + 1]; del args[i:i + 2]
+        datetime.date.fromisoformat(tgl)  # validasi format
+    main(args[0], diunggah=tgl)

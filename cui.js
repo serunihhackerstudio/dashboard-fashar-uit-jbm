@@ -446,6 +446,7 @@
       if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; render(); }
     } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); if (S.rows.length) renderFilters(); else render(); }
     if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
+    if (window.homeRefresh) window.homeRefresh();
   }
 
   /* ---------- Event ---------- */
@@ -492,6 +493,8 @@
 
   /* Tanggal "Diperbarui" di topbar = tanggal file export Jarvis diunggah */
   window.PAGE_UPDATED = window.PAGE_UPDATED || {};
+  /* Ringkasan untuk Beranda */
+  window.CUI_SUMMARY = () => { const tw = towersOf(S.rows); return { klem: S.rows.length, tower: tw.length, kritis: S.rows.length ? sevCount(S.rows, tw).kritis : 0, loading: S.remote === "loading" }; };
   window.PAGE_UPDATED.cui = () => !S.rows.length ? (S.remote === "loading" ? { text: "memuat…", title: "Memuat data CUI terbaru" } : { text: "—", title: "Belum ada data CUI" }) : S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
   const EMPTY = { source: "", periode: null, keys: [], dict: {}, rows: [] };
   load(window.CUI_JARVIS && window.CUI_JARVIS.rows && window.CUI_JARVIS.rows.length ? window.CUI_JARVIS : EMPTY, false); render();

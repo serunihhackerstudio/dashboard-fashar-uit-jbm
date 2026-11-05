@@ -95,6 +95,12 @@
       : S.remote === "loading" ? ` <b class="src-static">● Memuat data terbaru…</b>`
       : S.remote === "err" ? ` <b class="src-static" title="${esc(S.remoteErr || "")}">● Gagal memuat data permanen — menampilkan data bawaan</b>`
       : S.remote === "empty" ? ` <b class="src-static">● Belum ada unggahan permanen — menampilkan data bawaan</b>` : "";
+    if (!S.rows.length) {
+      $("#cuiSrc").innerHTML = `<b>Belum ada data CUI.</b> Klik <b>Unggah file export Jarvis</b> untuk memuat data.` +
+        (S.remote === "loading" ? ` <b class="src-static">● Memuat data terbaru…</b>` : S.remote === "err" ? ` <b class="src-static" title="${esc(S.remoteErr || "")}">● Gagal memuat data permanen</b>` : "") +
+        (S.history.length ? ` · <button type="button" class="linkbtn" id="cuiHistBtn">Riwayat unggahan (${S.history.length})</button>` : "");
+      return;
+    }
     $("#cuiSrc").innerHTML = `Sumber: <b>${esc(S.source)}</b>${S.diunggah ? ` · diunggah ${fmtD(S.diunggah)}` : ""} · periode ${fmtD(S.periode && S.periode[0])} – ${fmtD(S.periode && S.periode[1])} · ${fmt(S.rows.length)} klem` + st +
       (S.history.length ? ` · <button type="button" class="linkbtn" id="cuiHistBtn">Riwayat unggahan (${S.history.length})</button>` : "");
   }
@@ -420,7 +426,7 @@
       if (!j.ok) throw new Error(j.error || "Gagal memuat data CUI");
       S.history = j.history || [];
       if (S.uploaded) { S.remote = j.doc ? "ok" : "empty"; renderFilters(); return; } // jangan timpa file yang sedang dilihat
-      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; renderFilters(); }
+      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; renderFilters(); setUpdated("cui"); }
     } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); if (S.rows.length) renderFilters(); }
     if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
   }
@@ -469,8 +475,9 @@
 
   /* Tanggal "Diperbarui" di topbar = tanggal file export Jarvis diunggah */
   window.PAGE_UPDATED = window.PAGE_UPDATED || {};
-  window.PAGE_UPDATED.cui = () => S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
-  if (window.CUI_JARVIS) { load(window.CUI_JARVIS, false); render(); }
+  window.PAGE_UPDATED.cui = () => !S.rows.length ? { text: "—", title: "Belum ada data CUI" } : S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
+  const EMPTY = { source: "", periode: null, keys: [], dict: {}, rows: [] };
+  load(window.CUI_JARVIS && window.CUI_JARVIS.rows && window.CUI_JARVIS.rows.length ? window.CUI_JARVIS : EMPTY, false); render();
   if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
   loadRemote();
 })();

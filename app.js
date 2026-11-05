@@ -1177,7 +1177,7 @@ function setUpdated(id) {
   const v = fn ? fn() : null;
   const el = document.querySelector(".chip.updated");
   if (el) {
-    el.innerHTML = `<i class="live-dot"></i>Diperbarui ${v ? fmtTanggal(v.date) : UPDATED_DEFAULT}`;
+    el.innerHTML = `<i class="live-dot"></i>Diperbarui ${v ? (v.text || fmtTanggal(v.date)) : UPDATED_DEFAULT}`;
     el.title = v && v.title ? v.title : "";
   }
 }

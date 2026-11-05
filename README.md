@@ -91,5 +91,5 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
   - isi data terbaru ke sheet **CUI JARVIS DATA** (ditimpa setiap unggahan);
   - catatan unggahan ke sheet **CUI JARVIS UPLOAD** (riwayat, tidak dihapus).
   Dashboard selalu membaca unggahan terakhir (`GET ?action=cui`) untuk semua pengguna; tanggal **Diperbarui** = tanggal unggah. Daftar unggahan bisa dilihat lewat tautan **Riwayat unggahan**. Tombol **Lihat saja** menampilkan file hanya di browser tanpa menyimpan.
-- Data cadangan (dipakai bila Apps Script belum diatur / belum ada unggahan): `python3 tools/jarvis_to_js.py "Jarvis_per_<tanggal>.xls" [--tanggal YYYY-MM-DD]` lalu commit `data/cui-jarvis.js`.
+- Data bawaan `data/cui-jarvis.js` saat ini **dikosongkan** (`window.CUI_JARVIS = null`); halaman menampilkan "Belum ada data CUI" sampai ada unggahan. Untuk mengisi data bawaan (dipakai bila Apps Script belum diatur / belum ada unggahan): `python3 tools/jarvis_to_js.py "Jarvis_per_<tanggal>.xls" [--tanggal YYYY-MM-DD]` lalu commit `data/cui-jarvis.js`.
 - Kartu ringkasan dapat diklik untuk pop-up detail: rincian per UPT/ULTG & tipe tower, daftar tower bertemuan (urut terparah), rekap & lokasi temuan kritis / korosi P1 (dengan matriks P1–P3) / temuan lain. Baris di pop-up membuka detail klem.

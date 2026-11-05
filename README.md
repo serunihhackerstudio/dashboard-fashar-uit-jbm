@@ -9,7 +9,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 4. CUI Jarvis (hasil Climb Up Inspection tower dari export Jarvis)
 5. Tower Emergency *(Peralatan ERS)*
 6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
-7. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
+7. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM; database menunggu data asli)*
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
@@ -77,10 +77,10 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - **Dokumen BA mobilisasi** dapat diunggah di kotak Perpindahan lokasi maupun di form Tambah riwayat (PDF/JPG/PNG/DOC/DOCX, maks. 15 MB). File disimpan di folder Drive `BA_ROOT_ID` (`apps-script/Code.gs`, bisa diganti lewat Script Property `BA_FOLDER_ID`) dengan nama `BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]` (mis. `BA_Mobilisasi_GIS_150KV_TANDES_ke_GI_150KV_KALISARI_2026-11-04.pdf`); link-nya tersimpan di kolom NO / LINK BA riwayat. Akun pemilik skrip harus punya akses edit ke folder tersebut.
 - Setelah memperbarui `apps-script/Code.gs`, buat **New version** pada deployment.
 
-### Alat Berat (data dummy)
+### Alat Berat
 - Menu **Alat Berat** (Database Kesiapan Alat Berat UIT JBM) berisi **Daftar Alat**: filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, **peta lokasi penyimpanan** yang memfilter tabel, **tabel** 10 data/halaman dengan Tampilkan semua, atau tampilan kartu, serta pop-up detail alat. Pemberitahuan data contoh tampil sekali dan tidak muncul lagi di perangkat itu setelah ditutup.
-- Semua data masih **contoh**, dibuat di `data/alat-berat-dummy.js` (52 alat, 18 data peminjaman contoh untuk status "Dipinjam" & info terakhir dipinjam, koordinat perkiraan 7 lokasi). Logika tampilan ada di `alat-berat.js`.
-- Untuk data asli: ganti isi `window.ALAT_BERAT_DUMMY` dengan struktur yang sama (`alat[]`: id, kategori, nama, merk, kapasitas, tahun, noSeri, upt, lokasi, status, layak, kondisi, fungsi, suratIzin, foto; `peminjaman[]`: id, alatId, peminjam, pic, pekerjaan, tujuan, mulai, selesai, status, histori[]), atau sambungkan ke Google Sheets seperti menu Trafo Mobile.
+- Database saat ini **kosong** (data dummy sudah dihapus), menunggu data asli: `data/alat-berat.js`. Logika tampilan ada di `alat-berat.js`.
+- Untuk data asli: isi `window.ALAT_BERAT` dengan struktur yang sama (`alat[]`: id, kategori, nama, merk, kapasitas, tahun, noSeri, upt, lokasi, status, layak, kondisi, fungsi, suratIzin, foto; `peminjaman[]`: id, alatId, peminjam, pic, pekerjaan, tujuan, mulai, selesai, status, histori[]), atau sambungkan ke Google Sheets seperti menu Trafo Mobile.
 
 ### CUI Jarvis (Climb Up Inspection)
 - Menu **CUI Jarvis** (grup Inspeksi Transmisi) menampilkan hasil inspeksi tower dari export Jarvis: filter UPT/ULTG/penghantar/tanggal/cari, ringkasan (tower diinspeksi, tower dengan temuan, temuan kritis, korosi P1/P2/P3, temuan lain), grafik per UPT & progres mingguan, **kondisi per item inspeksi** per bagian tower (klik segmen untuk memfilter), **rekap per penghantar** (bisa diurutkan), dan **tabel data per klem** dengan pop-up detail.

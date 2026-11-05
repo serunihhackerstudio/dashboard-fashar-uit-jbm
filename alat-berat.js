@@ -1,16 +1,15 @@
 /* =========================================================
-   MENU ALAT BERAT — Daftar Alat
-   Sumber data: window.ALAT_BERAT (data/alat-berat.js)
-   Status "Dipinjam" & info terakhir dipinjam diturunkan dari data peminjaman.
+   MENU ALAT BERAT — Daftar Alat (data dummy)
+   Sumber data: window.ALAT_BERAT_DUMMY (data/alat-berat-dummy.js)
+   Status "Dipinjam" & info terakhir dipinjam diturunkan dari data peminjaman contoh.
    ========================================================= */
 (function () {
-  if (!$("#page-alat")) return;
-  const DB = window.ALAT_BERAT || { alat: [], peminjaman: [], koordinat: {} };
+  if (!$("#page-alat") || !window.ALAT_BERAT_DUMMY) return;
   const AB = {
-    alat: (DB.alat || []).map(a => ({ ...a })),
-    pj: (DB.peminjaman || []).map(p => ({ ...p, histori: (p.histori || []).map(h => ({ ...h })) })),
+    alat: window.ALAT_BERAT_DUMMY.alat.map(a => ({ ...a })),
+    pj: window.ALAT_BERAT_DUMMY.peminjaman.map(p => ({ ...p, histori: p.histori.map(h => ({ ...h })) })),
     kat: "", kondisi: "", q: "",
-    view: "tabel", lok: "", page: 1, all: false, coords: DB.koordinat || {}
+    view: "tabel", lok: "", page: 1, all: false, coords: window.ALAT_BERAT_DUMMY.koordinat || {}
   };
   const KAT = {
     crane: { label: "Crane", ic: '<path d="M4 21h9M7 21V4l12 3.5M7 4 4 8M19 7.5V14"/><path d="M17 14h4v3h-4z"/>' },
@@ -239,9 +238,12 @@
   }
 
   /* ---------------- Umum ---------------- */
-  /* Pemberitahuan database kosong */
-  $("#abDemo").hidden = AB.alat.length > 0;
-  if (!AB.alat.length) $("#abEmpty").textContent = "Database alat berat masih kosong.";
+  /* Pemberitahuan data contoh: tampil sekali, tidak muncul lagi setelah ditutup */
+  const DEMO_KEY = "fashar-ab-demo-closed";
+  let demoClosed = false;
+  try { demoClosed = localStorage.getItem(DEMO_KEY) === "1"; } catch (e) { }
+  $("#abDemo").hidden = demoClosed;
+  $("#abDemoClose").addEventListener("click", () => { $("#abDemo").hidden = true; try { localStorage.setItem(DEMO_KEY, "1"); } catch (e) { } });
 
   $("#abKat").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { AB.kat = b.dataset.k; AB.kondisi = AB.kondisi; renderDaftar(); } });
   $("#abKondisi").addEventListener("change", e => { AB.kondisi = e.target.value; renderDaftar(); });

@@ -9,7 +9,8 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 4. CUI Jarvis (hasil Climb Up Inspection tower dari export Jarvis)
 5. Tower Emergency *(Peralatan ERS)*
 6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
-7. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
+7. DC Mobile *(Peralatan ERS — data unit DC mobile dari `DATA_DC_MOBILE_UIT_JBM.xlsx`: ringkasan, peta per ULTG, grafik, tabel & detail)*
+8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
@@ -76,6 +77,11 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Riwayat lama dapat ditambahkan/dihapus di bagian **Riwayat perpindahan** form Edit. Pop-up Detail menampilkan timeline; tabel menampilkan tanggal pindah terakhir; peta menampilkan rute perpindahan untuk lokasi yang dipilih (hanya GI yang sudah punya koordinat di `TDB_COORDS`).
 - **Dokumen BA mobilisasi** dapat diunggah di kotak Perpindahan lokasi maupun di form Tambah riwayat (PDF/JPG/PNG/DOC/DOCX, maks. 15 MB). File disimpan di folder Drive `BA_ROOT_ID` (`apps-script/Code.gs`, bisa diganti lewat Script Property `BA_FOLDER_ID`) dengan nama `BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]` (mis. `BA_Mobilisasi_GIS_150KV_TANDES_ke_GI_150KV_KALISARI_2026-11-04.pdf`); link-nya tersimpan di kolom NO / LINK BA riwayat. Akun pemilik skrip harus punya akses edit ke folder tersebut.
 - Setelah memperbarui `apps-script/Code.gs`, buat **New version** pada deployment.
+
+### DC Mobile (Peralatan ERS)
+- Menu **DC Mobile** menampilkan unit DC mobile per UPT/ULTG: kartu ringkasan (total, kondisi normal, kalibrasi kedaluwarsa, belum kalibrasi, unit baru), peta lokasi per ULTG (posisi perkiraan), grafik sebaran per UPT, status kalibrasi, merk & tipe, kondisi & umur unit, tabel dengan filter UPT / status kalibrasi / pencarian, dan pop-up detail seluruh kolom Excel.
+- Memperbarui data: `python3 tools/xlsx_to_dc_mobile.py "DATA_DC_MOBILE_UIT_JBM.xlsx"` lalu commit `data/dc-mobile.js`. Tanggal **Diperbarui** = tanggal `updated_at`/`created_at` terbaru di file.
+- Koordinat ULTG untuk peta ada di `ULTG_COORD` (`dc-mobile.js`); tambahkan jika ada ULTG baru.
 
 ### Alat Berat (data dummy)
 - Menu **Alat Berat** (Database Kesiapan Alat Berat UIT JBM) berisi **Daftar Alat**: filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, **peta lokasi penyimpanan** yang memfilter tabel, **tabel** 10 data/halaman dengan Tampilkan semua, atau tampilan kartu, serta pop-up detail alat. Pemberitahuan data contoh tampil sekali dan tidak muncul lagi di perangkat itu setelah ditutup.

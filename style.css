@@ -531,7 +531,9 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .mv-last .ic{width:11px;height:11px}
 
 /* ---------- Alat Berat ---------- */
-.ab-demo{margin-bottom:16px}
+.ab-demo{margin-bottom:20px}
+.ab-pj-head{margin-top:40px}
+.ab-pj-head h2{font-size:17px}
 .ab-tabs{display:inline-flex;gap:4px;padding:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;margin-bottom:22px;max-width:100%}
 .ab-tab{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:9px 16px;border:0;border-radius:10px;background:transparent;color:var(--text);font:inherit;cursor:pointer;text-align:left}
 .ab-tab b{font-size:13.5px;font-weight:800}
@@ -600,6 +602,7 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .ab-table td{vertical-align:top;white-space:nowrap}
 .ab-table td.izin{white-space:normal;min-width:170px;max-width:220px;font-size:12.5px;color:var(--text-2)}
 .ab-table tbody tr{cursor:pointer}
+.ab-table td.no{color:var(--text-2);font-weight:700;width:48px}
 .pager:empty + #abAll{margin-left:auto}
 .lp-counts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .lp-cat{list-style:none;margin:0;padding:10px 20px 16px;display:flex;flex-direction:column;gap:6px}

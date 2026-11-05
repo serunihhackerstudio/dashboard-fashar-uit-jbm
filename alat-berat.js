@@ -57,6 +57,7 @@
     $("#abKondisi").innerHTML = KONDISI_OPT.map(([v, l, f]) => `<option value="${v}"${AB.kondisi === v ? " selected" : ""}>${l} (${inKat.filter(f).length})</option>`).join("");
     $("#abShown").innerHTML = `Menampilkan <b>${list.length}</b> alat${AB.lok ? ` di <b>${esc(AB.lok)}</b> <button type="button" class="linkbtn" data-clear-lok>hapus filter lokasi</button>` : ""}`;
     renderMap(base);
+    renderCharts(list);
     // tampilan
     $("#abTableCard").hidden = AB.view !== "tabel"; $("#abGrid").hidden = AB.view !== "kartu";
     document.querySelectorAll("#abView button").forEach(b => { const on = b.dataset.v === AB.view; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
@@ -86,6 +87,51 @@
       `<button type="button" class="pg" data-p="${AB.page + 1}" ${AB.page === pages ? "disabled" : ""} aria-label="Halaman berikutnya">›</button>`;
     $("#abAll").hidden = list.length <= PER_PAGE;
     $("#abAll").textContent = AB.all ? `Tampilkan ${PER_PAGE} per halaman` : `Tampilkan semua (${list.length})`;
+  }
+
+  /* ---------------- Ringkasan & grafik ---------------- */
+  const ST_COLOR = { Tersedia: "var(--primary)", Dipinjam: "var(--p2)", Perbaikan: "var(--p1)" };
+  const KD_COLOR = { "Baik": "var(--ok)", "Service Time": "var(--primary)", "Rusak Ringan": "var(--p2)", "Rusak Berat": "var(--p1)" };
+  const izinOf = a => /berlaku/i.test(a.suratIzin || "") ? "Berlaku" : /kedaluwarsa|kadaluarsa/i.test(a.suratIzin || "") ? "Kedaluwarsa" : "Belum ada data";
+  const umurOf = a => { const t = parseInt(a.tahun, 10); if (!t) return "Tidak diketahui"; const u = new Date().getFullYear() - t; return u < 10 ? "< 10 tahun" : u < 20 ? "10–19 tahun" : u < 30 ? "20–29 tahun" : "≥ 30 tahun"; };
+  const countBy = (list, fn, keys) => { const m = new Map(keys.map(k => [k, 0])); list.forEach(a => { const k = fn(a); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()]; };
+  const pctTxt = (n, t) => t ? Math.round(n / t * 100) + "%" : "0%";
+  function stackRow(label, parts, total, max, extra) {
+    return `<li${extra || ""}><span class="bl">${esc(label)}</span><span class="bt ab-stk" style="--w:${total / max * 100}%">${parts.filter(p => p[1]).map(([k, n, c]) =>
+      `<i style="flex:${n};background:${c}" title="${esc(k)}: ${n}"></i>`).join("")}</span><b>${total}</b></li>`;
+  }
+  function renderCharts(list) {
+    const n = list.length, st = s => list.filter(a => statusOf(a) === s).length;
+    const izinBad = list.filter(a => izinOf(a) !== "Berlaku").length;
+    $("#abKpi").innerHTML = [["Total alat", n, "tower", "primary"], ["Tersedia", st("Tersedia"), "check", "p3"], ["Dipinjam", st("Dipinjam"), "out", "p2"],
+      ["Dalam perbaikan", st("Perbaikan"), "wrench", "p1"], ["Tidak layak", list.filter(a => !a.layak).length, "x", "p1"], ["Surat izin perlu tindak lanjut", izinBad, "doc", "p2"]]
+      .map(([l, v, ic, t]) => `<div class="card kpi tone-${t}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div>${l !== "Total alat" ? `<div class="kpi-sub">${pctTxt(v, n)} dari total</div>` : ""}</div></div>`).join("");
+    $("#abLegStatus").innerHTML = Object.entries(ST_COLOR).map(([k, c]) => `<span><i class="swatch" style="background:${c}"></i>${k}</span>`).join("");
+    // per kategori
+    const kats = Object.entries(KAT).map(([k, v]) => { const xs = list.filter(a => a.kategori === k); return [k, v.label, xs]; }).filter(x => x[2].length);
+    const maxK = Math.max(1, ...kats.map(x => x[2].length));
+    $("#abChKat").innerHTML = kats.length ? `<ul class="bars ab-bars">${kats.map(([k, l, xs]) => stackRow(l, Object.keys(ST_COLOR).map(s => [s, xs.filter(a => statusOf(a) === s).length, ST_COLOR[s]]), xs.length, maxK,
+      ` data-kat="${k}" class="clickable${AB.kat === k ? " on" : ""}" title="Filter ${esc(l)}"`)).join("")}</ul>` : `<p class="dnil">Tidak ada data.</p>`;
+    // kondisi (donut) + kelayakan
+    const kd = countBy(list, a => a.kondisi, Object.keys(KD_COLOR)).filter(x => x[1]);
+    let acc = 0;
+    const segs = kd.map(([k, v]) => { const p = v / Math.max(n, 1) * 100, s = `<circle cx="50" cy="50" r="40" pathLength="100" style="stroke:${KD_COLOR[k] || "var(--text-3)"};stroke-dasharray:${Math.max(p - .6, .4)} ${100 - p + .6};stroke-dashoffset:${-acc}"><title>${esc(k)}: ${v}</title></circle>`; acc += p; return s; }).join("");
+    const layak = list.filter(a => a.layak).length;
+    $("#abChKondisi").innerHTML = n ? `<svg class="donut" viewBox="0 0 100 100" role="img" aria-label="Komposisi kondisi alat"><circle cx="50" cy="50" r="40" class="d-track"/>${segs}
+        <text x="50" y="49" class="d-total">${n}</text><text x="50" y="61" class="d-cap">alat</text></svg>
+      <div class="ab-donut-legend"><ul class="plist">${kd.map(([k, v]) => `<li><i class="swatch" style="background:${KD_COLOR[k]}"></i><span>${esc(k)}</span><b>${v}</b><em>${pctTxt(v, n)}</em></li>`).join("")}</ul>
+        <div class="ab-layak"><span>Kelayakan</span><div class="split-bar"><i style="flex:${layak};background:var(--ok)" title="Layak: ${layak}"></i><i style="flex:${n - layak};background:var(--p1)" title="Tidak layak: ${n - layak}"></i></div>
+        <small><b>${layak}</b> layak · <b>${n - layak}</b> tidak layak</small></div></div>` : `<p class="dnil">Tidak ada data.</p>`;
+    // per UPT
+    const ups = [...new Set(list.map(a => a.upt))].map(u => [u, list.filter(a => a.upt === u)]).sort((a, b) => b[1].length - a[1].length);
+    const maxU = Math.max(1, ...ups.map(x => x[1].length));
+    $("#abChUpt").innerHTML = ups.length ? `<ul class="bars ab-bars">${ups.map(([u, xs]) => stackRow(u.replace(/^UPT /, ""), Object.keys(ST_COLOR).map(s => [s, xs.filter(a => statusOf(a) === s).length, ST_COLOR[s]]), xs.length, maxU)).join("")}</ul>` : `<p class="dnil">Tidak ada data.</p>`;
+    // surat izin & umur
+    const iz = countBy(list, izinOf, ["Berlaku", "Kedaluwarsa", "Belum ada data"]), IZ_C = { "Berlaku": "var(--ok)", "Kedaluwarsa": "var(--p1)", "Belum ada data": "var(--text-3)" };
+    const um = countBy(list, umurOf, ["< 10 tahun", "10–19 tahun", "20–29 tahun", "≥ 30 tahun", "Tidak diketahui"]), UM_C = ["var(--ok)", "var(--primary)", "var(--p2)", "var(--p1)", "var(--text-3)"];
+    const mini = (title, rows, colorOf) => { const mx = Math.max(1, ...rows.map(r => r[1])); return `<div><h5>${title}</h5><ul class="bars ab-bars">${rows.map(([k, v], i) =>
+      `<li><span class="bl">${esc(k)}</span><span class="bt"><i style="width:${v / mx * 100}%;background:${colorOf(k, i)}"></i></span><b>${v}</b></li>`).join("")}</ul></div>`; };
+    $("#abChIzin").innerHTML = mini("Surat izin (SIA/SILO)", iz, k => IZ_C[k]) + mini("Umur alat", um, (k, i) => UM_C[i]);
   }
 
   /* ---------------- Peta lokasi alat ---------------- */
@@ -202,6 +248,7 @@
   $("#abKat").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { AB.kat = b.dataset.k; AB.kondisi = AB.kondisi; renderDaftar(); } });
   $("#abKondisi").addEventListener("change", e => { AB.kondisi = e.target.value; renderDaftar(); });
   $("#abSearch").addEventListener("input", e => { AB.q = e.target.value; renderDaftar(); });
+  $("#abChKat").addEventListener("click", e => { const li = e.target.closest("[data-kat]"); if (li) { AB.kat = AB.kat === li.dataset.kat ? "" : li.dataset.kat; renderDaftar(); } });
   $("#abView").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { AB.view = b.dataset.v; renderDaftar(); } });
   $("#abPager").addEventListener("click", e => { const b = e.target.closest("button[data-p]"); if (b && !b.disabled) { AB.page = +b.dataset.p; renderDaftar(true); } });
   $("#abAll").addEventListener("click", () => { AB.all = !AB.all; renderDaftar(); });

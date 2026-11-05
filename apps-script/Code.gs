@@ -64,7 +64,7 @@ const BA_MIME = {
 // Folder Google Drive untuk file export CUI Jarvis. Bisa diganti lewat Script Properties: CUI_FOLDER_ID
 const CUI_ROOT_ID = '1s7bQoZpSj4pTjk1RMmU79KN39pqiXEZb';
 // Spreadsheet khusus database CUI Jarvis. Bisa diganti lewat Script Properties: CUI_SPREADSHEET_ID
-const CUI_SPREADSHEET_ID = '1ZZIjI52Ea2Pg-LslfUGBvaHyqQLMDsf3JXkhIY4VPgc';
+const CUI_SPREADSHEET_ID = '1YAWA_ZEYbqM02LHjmsi1SZpBBnaPSRAMoE8I2DkZ7kU';
 const CUI_LOG_SHEET = 'CUI JARVIS UPLOAD';
 const CUI_DATA_SHEET = 'CUI JARVIS DATA';
 const CUI_LOG_HEAD = ['ID UNGGAH', 'TANGGAL UNGGAH', 'WAKTU UNGGAH', 'NAMA FILE', 'JUMLAH KLEM', 'JUMLAH TOWER',

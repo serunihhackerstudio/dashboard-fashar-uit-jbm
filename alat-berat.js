@@ -129,10 +129,15 @@
       const byKat = Object.entries(KAT).map(([k, v]) => [v, sel.items.filter(a => a.kategori === k).length]).filter(x => x[1]);
       const n = s => sel.items.filter(a => statusOf(a) === s).length;
       $("#abLocPanel").innerHTML = `<div class="lp-head"><button type="button" class="linkbtn lp-back" data-lok="">‹ Semua lokasi</button><h3>${esc(sel.lokasi)}</h3><p>${esc(sel.upt)} · ${sel.items.length} alat</p>
-          <div class="lp-counts"><span class="badge info">${n("Tersedia")} Tersedia</span><span class="badge warn">${n("Dipinjam")} Dipinjam</span><span class="badge bad">${n("Perbaikan")} Perbaikan</span></div></div>
+          ${lpChips("Status", ["Tersedia", "Dipinjam", "Perbaikan"].map(st => [st, ST_TONE[st], n(st)]))}
+          ${lpChips("Kelayakan", [["Layak", "ok", sel.items.filter(x => x.layak).length], ["Tidak layak", "bad", sel.items.filter(x => !x.layak).length]])}
+          ${lpChips("Kondisi", Object.keys(KONDISI_TONE).map(k => [k, KONDISI_TONE[k], sel.items.filter(x => x.kondisi === k).length]))}</div>
         <ul class="lp-cat">${byKat.map(([v, c]) => `<li><span>${svg(v.ic)}${v.label}</span><b>${c}</b></li>`).join("")}</ul>`;
     }
   }
+  /* Baris chip ringkasan di panel lokasi; nilai 0 ditampilkan redup */
+  const lpChips = (label, items) => `<div class="lp-chiprow"><span class="lp-chiplabel">${label}</span><div class="lp-counts">${items
+    .map(([l, tone, c]) => `<span class="badge ${tone}${c ? "" : " zero"}">${c} ${esc(l)}</span>`).join("")}</div></div>`;
   function selectLok(lok) {
     AB.lok = lok || "";
     renderDaftar();

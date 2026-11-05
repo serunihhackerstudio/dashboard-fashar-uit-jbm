@@ -153,8 +153,22 @@
       <label class="fld ab-kondisi"><span>Kondisi</span><select id="abKondisi"></select></label>
      </div>
     </div>
-    <p class="muted ab-shown" id="abShown"></p>
-    <div class="ab-grid" id="abGrid"></div>
+    <div class="card tdb-mapcard ab-mapcard">
+     <div class="tdb-mapwrap"><div id="abMap" role="region" aria-label="Peta lokasi alat berat"></div>
+      <p class="map-fallback" id="abMapFallback" hidden>Peta tidak dapat dimuat. Gunakan daftar lokasi di samping.</p>
+      <span class="map-note">Posisi titik perkiraan · angka = jumlah alat</span></div>
+     <aside class="tdb-locpanel" id="abLocPanel" aria-live="polite"></aside>
+    </div>
+    <div class="ab-listbar"><p class="muted ab-shown" id="abShown"></p>
+     <div class="seg" id="abView" role="group" aria-label="Tampilan"><button type="button" data-v="tabel" class="on" aria-pressed="true">Tabel</button><button type="button" data-v="kartu" aria-pressed="false">Kartu</button></div></div>
+    <div class="card" id="abTableCard">
+     <div class="table-wrap ab-table"><table class="table">
+      <thead><tr><th>ID</th><th>Alat</th><th>Merk/Type</th><th>Kapasitas</th><th>Tahun</th><th>No. Seri</th><th>Lokasi</th><th>Status</th><th>Kelayakan</th><th>Kondisi</th><th>Surat Izin</th><th><span class="sr-only">Aksi</span></th></tr></thead>
+      <tbody id="abRows"></tbody>
+     </table><div class="empty" id="abEmpty" hidden>Tidak ada alat yang cocok dengan filter.</div></div>
+     <div class="card-foot tdb-foot"><span class="muted" id="abTCount"></span><nav class="pager" id="abPager" aria-label="Halaman daftar alat"></nav><button class="btn ghost" type="button" id="abAll" hidden></button></div>
+    </div>
+    <div class="ab-grid" id="abGrid" hidden></div>
    </div>
 
    <div id="abPinjam" hidden>

@@ -72,5 +72,10 @@
       mulai, selesai, status: st, pic: ["Andi P.", "Budi S.", "Citra W.", "Dimas R.", "Eka F.", "Fajar N."][i % 6], histori: hist
     });
   }
-  window.ALAT_BERAT_DUMMY = { alat, peminjaman, generated: "dummy" };
+  // Koordinat perkiraan lokasi penyimpanan alat (untuk peta)
+  const koordinat = {
+    "Gudang Ketintang": [-7.312, 112.727], "GI Sukolilo": [-7.289, 112.789], "Gudang Gresik": [-7.162, 112.651],
+    "Gudang Pakis": [-7.955, 112.712], "Gudang Grati": [-7.705, 113.014], "Gudang Madiun": [-7.629, 111.523], "Gudang Pesanggaran": [-8.712, 115.209]
+  };
+  window.ALAT_BERAT_DUMMY = { alat, peminjaman, koordinat, generated: "dummy" };
 })();

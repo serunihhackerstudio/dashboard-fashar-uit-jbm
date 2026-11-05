@@ -588,6 +588,26 @@ details.tdb-field[open] summary::before{content:"▾ ";}
   .ab-detail-top{grid-template-columns:1fr}
 }
 
+#abMap{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
+.ab-mapcard{margin-top:16px;min-height:380px}
+.ab-mapcard .tdb-mapwrap{min-height:380px}
+.ab-mapcard .tdb-locpanel{max-height:440px}
+.ab-listbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 12px}
+.ab-listbar .ab-shown{margin:0}
+.ab-table{max-height:none;padding:0}
+.ab-table .table{min-width:1180px}
+.ab-table th{background:var(--surface-2)}
+.ab-table td{vertical-align:top;white-space:nowrap}
+.ab-table td.izin{white-space:normal;min-width:170px;max-width:220px;font-size:12.5px;color:var(--text-2)}
+.ab-table tbody tr{cursor:pointer}
+.pager:empty + #abAll{margin-left:auto}
+.lp-counts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lp-cat{list-style:none;margin:0;padding:10px 20px 16px;display:flex;flex-direction:column;gap:6px}
+.lp-cat li{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 10px;border-radius:9px;background:var(--surface-2)}
+.lp-cat li span{display:flex;align-items:center;gap:8px;font-weight:600}
+.lp-cat .ic{width:16px;height:16px;color:var(--primary)}
+@media (max-width:720px){ .pager:empty + #abAll{margin-left:0} }
+
 /* ---------- Pemilih UPT & GI ---------- */
 .fld-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
 .fld-group-h{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;font-size:12px;font-weight:800;color:var(--text)}

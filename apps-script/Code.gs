@@ -14,7 +14,9 @@
  *
  * CUI Jarvis: file export Jarvis yang diunggah dari dashboard disimpan permanen di
  * folder CUI_ROOT_ID (file asli + data ringkas JSON). Isi data terbaru juga ditulis
- * ke sheet CUI_DATA_SHEET dan setiap unggahan dicatat di sheet CUI_LOG_SHEET.
+ * ke sheet CUI_DATA_SHEET dan setiap unggahan dicatat di sheet CUI_LOG_SHEET —
+ * keduanya di spreadsheet DATABASE CUI JARVIS (CUI_SPREADSHEET_ID), terpisah dari
+ * spreadsheet Trafo Mobile.
  *
  * Dokumen BA mobilisasi disimpan di folder BA_ROOT_ID dengan nama
  * "BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]".
@@ -61,6 +63,8 @@ const BA_MIME = {
 };
 // Folder Google Drive untuk file export CUI Jarvis. Bisa diganti lewat Script Properties: CUI_FOLDER_ID
 const CUI_ROOT_ID = '1s7bQoZpSj4pTjk1RMmU79KN39pqiXEZb';
+// Spreadsheet khusus database CUI Jarvis. Bisa diganti lewat Script Properties: CUI_SPREADSHEET_ID
+const CUI_SPREADSHEET_ID = '1ZZIjI52Ea2Pg-LslfUGBvaHyqQLMDsf3JXkhIY4VPgc';
 const CUI_LOG_SHEET = 'CUI JARVIS UPLOAD';
 const CUI_DATA_SHEET = 'CUI JARVIS DATA';
 const CUI_LOG_HEAD = ['ID UNGGAH', 'TANGGAL UNGGAH', 'WAKTU UNGGAH', 'NAMA FILE', 'JUMLAH KLEM', 'JUMLAH TOWER',
@@ -469,8 +473,13 @@ function cuiFolder_() {
   return DriveApp.getFolderById(id);
 }
 
+function cuiSpreadsheet_() {
+  const id = PropertiesService.getScriptProperties().getProperty('CUI_SPREADSHEET_ID') || CUI_SPREADSHEET_ID;
+  return SpreadsheetApp.openById(id);
+}
+
 function cuiLogSheet_(create) {
-  const ss = SpreadsheetApp.getActive();
+  const ss = cuiSpreadsheet_();
   let sh = ss.getSheetByName(CUI_LOG_SHEET);
   if (!sh && create) {
     sh = ss.insertSheet(CUI_LOG_SHEET);
@@ -544,7 +553,7 @@ function cuiUpload_(req) {
 }
 
 function cuiWriteData_(doc, tanggal) {
-  const ss = SpreadsheetApp.getActive();
+  const ss = cuiSpreadsheet_();
   const sh = ss.getSheetByName(CUI_DATA_SHEET) || ss.insertSheet(CUI_DATA_SHEET);
   sh.clearContents();
   const fields = CUI_FIELDS.filter(f => doc.keys.indexOf(f[0]) >= 0);

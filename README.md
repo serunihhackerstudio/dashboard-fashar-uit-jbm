@@ -7,9 +7,9 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 2. Asesmen JAR
 3. Asesmen GI
 4. CUI Jarvis (hasil Climb Up Inspection tower dari export Jarvis)
-4. Tower Emergency *(Peralatan ERS)*
-5. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
-6. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
+5. Tower Emergency *(Peralatan ERS)*
+6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
+7. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.

@@ -157,7 +157,7 @@
   }
 
   /* ---------- Tabel data klem ---------- */
-  const PER = 10;
+  const PER = 25; // baris per halaman tabel data klem
   function renderTable(rows) {
     let list = S.f.only ? rows.filter(r => r._t.length) : rows;
     list = list.slice().sort((a, b) => b.tanggal.localeCompare(a.tanggal) || a.lokasi.localeCompare(b.lokasi) || a.clamp.localeCompare(b.clamp));

@@ -592,7 +592,7 @@ details.tdb-field[open] summary::before{content:"▾ ";}
   .ab-detail-top{grid-template-columns:1fr}
 }
 
-#abMap,#dcmMap{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
+#abMap,.alx-map{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
 .map-home a{display:grid!important;place-items:center}
 .map-home svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ab-mapcard{margin-top:16px;min-height:380px}
@@ -844,13 +844,13 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 @keyframes sk-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.sk,.cui-loading .cui-kpi .kpi-value,.cui-loading .cui-kpi .kpi-sub,.cui-loading .cui-item-h em,.cui-loading .cui-stack{animation:none}}
 
-/* DC Mobile */
-.dcm-merk li{grid-template-columns:170px minmax(0,1fr) 34px}
-.dcm-merk .bl{display:flex;flex-direction:column;line-height:1.25;white-space:normal}
-.dcm-merk .bl b{font-size:12.5px;color:var(--text);text-align:left;font-weight:700}
-.dcm-merk .bl small{font-size:11px;color:var(--text-3);overflow-wrap:anywhere}
-.dcm-note{margin:0}
-.dcm-table .table{min-width:1240px}
-.dcm-table td.izin{white-space:normal;min-width:200px;max-width:260px}
-.dcm-table .badge{white-space:nowrap}
-@media (max-width:520px){ .dcm-merk li{grid-template-columns:120px minmax(0,1fr) 30px} }
+/* Halaman data alat (DC Mobile, Filter Minyak) */
+.alx-merk li{grid-template-columns:170px minmax(0,1fr) 34px}
+.alx-merk .bl{display:flex;flex-direction:column;line-height:1.25;white-space:normal}
+.alx-merk .bl b{font-size:12.5px;color:var(--text);text-align:left;font-weight:700}
+.alx-merk .bl small{font-size:11px;color:var(--text-3);overflow-wrap:anywhere}
+.alx-note{margin:0}
+.alx-table .table{min-width:1240px}
+.alx-table td.izin{white-space:normal;min-width:200px;max-width:260px}
+.alx-table .badge{white-space:nowrap}
+@media (max-width:520px){ .alx-merk li{grid-template-columns:120px minmax(0,1fr) 30px} }

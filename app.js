@@ -1163,7 +1163,8 @@ const PAGES = {
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
   trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"],
   dcm: ["Peralatan ERS", "DC Mobile", "Data unit DC mobile (sistem DC bergerak) UIT JBM"],
-  alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"]
+  alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"],
+  fm: ["Alat Berat & Alat Bantu", "Filter Minyak", "Data unit filter minyak trafo UIT JBM"]
 };
 /* Tanggal "Diperbarui" di topbar: halaman boleh mendaftarkan tanggalnya sendiri lewat window.PAGE_UPDATED[id]() */
 const UPDATED_DEFAULT = "3 Okt 2026";
@@ -1218,5 +1219,5 @@ function toggleTheme() {
   store("fashar-theme", root.dataset.theme);
   if (TDB_MAP.map) tdbTiles();
   if (window.abMapTheme) window.abMapTheme();
-  if (window.dcmMapTheme) window.dcmMapTheme();
+  (window.ALAT_MAP_THEMES || []).forEach(f => f());
 }

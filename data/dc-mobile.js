@@ -1,4 +1,4 @@
-/* Dibuat otomatis oleh tools/xlsx_to_dc_mobile.py. Jangan diedit manual. */
+/* Dibuat otomatis oleh tools/xlsx_alat_to_js.py. Jangan diedit manual. */
 window.DC_MOBILE = {
  "source": "DATA_DC_MOBILE_UIT_JBM.xlsx",
  "diperbarui": "2026-08-04",

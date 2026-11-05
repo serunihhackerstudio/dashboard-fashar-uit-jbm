@@ -1,6 +1,7 @@
 /* =========================================================
    MENU CUI JARVIS — Climb Up Inspection tower transmisi
-   Sumber: window.CUI_JARVIS (data/cui-jarvis.js, dari tools/jarvis_to_js.py)
+   Sumber: unggahan terakhir di Google Drive (Apps Script ?action=cui);
+   cadangan: window.CUI_JARVIS (data/cui-jarvis.js, dari tools/jarvis_to_js.py)
    ========================================================= */
 (function () {
   if (!$("#page-cui")) return;
@@ -36,7 +37,7 @@
   const pct = (a, b) => b ? (a / b * 100).toFixed(1).replace(".", ",") + "%" : "0%";
 
   /* ---------- Data ---------- */
-  const S = { rows: [], source: "", periode: null, uploaded: false,
+  const S = { rows: [], source: "", periode: null, uploaded: false, remote: "off", history: [], pending: null,
     f: { upt: "", ultg: "", peng: "", from: "", to: "", q: "", only: false, item: null },
     page: 1, all: false, sort: { k: "risk", dir: -1 }, detail: null,
     t: { q: "", sev: "", item: "", tipe: "" } }; // filter khusus tabel data klem
@@ -89,8 +90,13 @@
     fillSelect("#cuiPeng", uniq(r2, "penghantar"), f.peng, "Semua penghantar");
     $("#cuiFrom").value = f.from; $("#cuiTo").value = f.to;
     if (S.periode) { $("#cuiFrom").min = $("#cuiTo").min = S.periode[0]; $("#cuiFrom").max = $("#cuiTo").max = S.periode[1]; }
-    $("#cuiSrc").innerHTML = `Sumber: <b>${esc(S.source)}</b>${S.diunggah ? ` · diunggah ${fmtD(S.diunggah)}` : ""} · periode ${fmtD(S.periode && S.periode[0])} – ${fmtD(S.periode && S.periode[1])} · ${fmt(S.rows.length)} klem` +
-      (S.uploaded ? ` <span class="badge warn">dimuat dari file — belum tersimpan permanen</span>` : "");
+    const st = S.uploaded ? ` <span class="badge warn">dimuat dari file — belum tersimpan permanen</span>`
+      : S.remote === "ok" ? ` <b class="src-live">● Tersimpan permanen (Google Drive)</b>`
+      : S.remote === "loading" ? ` <b class="src-static">● Memuat data terbaru…</b>`
+      : S.remote === "err" ? ` <b class="src-static" title="${esc(S.remoteErr || "")}">● Gagal memuat data permanen — menampilkan data bawaan</b>`
+      : S.remote === "empty" ? ` <b class="src-static">● Belum ada unggahan permanen — menampilkan data bawaan</b>` : "";
+    $("#cuiSrc").innerHTML = `Sumber: <b>${esc(S.source)}</b>${S.diunggah ? ` · diunggah ${fmtD(S.diunggah)}` : ""} · periode ${fmtD(S.periode && S.periode[0])} – ${fmtD(S.periode && S.periode[1])} · ${fmt(S.rows.length)} klem` + st +
+      (S.history.length ? ` · <button type="button" class="linkbtn" id="cuiHistBtn">Riwayat unggahan (${S.history.length})</button>` : "");
   }
 
   /* ---------- Ringkasan & grafik ---------- */
@@ -307,7 +313,7 @@
     renderTable(rows);
   }
 
-  /* ---------- Muat file export Jarvis baru (di browser) ---------- */
+  /* ---------- Unggah file export Jarvis baru ---------- */
   const FIELDS = [["upt", "Upt"], ["ultg", "Ultg"], ["gi", "Gi"], ["penghantar", "Penghantar"], ["lokasi", "Lokasi"], ["clamp", "Clamp"], ["tanggal", "Tanggal Inspeksi"], ["tipe", "Tipe Tower"],
     ["halaman", "Halaman Tower"], ["acd", "Acd"], ["chimney", "Chimney"], ["stub", "Stub"], ["nomor", "Nomor Tower"], ["plat", "Plat Tanda Bahaya"], ["stepbolt", "Step Bolt"], ["row", "Right Of Way"],
     ["isolator", "Isolator"], ["aksCold", "Aksesoris Sisi Cold"], ["aksHot", "Aksesoris Sisi Hot"], ["konduktor", "Konduktor"], ["gap", "Gap Arching"],
@@ -334,14 +340,89 @@
     const ds = rows.map(r => dict.tanggal[r[keys.indexOf("tanggal")]]).sort();
     return { source: name, periode: [ds[0], ds[ds.length - 1]], keys, dict, rows };
   }
+  const API = typeof TDB_API === "string" ? TDB_API : "";
+  /* Pilih file → baca di browser → dialog konfirmasi: simpan permanen atau lihat saja */
   async function onFile(file) {
     if (!file) return;
     const btn = $("#cuiUploadLbl"); btn.classList.add("disabled"); $("#cuiUploadTxt").textContent = "Membaca file…";
     try {
       const doc = parseExport(await file.text(), file.name);
-      load(doc, true); render(); setUpdated("cui"); toast(`${fmt(doc.rows.length)} klem dimuat dari ${file.name}`);
+      if (!API) { load(doc, true); render(); setUpdated("cui"); toast(`${fmt(doc.rows.length)} klem dimuat dari ${file.name} (belum permanen — Apps Script belum diatur)`); return; }
+      S.pending = { file, doc }; openUpload();
     } catch (e) { toast(String(e.message || e)); }
-    finally { btn.classList.remove("disabled"); $("#cuiUploadTxt").textContent = "Muat file export Jarvis"; }
+    finally { btn.classList.remove("disabled"); $("#cuiUploadTxt").textContent = "Unggah file export Jarvis"; }
+  }
+  function tokUi() {
+    const tok = tokenGet();
+    $("#cui_token").value = tok; $("#cuiTokIn").hidden = !!tok; $("#cuiTokSaved").hidden = !tok;
+  }
+  function upErr(msg) { $("#cuiUpErr").textContent = msg || ""; $("#cuiUpErr").hidden = !msg; }
+  function openUpload() {
+    const { file, doc } = S.pending, li = doc.keys.indexOf("lokasi");
+    const towers = new Set(doc.rows.map(r => r[li])).size;
+    $("#cuiUpBody").innerHTML = `<dl class="cui-up-sum">${[["Nama file", file.name], ["Ukuran", (file.size / 1048576).toFixed(1).replace(".", ",") + " MB"],
+      ["Titik klem", fmt(doc.rows.length)], ["Tower", fmt(towers)], ["Periode inspeksi", `${fmtD(doc.periode[0])} – ${fmtD(doc.periode[1])}`]]
+      .map(([l, v]) => `<div><dt>${l}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      <p class="cui-up-note">File asli dan data ringkasnya disimpan di folder Google Drive CUI Jarvis, isi datanya ditulis ke sheet <b>CUI JARVIS DATA</b>, dan unggahan dicatat di sheet <b>CUI JARVIS UPLOAD</b>. Tanggal “Diperbarui” mengikuti tanggal unggah.</p>`;
+    upErr(""); tokUi(); setBusy(false);
+    $("#cuiUpDlg").showModal();
+  }
+  function setBusy(on, txt) {
+    $("#cuiUpSave").disabled = $("#cuiUpLocal").disabled = on;
+    $("#cuiUpSave").textContent = on ? (txt || "Menyimpan…") : "Simpan permanen";
+  }
+  /* File asli dikompresi gzip di browser agar ringan dikirim (12 MB → ±1 MB) */
+  async function gzipB64(file) {
+    if (!window.CompressionStream) return null;
+    try {
+      const buf = await new Response(file.stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+      if (buf.byteLength > 30 * 1048576) return null;
+      return await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(new Blob([buf])); });
+    } catch (e) { return null; }
+  }
+  async function saveUpload() {
+    const token = ($("#cui_token").value || "").trim();
+    if (!token) { upErr("Masukkan kode akses edit."); $("#cui_token").focus(); return; }
+    const { file, doc } = S.pending;
+    upErr(""); setBusy(true, "Menyiapkan file…");
+    try {
+      const gz = await gzipB64(file);
+      setBusy(true, "Menyimpan ke Google Drive…");
+      const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token, action: "cui_upload", doc, file: gz ? { name: file.name, gz } : null }) })).json();
+      if (!j.ok) { if (j.code === "auth") { tokenForget(true); tokUi(); } throw new Error(j.error || "Gagal menyimpan file."); }
+      tokenSave(token);
+      S.remote = "ok"; S.history = j.history || []; S.pending = null;
+      load(j.doc, false); render(); setUpdated("cui");
+      $("#cuiUpDlg").close();
+      toast(`Tersimpan permanen: ${fmt(j.doc.rows.length)} klem dari ${j.doc.source}`);
+    } catch (e) {
+      upErr(/Failed to fetch|NetworkError/i.test(String(e.message)) ? "Gagal terhubung ke Apps Script. Periksa koneksi lalu coba lagi." : String(e.message || e));
+    } finally { setBusy(false); }
+  }
+  function viewLocal() {
+    const { doc } = S.pending; S.pending = null; $("#cuiUpDlg").close();
+    load(doc, true); render(); setUpdated("cui"); toast(`${fmt(doc.rows.length)} klem dimuat dari ${doc.source} (hanya di browser ini)`);
+  }
+  function openHistory() {
+    $("#cuiHistBody").innerHTML = S.history.length ? `<div class="table-wrap flat"><table class="table cui-hist"><thead><tr><th>Tanggal unggah</th><th>File</th><th class="num">Klem</th><th class="num">Tower</th><th>Periode inspeksi</th><th>Tautan</th></tr></thead><tbody>
+      ${S.history.map((h, i) => `<tr><td>${fmtD(h.tanggal)}<small>${esc(h.waktu || "")}</small></td><td>${esc(h.file)}${i === 0 ? ` <span class="badge ok">Dipakai</span>` : ""}</td>
+        <td class="num">${fmt(h.klem)}</td><td class="num">${fmt(h.tower)}</td><td>${fmtD(h.periode && h.periode[0])} – ${fmtD(h.periode && h.periode[1])}</td>
+        <td>${h.asli ? `<a href="${esc(h.asli)}" target="_blank" rel="noopener">File asli</a>` : ""}${h.asli && h.json ? " · " : ""}${h.json ? `<a href="${esc(h.json)}" target="_blank" rel="noopener">Data JSON</a>` : ""}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="dnil">Belum ada unggahan.</p>`;
+    $("#cuiHistDlg").showModal();
+  }
+  /* Ambil unggahan terakhir dari Google Drive (via Apps Script) */
+  async function loadRemote() {
+    if (!API) return;
+    S.remote = "loading"; if (S.rows.length) renderFilters();
+    try {
+      const j = await (await fetch(API + (API.includes("?") ? "&" : "?") + "action=cui")).json();
+      if (!j.ok) throw new Error(j.error || "Gagal memuat data CUI");
+      S.history = j.history || [];
+      if (S.uploaded) { S.remote = j.doc ? "ok" : "empty"; renderFilters(); return; } // jangan timpa file yang sedang dilihat
+      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; renderFilters(); }
+    } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); if (S.rows.length) renderFilters(); }
+    if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
   }
 
   /* ---------- Event ---------- */
@@ -374,6 +455,11 @@
   $("#cuiAll").addEventListener("click", () => { S.all = !S.all; S.page = 1; renderTable(filtered(false)); });
   $("#cuiActive").addEventListener("click", e => { const b = e.target.closest("[data-clear]"); if (b) setF(b.dataset.clear, b.dataset.clear === "item" ? null : ""); });
   $("#cuiFile").addEventListener("change", e => { onFile(e.target.files[0]); e.target.value = ""; });
+  $("#cuiUpForm").addEventListener("submit", e => { e.preventDefault(); saveUpload(); });
+  $("#cuiUpLocal").addEventListener("click", viewLocal);
+  $("#cuiTokForget").addEventListener("click", () => { tokenForget(); tokUi(); $("#cui_token").focus(); });
+  $("#cuiSrc").addEventListener("click", e => { if (e.target.closest("#cuiHistBtn")) openHistory(); });
+  $("#cuiHistDlg").addEventListener("click", e => { if (e.target === $("#cuiHistDlg")) $("#cuiHistDlg").close(); });
   $("#cuiDetail").addEventListener("click", e => { if (e.target === $("#cuiDetail")) $("#cuiDetail").close(); });
   $("#cuiKpi").addEventListener("click", e => { const c = e.target.closest("[data-kpi]"); if (c) openKpi(c.dataset.kpi); });
   $("#cuiKpi").addEventListener("keydown", e => { const c = e.target.closest("[data-kpi]"); if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openKpi(c.dataset.kpi); } });
@@ -386,4 +472,5 @@
   window.PAGE_UPDATED.cui = () => S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
   if (window.CUI_JARVIS) { load(window.CUI_JARVIS, false); render(); }
   if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
+  loadRemote();
 })();

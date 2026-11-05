@@ -139,10 +139,6 @@
   <!-- ALAT BERAT (data dummy) -->
   <section id="page-alat" class="page">
    <div class="callout warn ab-demo">Mode contoh: seluruh data alat berat & peminjaman di halaman ini adalah <b>data dummy</b>. Pengajuan & approval hanya tersimpan sementara di browser ini dan hilang saat halaman dimuat ulang.</div>
-   <div class="ab-tabs" role="tablist" aria-label="Menu alat berat">
-    <button type="button" class="ab-tab on" role="tab" aria-selected="true" data-tab="daftar"><b>Daftar Alat</b><span>Registry &amp; kondisi armada</span></button>
-    <button type="button" class="ab-tab" role="tab" aria-selected="false" data-tab="pinjam"><b>Peminjaman &amp; Histori</b><span>Pengajuan, approval, dan riwayat</span></button>
-   </div>
 
    <div id="abDaftar">
     <div class="ab-head"><div><div class="eyebrow">Fleet registry</div><h2>Daftar Alat Berat &amp; Alat Bantu</h2></div><span class="muted" id="abCount"></span></div>
@@ -163,7 +159,7 @@
      <div class="seg" id="abView" role="group" aria-label="Tampilan"><button type="button" data-v="tabel" class="on" aria-pressed="true">Tabel</button><button type="button" data-v="kartu" aria-pressed="false">Kartu</button></div></div>
     <div class="card" id="abTableCard">
      <div class="table-wrap ab-table"><table class="table">
-      <thead><tr><th>ID</th><th>Alat</th><th>Merk/Type</th><th>Kapasitas</th><th>Tahun</th><th>No. Seri</th><th>Lokasi</th><th>Status</th><th>Kelayakan</th><th>Kondisi</th><th>Surat Izin</th><th><span class="sr-only">Aksi</span></th></tr></thead>
+      <thead><tr><th class="num">No</th><th>ID</th><th>Alat</th><th>Merk/Type</th><th>Kapasitas</th><th>Tahun</th><th>No. Seri</th><th>Lokasi</th><th>Status</th><th>Kelayakan</th><th>Kondisi</th><th>Surat Izin</th><th><span class="sr-only">Aksi</span></th></tr></thead>
       <tbody id="abRows"></tbody>
      </table><div class="empty" id="abEmpty" hidden>Tidak ada alat yang cocok dengan filter.</div></div>
      <div class="card-foot tdb-foot"><span class="muted" id="abTCount"></span><nav class="pager" id="abPager" aria-label="Halaman daftar alat"></nav><button class="btn ghost" type="button" id="abAll" hidden></button></div>
@@ -171,7 +167,8 @@
     <div class="ab-grid" id="abGrid" hidden></div>
    </div>
 
-   <div id="abPinjam" hidden>
+   <div id="abPinjam">
+    <div class="section-head ab-pj-head"><div><div class="eyebrow">Peminjaman &amp; histori</div><h2>Pengajuan, approval, dan riwayat</h2></div></div>
     <div class="grid g4" id="abPjKpi"></div>
     <div class="section-head"><div><h2>Pengajuan Peminjaman</h2><p id="abPjCount"></p></div>
      <button class="btn primary" type="button" id="abNewBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajukan peminjaman</button></div>

@@ -70,9 +70,9 @@
     const per = AB.all ? Math.max(list.length, 1) : PER_PAGE, pages = Math.max(1, Math.ceil(list.length / per));
     AB.page = Math.min(Math.max(1, AB.page), pages);
     const from = (AB.page - 1) * per, rows = list.slice(from, from + per);
-    $("#abRows").innerHTML = rows.map(a => {
+    $("#abRows").innerHTML = rows.map((a, i) => {
       const st = statusOf(a);
-      return `<tr data-id="${a.id}" tabindex="0"><td class="muted">${a.id}</td>
+      return `<tr data-id="${a.id}" tabindex="0"><td class="num no">${from + i + 1}</td><td class="muted">${a.id}</td>
         <td><b>${esc(a.nama)}</b><div class="muted sm">${esc(KAT[a.kategori].label)}${a.fungsi !== KAT[a.kategori].label ? " · " + esc(a.fungsi) : ""}</div></td>
         <td>${esc(a.merk || "-")}</td><td class="num">${esc(a.kapasitas || "-")}</td><td class="num">${esc(a.tahun || "-")}</td><td><code>${esc(a.noSeri || "—")}</code></td>
         <td>${esc(a.lokasi)}<div class="muted sm">${esc(a.upt)}</div></td>
@@ -269,11 +269,10 @@
   }
 
   /* ---------------- Umum ---------------- */
+  /* Tab dihapus: Daftar Alat & Peminjaman tampil berurutan; "pinjam" hanya menggulir ke bagian peminjaman */
   function switchTab(t) {
     AB.tab = t;
-    document.querySelectorAll(".ab-tab").forEach(b => { const on = b.dataset.tab === t; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
-    $("#abDaftar").hidden = t !== "daftar"; $("#abPinjam").hidden = t !== "pinjam";
-    if (t === "daftar") setTimeout(mapResize, 60);
+    if (t === "pinjam") $("#abPinjam").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function renderAll() { renderDaftar(); renderPinjam(); }
 
@@ -287,11 +286,10 @@
   $("#abRows").addEventListener("keydown", e => { const t = e.target.closest("tr[data-id]"); if (t && e.key === "Enter") openDetail(t.dataset.id); });
   $("#abLocPanel").addEventListener("click", e => { const b = e.target.closest("[data-lok]"); if (b) selectLok(b.dataset.lok); });
   $("#abShown").addEventListener("click", e => { if (e.target.closest("[data-clear-lok]")) selectLok(""); });
-  const onShow = () => { if (location.hash === "#alat" && AB.tab === "daftar") setTimeout(mapResize, 80); };
+  const onShow = () => { if (location.hash === "#alat") setTimeout(mapResize, 80); };
   addEventListener("hashchange", onShow);
   $("#abGrid").addEventListener("click", e => { const c = e.target.closest("[data-id]"); if (c) openDetail(c.dataset.id); });
   $("#abGrid").addEventListener("keydown", e => { const c = e.target.closest("[data-id]"); if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDetail(c.dataset.id); } });
-  document.querySelectorAll(".ab-tab").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
   $("#abPjStatus").addEventListener("click", e => { const b = e.target.closest("button[data-v]"); if (b) { AB.pjStatus = b.dataset.v; renderPinjam(); } });
   $("#abPjSearch").addEventListener("input", e => { AB.pjQ = e.target.value; renderPinjam(); });
   $("#abPjRows").addEventListener("click", e => { const b = e.target.closest("[data-pj]"); if (b) openPj(b.dataset.pj); });

@@ -11,7 +11,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 5. Tower Emergency *(Peralatan ERS)*
 6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
 7. DC Mobile *(Peralatan ERS — data unit DC mobile dari `DATA_DC_MOBILE_UIT_JBM.xlsx`: ringkasan, peta per ULTG, grafik, tabel & detail)*
-8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
+8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM; data dummy, menunggu sinkronisasi data dari aplikasi WARNOTO)*
 9. Filter Minyak *(Alat Berat & Alat Bantu — data unit filter minyak trafo dari `FILTER_MINYAK_UIT_JBM.xlsx`)*
 
 ## Status

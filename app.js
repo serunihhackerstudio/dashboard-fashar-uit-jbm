@@ -1159,7 +1159,7 @@ const PAGES = {
   health: ["Kondisi Aset", "Health Index", "Sebaran prioritas temuan aset Jaringan dan Gardu Induk"],
   jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
-  cui: ["Kondisi Aset", "CUI Jarvis", "Hasil Climb Up Inspection tower transmisi dari Jarvis"],
+  cui: ["Inspeksi Transmisi", "CUI Jarvis", "Hasil Climb Up Inspection tower transmisi dari Jarvis"],
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
   trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"],
   alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"]

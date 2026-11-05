@@ -77,6 +77,24 @@ const CUI_FIELDS = [['upt', 'UPT'], ['ultg', 'ULTG'], ['gi', 'GI'], ['penghantar
   ['ewAks2', 'AKSESORIS EARTH WIRE LINE 2'], ['ket', 'KETERANGAN']];
 const CUI_MAX_ROWS = 200000;
 
+/**
+ * Jalankan SEKALI dari editor Apps Script (pilih "izinkanAkses" → Run) untuk
+ * memberi izin Drive & Sheets yang dibutuhkan foto, BA, dan penyimpanan CUI Jarvis.
+ * Setelah itu Deploy → Manage deployments → Edit → New version → Deploy.
+ */
+function izinkanAkses() {
+  const p = PropertiesService.getScriptProperties();
+  const out = [
+    'Spreadsheet Trafo Mobile: ' + SpreadsheetApp.getActive().getName(),
+    'Spreadsheet CUI Jarvis: ' + cuiSpreadsheet_().getName(),
+    'Folder CUI Jarvis: ' + cuiFolder_().getName(),
+    'Folder foto: ' + DriveApp.getFolderById(p.getProperty('PHOTO_FOLDER_ID') || PHOTO_ROOT_ID).getName(),
+    'Folder BA: ' + DriveApp.getFolderById(p.getProperty('BA_FOLDER_ID') || BA_ROOT_ID).getName()
+  ];
+  Logger.log('Izin OK:\n' + out.join('\n'));
+  return out;
+}
+
 function doGet(e) {
   try {
     const p = (e && e.parameter) || {};

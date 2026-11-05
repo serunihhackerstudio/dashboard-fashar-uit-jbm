@@ -675,6 +675,11 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .cui-ratio{display:inline-block;width:56px;height:6px;margin-right:8px;vertical-align:middle;border-radius:999px;background:var(--track);overflow:hidden}
 .cui-ratio i{display:block;height:100%;background:var(--sev-p2)}
 .cui-data .table{min-width:1100px}
+.cui-ttools{gap:10px}
+.cui-ttools .search{flex:1 1 320px}
+.cui-ttools select{padding:9px 10px;border:1px solid var(--border-2);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text);font:inherit;font-size:13px;max-width:240px}
+.cui-tsev{flex-basis:100%;width:fit-content}
+.cui-tsev .dot{width:8px;height:8px;margin-right:6px;vertical-align:1px}
 .cui-data td.clamp{white-space:normal;min-width:180px;max-width:240px}
 .cui-data td.temuan{white-space:normal;min-width:300px}
 .cui-t{display:inline-flex;align-items:center;gap:4px;margin:0 8px 4px 0;font-size:12px;color:var(--text-2)}

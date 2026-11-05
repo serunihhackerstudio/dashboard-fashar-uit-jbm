@@ -38,7 +38,8 @@
   /* ---------- Data ---------- */
   const S = { rows: [], source: "", periode: null, uploaded: false,
     f: { upt: "", ultg: "", peng: "", from: "", to: "", q: "", only: false, item: null },
-    page: 1, all: false, sort: { k: "risk", dir: -1 }, detail: null };
+    page: 1, all: false, sort: { k: "risk", dir: -1 }, detail: null,
+    t: { q: "", sev: "", item: "", tipe: "" } }; // filter khusus tabel data klem
   function load(doc, uploaded) {
     const K = doc.keys;
     S.rows = doc.rows.map((r, i) => { const o = { _i: i }; K.forEach((k, j) => { o[k] = doc.dict[k][r[j]]; }); return o; });
@@ -163,8 +164,29 @@
 
   /* ---------- Tabel data klem ---------- */
   const PER = 25; // baris per halaman tabel data klem
+  const T_SEV = [["", "Semua"], ["ada", "Ada temuan"], ["kritis", "Kritis"], ["p1", "P1"], ["p2", "P2"], ["p3", "P3"], ["lain", "Lain"], ["ok", "Normal"]];
+  const tipeOf = r => r.tipe && r.tipe !== "-" ? r.tipe : "Tidak diisi";
+  function tableFilter(rows, skipSev) {
+    const t = S.t, q = t.q.trim().toLowerCase();
+    return rows.filter(r => (!t.item || r._t.some(x => x.i.k === t.item)) && (!t.tipe || tipeOf(r) === t.tipe)
+      && (skipSev || !t.sev || (t.sev === "ada" ? r._t.length > 0 : r._worst === t.sev))
+      && (!q || (r._q || (r._q = [r.lokasi, r.clamp, r.penghantar, r.gi, r.upt, r.ultg, tipeOf(r), ...r._t.map(x => x.i.label + " " + x.v)].join(" ").toLowerCase())).includes(q)));
+  }
+  function renderTableTools(rows) {
+    const t = S.t, base = tableFilter(rows, true);
+    const cnt = v => v === "" ? base.length : v === "ada" ? base.filter(r => r._t.length).length : base.filter(r => r._worst === v).length;
+    $("#cuiTSev").innerHTML = T_SEV.map(([v, l]) => `<button type="button" data-v="${v}" class="${t.sev === v ? "on" : ""}" aria-pressed="${t.sev === v}">${v && v !== "ada" ? `<i class="dot seg-${v}"></i>` : ""}${l} <small>${fmt(cnt(v))}</small></button>`).join("");
+    const itemCnt = k => rows.filter(r => r._t.some(x => x.i.k === k)).length;
+    $("#cuiTItem").innerHTML = `<option value="">Semua item temuan</option>` + Object.entries(SECTIONS).map(([sec, name]) => `<optgroup label="${esc(name)}">${ITEMS.filter(i => i.sec === sec)
+      .map(i => [i, itemCnt(i.k)]).filter(([, n]) => n).map(([i, n]) => `<option value="${i.k}"${t.item === i.k ? " selected" : ""}>${esc(i.label)} (${fmt(n)})</option>`).join("")}</optgroup>`).join("");
+    if (t.item && !$("#cuiTItem").value) t.item = "";
+    const tipes = [...new Set(rows.map(tipeOf))].sort();
+    $("#cuiTTipe").innerHTML = `<option value="">Semua tipe tower</option>` + tipes.map(v => `<option${t.tipe === v ? " selected" : ""}>${esc(v)}</option>`).join("");
+    $("#cuiTReset").hidden = !(t.q || t.sev || t.item || t.tipe);
+  }
   function renderTable(rows) {
-    let list = S.f.only ? rows.filter(r => r._t.length) : rows;
+    renderTableTools(rows);
+    let list = tableFilter(rows);
     list = list.slice().sort((a, b) => b.tanggal.localeCompare(a.tanggal) || a.lokasi.localeCompare(b.lokasi) || a.clamp.localeCompare(b.clamp));
     const per = S.all ? Math.max(list.length, 1) : PER, pages = Math.max(1, Math.ceil(list.length / per));
     S.page = Math.min(Math.max(1, S.page), pages);
@@ -330,8 +352,14 @@
   $("#cuiFrom").addEventListener("change", e => setF("from", e.target.value));
   $("#cuiTo").addEventListener("change", e => setF("to", e.target.value));
   $("#cuiQ").addEventListener("input", e => { S.f.q = e.target.value; render(); });
-  $("#cuiOnly").addEventListener("change", e => { S.f.only = e.target.checked; render(); });
-  $("#cuiReset").addEventListener("click", () => { S.f = { upt: "", ultg: "", peng: "", from: "", to: "", q: "", only: false, item: null }; $("#cuiQ").value = ""; $("#cuiOnly").checked = false; render(); });
+  $("#cuiReset").addEventListener("click", () => { S.f = { upt: "", ultg: "", peng: "", from: "", to: "", q: "", only: false, item: null }; $("#cuiQ").value = ""; render(); });
+  /* filter & pencarian khusus tabel data klem */
+  const tUpd = () => { S.page = 1; renderTable(filtered(false)); };
+  $("#cuiTQ").addEventListener("input", e => { S.t.q = e.target.value; tUpd(); });
+  $("#cuiTItem").addEventListener("change", e => { S.t.item = e.target.value; tUpd(); });
+  $("#cuiTTipe").addEventListener("change", e => { S.t.tipe = e.target.value; tUpd(); });
+  $("#cuiTSev").addEventListener("click", e => { const b = e.target.closest("button[data-v]"); if (b) { S.t.sev = b.dataset.v; tUpd(); } });
+  $("#cuiTReset").addEventListener("click", () => { S.t = { q: "", sev: "", item: "", tipe: "" }; $("#cuiTQ").value = ""; tUpd(); });
   $("#cuiItems").addEventListener("click", e => {
     const b = e.target.closest("[data-k]"); if (!b) return;
     const same = S.f.item && S.f.item.k === b.dataset.k && S.f.item.v === b.dataset.v;

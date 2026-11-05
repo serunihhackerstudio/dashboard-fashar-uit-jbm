@@ -936,3 +936,14 @@ details.tdb-field[open] summary::before{content:"▾ ";}
   .hh-photo{justify-self:center;width:min(100%,300px);transform:rotate(0)}
 }
 @media (prefers-reduced-motion:reduce){.hh-orb,.feat,.hl-card{animation:none}.feat:hover{transform:none}}
+
+/* Alat Berat — banner menunggu sinkronisasi WARNOTO */
+.ab-sync{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px 18px;border-radius:14px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--p2) 16%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--p2) 40%,var(--border))}
+.ab-sync b{display:block;font-size:14.5px;font-weight:800;color:color-mix(in srgb,var(--p2) 55%,var(--text))}
+.ab-sync p{margin:3px 0 0;font-size:12.5px;color:var(--text-2)}
+.ab-sync-ic{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--p2) 18%,transparent);color:var(--p2)}
+.ab-sync-ic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;animation:spin 2.4s linear infinite}
+@media (prefers-reduced-motion:reduce){.ab-sync-ic svg{animation:none}}
+.feat-pending{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--p2);background:color-mix(in srgb,var(--p2) 14%,transparent);padding:4px 9px;border-radius:99px}
+.live-dot.pending{background:var(--p2);box-shadow:0 0 0 3px color-mix(in srgb,var(--p2) 22%,transparent)}

@@ -238,12 +238,10 @@
   }
 
   /* ---------------- Umum ---------------- */
-  /* Pemberitahuan data contoh: tampil sekali, tidak muncul lagi setelah ditutup */
-  const DEMO_KEY = "fashar-ab-demo-closed";
-  let demoClosed = false;
-  try { demoClosed = localStorage.getItem(DEMO_KEY) === "1"; } catch (e) { }
-  $("#abDemo").hidden = demoClosed;
-  $("#abDemoClose").addEventListener("click", () => { $("#abDemo").hidden = true; try { localStorage.setItem(DEMO_KEY, "1"); } catch (e) { } });
+  /* Data menunggu sinkronisasi dari aplikasi WARNOTO: chip "Diperbarui" menampilkan status ini */
+  window.PAGE_UPDATED = window.PAGE_UPDATED || {};
+  window.PAGE_UPDATED.alat = () => ({ label: "Menunggu sinkronisasi WARNOTO", pending: true, title: "Menunggu sinkronisasi data dari aplikasi WARNOTO" });
+  if (location.hash === "#alat" && typeof setUpdated === "function") setUpdated("alat");
 
   $("#abKat").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { AB.kat = b.dataset.k; AB.kondisi = AB.kondisi; renderDaftar(); } });
   $("#abKondisi").addEventListener("change", e => { AB.kondisi = e.target.value; renderDaftar(); });

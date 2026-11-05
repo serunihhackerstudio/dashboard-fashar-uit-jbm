@@ -2,6 +2,7 @@
    Dashboard FASHAR UIT JBM — Design System
    ========================================================= */
 :root{
+  --sev-p3:#D9A400; --sev-p2:#EA7A12; --sev-kritis:#7F1D1D;
   --bg:#F4F6FA; --surface:#FFFFFF; --surface-2:#F7F9FC; --border:#E5E9F0; --border-2:#D6DDE7;
   --text:#0F1E33; --text-2:#5A6A80; --text-3:#8995A7;
   --primary:#1667D9; --primary-soft:#E8F1FD; --primary-ink:#0D4FAE;
@@ -18,6 +19,7 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
+    --sev-p3:#E8C547; --sev-p2:#F59A4A; --sev-kritis:#B91C1C;
     --bg:#0A111E; --surface:#111A2B; --surface-2:#162136; --border:#1F2B41; --border-2:#2A3852;
     --text:#E7EDF6; --text-2:#A2B0C4; --text-3:#6D7C93;
     --primary:#5B9DFF; --primary-soft:rgba(91,157,255,.14); --primary-ink:#8DBBFF;
@@ -28,6 +30,7 @@
   }
 }
 :root[data-theme="dark"]{
+  --sev-p3:#E8C547; --sev-p2:#F59A4A; --sev-kritis:#B91C1C;
   --bg:#0A111E; --surface:#111A2B; --surface-2:#162136; --border:#1F2B41; --border-2:#2A3852;
   --text:#E7EDF6; --text-2:#A2B0C4; --text-3:#6D7C93;
   --primary:#5B9DFF; --primary-soft:rgba(91,157,255,.14); --primary-ink:#8DBBFF;
@@ -609,6 +612,66 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .lp-cat li span{display:flex;align-items:center;gap:8px;font-weight:600}
 .lp-cat .ic{width:16px;height:16px;color:var(--primary)}
 @media (max-width:720px){ .pager:empty + #abAll{margin-left:0} }
+
+/* ---------- CUI Jarvis ---------- */
+.cui-filters{padding:16px 18px}
+.cui-frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.cui-frow .cui-wide{grid-column:span 2}
+.cui-frow .fld select,.cui-frow .fld input{background:var(--surface-2)}
+.cui-src{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12.5px}
+.cui-src b{color:var(--text)}
+.cui-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px}
+.cui-upt li{grid-template-columns:96px minmax(0,1fr) 44px}
+.cui-upt .cui-sub{grid-column:2/4;margin-top:-8px;font-size:11.5px;color:var(--text-3)}
+.cui-cols{display:flex;align-items:flex-end;gap:6px;height:210px;padding-top:18px}
+.cui-col{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.cui-col i{display:block;width:100%;max-width:34px;border-radius:6px 6px 2px 2px;background:var(--primary);opacity:.85}
+.cui-col:hover i{opacity:1}
+.cui-colv{font-size:11px;font-weight:700;color:var(--text-2)}
+.cui-col small{font-size:10px;color:var(--text-3);white-space:nowrap}
+.cui-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 32px}
+.cui-sec h4{margin:0 0 10px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary)}
+.cui-sec h4 small{font-weight:600;text-transform:none;letter-spacing:0;color:var(--text-3);margin-left:4px}
+.cui-item{padding:8px 0 10px;border-bottom:1px dashed var(--border)}
+.cui-item:last-child{border-bottom:0}
+.cui-item-h{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:700;margin-bottom:6px}
+.cui-item-h em{font-style:normal;font-weight:500;font-size:11.5px;color:var(--text-3);text-align:right}
+.cui-item-h em b{color:var(--text)}
+.cui-stack{display:flex;gap:2px;height:12px;border-radius:999px;overflow:hidden;background:var(--track)}
+.cui-stack button{border:0;padding:0;min-width:3px;cursor:pointer;transition:filter .15s}
+.cui-stack button:hover,.cui-stack button.on{filter:brightness(1.15) saturate(1.2)}
+.cui-stack button.on{outline:2px solid var(--text);outline-offset:-2px}
+.seg-ok{background:var(--ok)}.seg-p3{background:var(--sev-p3)}.seg-p2{background:var(--sev-p2)}.seg-p1{background:var(--p1)}.seg-kritis{background:var(--sev-kritis)}.seg-lain{background:var(--violet)}
+.cui-vals{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px}
+.cui-val{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:0;font:inherit;font-size:11.5px;font-weight:700;color:var(--text-2);cursor:pointer}
+.badge.sev{font-size:11px}
+.sev-ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.sev-p3{background:color-mix(in srgb,var(--sev-p3) 18%,transparent);color:color-mix(in srgb,var(--sev-p3) 70%,var(--text))}
+.sev-p2{background:color-mix(in srgb,var(--sev-p2) 16%,transparent);color:color-mix(in srgb,var(--sev-p2) 80%,var(--text))}
+.sev-p1{background:color-mix(in srgb,var(--p1) 14%,transparent);color:var(--p1)}
+.sev-kritis{background:var(--sev-kritis);color:#fff}
+.sev-lain{background:color-mix(in srgb,var(--violet) 14%,transparent);color:var(--violet)}
+.sev-na{background:var(--surface-2);color:var(--text-3)}
+.cui-table{max-height:none;padding:0}
+.cui-table th{background:var(--surface-2)}
+.cui-table th.sortable{cursor:pointer;user-select:none}
+.cui-table th.sortable.on{color:var(--primary)}
+.cui-table td{vertical-align:top;white-space:nowrap}
+.cui-table tbody tr{cursor:pointer}
+.cui-table tbody tr.sel td{background:var(--primary-soft)}
+.cui-ratio{display:inline-block;width:56px;height:6px;margin-right:8px;vertical-align:middle;border-radius:999px;background:var(--track);overflow:hidden}
+.cui-ratio i{display:block;height:100%;background:var(--sev-p2)}
+.cui-data .table{min-width:1100px}
+.cui-data td.clamp{white-space:normal;min-width:180px;max-width:240px}
+.cui-data td.temuan{white-space:normal;min-width:300px}
+.cui-t{display:inline-flex;align-items:center;gap:4px;margin:0 8px 4px 0;font-size:12px;color:var(--text-2)}
+.cui-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chip-f{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 10px;margin-right:6px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:700}
+.chip-f button{border:0;background:none;color:inherit;font:inherit;font-size:14px;line-height:1;cursor:pointer;padding:0 4px}
+.cui-det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px 16px}
+.cui-det-grid>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:var(--surface-2);font-size:12.5px;font-weight:600}
+.dsec h4 small{font-weight:600;text-transform:none;letter-spacing:0;color:var(--text-3)}
+@media (max-width:900px){ .cui-items{grid-template-columns:1fr} .cui-frow .cui-wide{grid-column:auto} }
 
 /* ---------- Pemilih UPT & GI ---------- */
 .fld-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}

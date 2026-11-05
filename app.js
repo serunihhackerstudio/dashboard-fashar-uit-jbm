@@ -1160,7 +1160,8 @@ const PAGES = {
   jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
-  trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"]
+  trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"],
+  alat: ["Peralatan ERS", "Alat Berat", "Registry alat berat & alat bantu serta peminjamannya (data contoh)"]
 };
 function route() {
   if (location.hash === "#trafo") { location.replace("#trafodb"); return; } // halaman lama Trafo Mobile dihapus

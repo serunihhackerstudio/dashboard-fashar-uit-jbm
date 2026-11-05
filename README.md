@@ -8,6 +8,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 3. Asesmen GI
 4. Tower Emergency
 5. Trafo Mobile (data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)
+6. Alat Berat (data dummy: daftar alat & peminjaman/approval)
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
@@ -74,3 +75,8 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Riwayat lama dapat ditambahkan/dihapus di bagian **Riwayat perpindahan** form Edit. Pop-up Detail menampilkan timeline; tabel menampilkan tanggal pindah terakhir; peta menampilkan rute perpindahan untuk lokasi yang dipilih (hanya GI yang sudah punya koordinat di `TDB_COORDS`).
 - **Dokumen BA mobilisasi** dapat diunggah di kotak Perpindahan lokasi maupun di form Tambah riwayat (PDF/JPG/PNG/DOC/DOCX, maks. 15 MB). File disimpan di folder Drive `BA_ROOT_ID` (`apps-script/Code.gs`, bisa diganti lewat Script Property `BA_FOLDER_ID`) dengan nama `BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]` (mis. `BA_Mobilisasi_GIS_150KV_TANDES_ke_GI_150KV_KALISARI_2026-11-04.pdf`); link-nya tersimpan di kolom NO / LINK BA riwayat. Akun pemilik skrip harus punya akses edit ke folder tersebut.
 - Setelah memperbarui `apps-script/Code.gs`, buat **New version** pada deployment.
+
+### Alat Berat (data dummy)
+- Menu **Alat Berat** berisi tab **Daftar Alat** (filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, kartu alat, pop-up detail + riwayat peminjaman) dan tab **Peminjaman & Histori** (ringkasan, filter status, pengajuan baru, approval: setujui/tolak → serahkan → dikembalikan, histori approval).
+- Semua data masih **contoh**, dibuat di `data/alat-berat-dummy.js` (52 alat, 18 pengajuan). Perubahan hanya tersimpan sementara di browser. Logika tampilan ada di `alat-berat.js`.
+- Untuk data asli: ganti isi `window.ALAT_BERAT_DUMMY` dengan struktur yang sama (`alat[]`: id, kategori, nama, merk, kapasitas, tahun, noSeri, upt, lokasi, status, layak, kondisi, fungsi, suratIzin, foto; `peminjaman[]`: id, alatId, peminjam, pic, pekerjaan, tujuan, mulai, selesai, status, histori[]), atau sambungkan ke Google Sheets seperti menu Trafo Mobile.

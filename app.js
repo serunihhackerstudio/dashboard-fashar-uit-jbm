@@ -1162,6 +1162,7 @@ const PAGES = {
   cui: ["Inspeksi Transmisi", "CUI Jarvis", "Hasil Climb Up Inspection tower transmisi dari Jarvis"],
   tower: ["Peralatan ERS", "Tower Emergency", "Ketersediaan & inventaris tower emergency (ERS)"],
   trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"],
+  dcm: ["Peralatan ERS", "DC Mobile", "Data unit DC mobile (sistem DC bergerak) UIT JBM"],
   alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"]
 };
 /* Tanggal "Diperbarui" di topbar: halaman boleh mendaftarkan tanggalnya sendiri lewat window.PAGE_UPDATED[id]() */
@@ -1217,4 +1218,5 @@ function toggleTheme() {
   store("fashar-theme", root.dataset.theme);
   if (TDB_MAP.map) tdbTiles();
   if (window.abMapTheme) window.abMapTheme();
+  if (window.dcmMapTheme) window.dcmMapTheme();
 }

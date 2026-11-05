@@ -205,8 +205,15 @@
    <div class="section-head"><div><h2>Rekap per Penghantar</h2><p>Ringkasan hasil CUI per jalur transmisi (penghantar): jumlah tower &amp; klem yang diinspeksi, persentase tower yang memiliki temuan, dan jumlah temuan per tingkat keparahan. Klik judul kolom untuk mengurutkan, klik baris untuk memfilter seluruh halaman.</p></div></div>
    <div class="card"><div class="table-wrap cui-table"><table class="table"><thead id="cuiPengHead"></thead><tbody id="cuiPengRows"></tbody></table><div class="empty" id="cuiPengEmpty" hidden>Tidak ada data.</div></div></div>
    <div class="section-head" id="cuiTableCard"><div><h2>Data Inspeksi per Klem</h2><p>Temuan diurutkan dari yang terparah</p></div>
-    <div class="cui-tools"><span id="cuiActive"></span><label class="mv-set"><input type="checkbox" id="cuiOnly"> Hanya yang ada temuan</label></div></div>
+    <div class="cui-tools"><span id="cuiActive"></span></div></div>
    <div class="card">
+    <div class="tdb-toolbar cui-ttools">
+     <div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="cuiTQ" placeholder="Cari tower, klem, penghantar, GI, atau temuan (mis. korosi, pecah)…" aria-label="Cari di tabel data klem" autocomplete="off"></div>
+     <select id="cuiTItem" aria-label="Filter item bertemuan"></select>
+     <select id="cuiTTipe" aria-label="Filter tipe tower"></select>
+     <button class="btn ghost sm" type="button" id="cuiTReset">Reset</button>
+     <div class="seg cui-tsev" id="cuiTSev" role="group" aria-label="Filter tingkat temuan tertinggi"></div>
+    </div>
     <div class="table-wrap cui-table cui-data"><table class="table">
      <thead><tr><th class="num">No</th><th>Tanggal</th><th>Tower</th><th>Klem / fasa</th><th>Penghantar</th><th>Tertinggi</th><th>Temuan</th><th><span class="sr-only">Aksi</span></th></tr></thead>
      <tbody id="cuiRows"></tbody></table><div class="empty" id="cuiEmpty" hidden>Tidak ada data yang cocok dengan filter.</div></div>

@@ -97,7 +97,7 @@
       : S.remote === "empty" ? ` <b class="src-static">● Belum ada unggahan permanen — menampilkan data bawaan</b>` : "";
     if (!S.rows.length) {
       $("#cuiSrc").innerHTML = `<b>Belum ada data CUI.</b> Klik <b>Unggah file export Jarvis</b> untuk memuat data.` +
-        (S.remote === "loading" ? ` <b class="src-static">● Memuat data terbaru…</b>` : S.remote === "err" ? ` <b class="src-static" title="${esc(S.remoteErr || "")}">● Gagal memuat data permanen</b>` : "") +
+        (S.remote === "loading" ? ` <b class="src-static">● Memuat data terbaru…</b>` : S.remote === "err" ? ` <b class="src-static" title="${esc(S.remoteErr || "")}">● Gagal memuat data permanen${S.remoteErr === OUTDATED ? ": " + esc(OUTDATED) : ""}</b>` : "") +
         (S.history.length ? ` · <button type="button" class="linkbtn" id="cuiHistBtn">Riwayat unggahan (${S.history.length})</button>` : "");
       return;
     }
@@ -395,7 +395,7 @@
       const gz = await gzipB64(file);
       setBusy(true, "Menyimpan ke Google Drive…");
       const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token, action: "cui_upload", doc, file: gz ? { name: file.name, gz } : null }) })).json();
-      if (!j.ok) { if (j.code === "auth") { tokenForget(true); tokUi(); } throw new Error(j.error || "Gagal menyimpan file."); }
+      if (!j.ok) { if (j.code === "auth") { tokenForget(true); tokUi(); } throw new Error(/Aksi tidak dikenal/i.test(j.error || "") ? OUTDATED : (j.error || "Gagal menyimpan file.")); }
       tokenSave(token);
       S.remote = "ok"; S.history = j.history || []; S.pending = null;
       load(j.doc, false); render(); setUpdated("cui");
@@ -418,16 +418,18 @@
     $("#cuiHistDlg").showModal();
   }
   /* Ambil unggahan terakhir dari Google Drive (via Apps Script) */
+  const OUTDATED = "Apps Script yang aktif masih versi lama (belum ada fitur simpan CUI). Tempel Code.gs terbaru lalu Deploy → Manage deployments → Edit → Version: New version → Deploy.";
   async function loadRemote() {
     if (!API) return;
-    S.remote = "loading"; if (S.rows.length) renderFilters();
+    S.remote = "loading"; renderFilters();
     try {
       const j = await (await fetch(API + (API.includes("?") ? "&" : "?") + "action=cui")).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat data CUI");
+      if (!("doc" in j)) throw new Error(OUTDATED); // versi lama mengabaikan ?action=cui
       S.history = j.history || [];
       if (S.uploaded) { S.remote = j.doc ? "ok" : "empty"; renderFilters(); return; } // jangan timpa file yang sedang dilihat
       if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; renderFilters(); setUpdated("cui"); }
-    } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); if (S.rows.length) renderFilters(); }
+    } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); renderFilters(); }
     if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
   }
 

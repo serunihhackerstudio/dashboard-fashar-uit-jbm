@@ -73,9 +73,9 @@ svg{display:block}
   display:flex;flex-direction:column;transition:width .25s ease,transform .25s ease;z-index:30;overflow:hidden;
 }
 .brand{display:flex;align-items:center;gap:12px;padding:22px 18px 18px;white-space:nowrap}
-.brand-logo{width:38px;height:38px;flex:0 0 38px;border-radius:11px;display:grid;place-items:center;
-  background:linear-gradient(135deg,#FFC93C,#F59E0B);box-shadow:0 6px 16px rgba(245,158,11,.35)}
-.brand-logo svg{width:20px;height:20px;fill:#0B2545}
+.brand-logo{width:38px;height:38px;flex:0 0 38px;border-radius:6px;overflow:hidden;display:grid;place-items:center;
+  background:#FFF100;box-shadow:0 6px 16px rgba(0,0,0,.28)}
+.brand-logo img{width:100%;height:100%;display:block;object-fit:cover}
 .brand-text b{display:block;color:#fff;font-size:16px;font-weight:800;letter-spacing:.02em}
 .brand-text span{display:block;font-size:11.5px;color:var(--sidebar-text);opacity:.8}
 .nav{padding:6px 12px;flex:1;overflow-y:auto}

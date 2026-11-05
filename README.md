@@ -6,9 +6,9 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 1. Health Index
 2. Asesmen JAR
 3. Asesmen GI
-4. Tower Emergency
-5. Trafo Mobile (data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)
-6. Alat Berat — Database Kesiapan Alat Berat UIT JBM (data dummy)
+4. Tower Emergency *(Peralatan ERS)*
+5. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
+6. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM, data dummy)*
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
@@ -76,6 +76,7 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - **Dokumen BA mobilisasi** dapat diunggah di kotak Perpindahan lokasi maupun di form Tambah riwayat (PDF/JPG/PNG/DOC/DOCX, maks. 15 MB). File disimpan di folder Drive `BA_ROOT_ID` (`apps-script/Code.gs`, bisa diganti lewat Script Property `BA_FOLDER_ID`) dengan nama `BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]` (mis. `BA_Mobilisasi_GIS_150KV_TANDES_ke_GI_150KV_KALISARI_2026-11-04.pdf`); link-nya tersimpan di kolom NO / LINK BA riwayat. Akun pemilik skrip harus punya akses edit ke folder tersebut.
 - Setelah memperbarui `apps-script/Code.gs`, buat **New version** pada deployment.
 
-### Alat Berat (data dum- Menu **Alat Berat** (Database Kesiapan Alat Berat UIT JBM) berisi **Daftar Alat**: filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, **peta lokasi penyimpanan** yang memfilter tabel, **tabel** 10 data/halaman dengan Tampilkan semua, atau tampilan kartu, serta pop-up detail alat. Pemberitahuan data contoh tampil sekali dan tidak muncul lagi di perangkat itu setelah ditutup.al).
+### Alat Berat (data dummy)
+- Menu **Alat Berat** (Database Kesiapan Alat Berat UIT JBM) berisi **Daftar Alat**: filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, **peta lokasi penyimpanan** yang memfilter tabel, **tabel** 10 data/halaman dengan Tampilkan semua, atau tampilan kartu, serta pop-up detail alat. Pemberitahuan data contoh tampil sekali dan tidak muncul lagi di perangkat itu setelah ditutup.
 - Semua data masih **contoh**, dibuat di `data/alat-berat-dummy.js` (52 alat, 18 data peminjaman contoh untuk status "Dipinjam" & info terakhir dipinjam, koordinat perkiraan 7 lokasi). Logika tampilan ada di `alat-berat.js`.
 - Untuk data asli: ganti isi `window.ALAT_BERAT_DUMMY` dengan struktur yang sama (`alat[]`: id, kategori, nama, merk, kapasitas, tahun, noSeri, upt, lokasi, status, layak, kondisi, fungsi, suratIzin, foto; `peminjaman[]`: id, alatId, peminjam, pic, pekerjaan, tujuan, mulai, selesai, status, histori[]), atau sambungkan ke Google Sheets seperti menu Trafo Mobile.

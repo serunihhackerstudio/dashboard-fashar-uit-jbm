@@ -46,6 +46,10 @@ Tanpa langkah di bawah, halaman tetap tampil dengan data statis (`data/trafo-mob
 
 Jika `Code.gs` diubah, gunakan **Deploy → Manage deployments → Edit → Version: New version** agar URL tetap sama.
 
+### Tanggal "Diperbarui" Trafo Mobile
+- Mengikuti **waktu perubahan data terakhir**: edit/tambah komponen, foto, riwayat lokasi, atau dokumen BA lewat dashboard; edit langsung di sheet `2. TRAFO MOBILE` / `RIWAYAT LOKASI` (simple trigger `onEdit`); atau isi data yang berubah saat dimuat ulang (sinkronisasi, dicek dengan hash). Disimpan di Script Property `TRAFO_UPDATED` dan dikirim sebagai `updated` oleh Apps Script.
+- Arahkan kursor ke chip **Diperbarui** untuk melihat jam perubahannya.
+
 ### Cara kerja & keamanan
 - Siapa pun yang membuka dashboard dapat **melihat** data (sama seperti sebelumnya). **Menyimpan** perubahan wajib memasukkan kode akses edit (`EDIT_TOKEN`); kode cukup dimasukkan sekali per perangkat (diingat di browser tersebut) dan bisa dihapus lewat tautan **Lupakan** di form. Jika `EDIT_TOKEN` diganti, perangkat yang menyimpan kode lama akan diminta memasukkan kode baru.
 - Tombol **Detail** menampilkan seluruh informasi baris (termasuk informasi aset, tautan dokumentasi, dan riwayat lokasi). Kolom nilai aset, referensi, dan riwayat hanya bisa diubah langsung di Google Sheets.

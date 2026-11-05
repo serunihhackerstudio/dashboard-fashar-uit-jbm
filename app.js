@@ -248,7 +248,23 @@ const TDB_API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").
 const TDB = {
   rows: (window.TRAFO_DB && window.TRAFO_DB.rows) || [],
   source: (window.TRAFO_DB && window.TRAFO_DB.source) || "",
-  live: false, editing: null, moves: []
+  live: false, editing: null, moves: [],
+  updated: (window.TRAFO_DB && window.TRAFO_DB.generated) || "" // waktu perubahan terakhir (ISO / yyyy-mm-dd)
+};
+/* Tanggal "Diperbarui" Trafo Mobile = waktu perubahan data terakhir (edit, tambah, foto, riwayat, BA, atau sinkronisasi dari Sheets) */
+function tdbMarkUpdated(iso) {
+  if (!iso) return;
+  TDB.updated = iso;
+  if (location.hash === "#trafodb" && typeof setUpdated === "function") setUpdated("trafodb");
+}
+window.PAGE_UPDATED = window.PAGE_UPDATED || {};
+window.PAGE_UPDATED.trafodb = () => {
+  if (!TDB.updated) return null;
+  const d = new Date(TDB.updated.length > 10 ? TDB.updated : TDB.updated + "T00:00:00");
+  if (isNaN(d)) return null;
+  const pad = n => String(n).padStart(2, "0"), date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const jam = TDB.updated.length > 10 ? ` pukul ${pad(d.getHours())}.${pad(d.getMinutes())}` : "";
+  return { date, title: `Perubahan data terakhir: ${fmtTanggal(date)}${jam}${TDB.live ? "" : " (data statis)"}` };
 };
 const TDB_FIELDS = [
   ["komponen", "Komponen", "select-komp", { required: true, wide: true }],
@@ -550,6 +566,7 @@ async function tdbLoad() {
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || "Gagal memuat");
     TDB.rows = j.rows; TDB.moves = j.moves || []; TDB.source = j.source || TDB.source; TDB.live = true;
+    tdbMarkUpdated(j.updated);
     renderTrafoDb();
     tdbSetSync("live", "Live · Google Sheets");
     $("#tdbSyncNote").textContent = `Tersambung ke spreadsheet · dimuat ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
@@ -764,6 +781,7 @@ async function tdbSubmit(ev) {
       throw new Error(j.error || "Gagal menyimpan");
     }
     tokenSave(token);
+    tdbMarkUpdated(j.updated || new Date().toISOString());
     tdbCloseForm();
     if (j.moved) {
       await tdbLoad(); // muat ulang: lokasi beberapa komponen & riwayat berubah
@@ -940,6 +958,7 @@ async function phPost(action, payload) {
     throw new Error(j.error || "Gagal menyimpan foto");
   }
   tokenSave(token); PH.needToken = false; PH.tok = "";
+  tdbMarkUpdated(j.updated || new Date().toISOString());
   if ($("#tdbDialog").open) tdbTokenUi();
   if (j.folder) r.linkFoto = j.folder;
   return j;
@@ -1060,6 +1079,7 @@ async function mvPost(action, payload) {
     const j = await (await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action, row: r._row, expect: r.komponen, ...payload }) })).json();
     if (!j.ok) { if (j.code === "auth") tokenForget(true); throw new Error(j.error || "Gagal menyimpan riwayat"); }
     tokenSave(token); if ($("#tdbDialog").open) tdbTokenUi();
+    tdbMarkUpdated(j.updated || new Date().toISOString());
     TDB.moves = j.moves || TDB.moves;
     mvStatus("");
     return j;
@@ -1106,6 +1126,7 @@ async function baUpload(file, dariGi, keGi, token, r) {
   const j = await (await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action: "ba_upload", row: r._row, expect: r.komponen, name: file.name, mime, data, dariGi, keGi }) })).json();
   if (!j.ok) { if (j.code === "auth") tokenForget(true); throw new Error(j.error || "Gagal mengunggah dokumen BA"); }
   tokenSave(token);
+  tdbMarkUpdated(j.updated || new Date().toISOString());
   return (BA_CACHE[key] = j);
 }
 async function mvDelete(id) {

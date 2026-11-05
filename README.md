@@ -3,6 +3,7 @@
 Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 
 ## Menu
+0. **Beranda** *(halaman awal: sambutan + foto tim, angka sorotan dari seluruh menu, dan kartu fitur per kelompok menu — `home.js`)*
 1. Health Index
 2. Asesmen JAR
 3. Asesmen GI

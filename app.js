@@ -568,6 +568,7 @@ async function tdbLoad() {
     TDB.rows = j.rows; TDB.moves = j.moves || []; TDB.source = j.source || TDB.source; TDB.live = true;
     tdbMarkUpdated(j.updated);
     renderTrafoDb();
+    if (window.homeRefresh) window.homeRefresh();
     tdbSetSync("live", "Live · Google Sheets");
     $("#tdbSyncNote").textContent = `Tersambung ke spreadsheet · dimuat ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
   } catch (e) {
@@ -1177,6 +1178,7 @@ initTrafoDb();
    NAVIGATION (hash routing: bisa di-bookmark & tombol back)
    ========================================================= */
 const PAGES = {
+  home: ["PDKB & FASHAR", "Beranda", "Ringkasan seluruh fitur dashboard HARTRANS UIT JBM"],
   health: ["Kondisi Aset", "Health Index", "Sebaran prioritas temuan aset Jaringan dan Gardu Induk"],
   jar: ["Kondisi Aset", "Asesmen JAR", "Health index aset jaringan per UPT"],
   gi: ["Kondisi Aset", "Asesmen GI", "Health index aset gardu induk per UPT"],
@@ -1206,7 +1208,7 @@ function setUpdated(id) {
 }
 function route() {
   if (location.hash === "#trafo") { location.replace("#trafodb"); return; } // halaman lama Trafo Mobile dihapus
-  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "health"; // halaman awal (Kinerja & Optimalisasi PDKB dihapus)
+  const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "home"; // halaman awal: Beranda
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + id));
   document.querySelectorAll(".nav-item").forEach(n => {
     const on = n.dataset.page === id;

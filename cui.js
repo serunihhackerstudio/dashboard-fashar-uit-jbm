@@ -317,6 +317,21 @@
     renderItems(rowsNoItem, towersNoItem);
     renderPeng(rows);
     renderTable(rows);
+    skeleton();
+  }
+  /* ---------- Shimmer saat memuat data dari Google Drive ---------- */
+  function skeleton() {
+    const on = S.remote === "loading" && !S.rows.length;
+    $("#page-cui").classList.toggle("cui-loading", on);
+    $("#page-cui").setAttribute("aria-busy", on ? "true" : "false");
+    if (!on) return;
+    const sk = (w, h) => `<span class="sk" style="width:${w}${h ? `;height:${h}px` : ""}"></span>`;
+    $("#cuiUptChart").innerHTML = `<ul class="bars cui-upt sk-bars">${[92, 78, 64, 50, 38, 26].map(w => `<li><span class="bl">${sk("70%")}</span><span class="bt">${sk(w + "%", 10)}</span><b>${sk("28px")}</b></li>`).join("")}</ul>`;
+    $("#cuiWeekChart").innerHTML = `<div class="cui-cols sk-cols">${[30, 45, 60, 40, 70, 55, 80, 65, 50, 90, 45, 35].map(h => `<div class="cui-col"><i class="sk" style="height:${h}%"></i></div>`).join("")}</div>`;
+    const row = n => `<tr class="sk-row">${Array.from({ length: n }, (_, i) => `<td>${sk(i === 0 ? "80%" : 40 + (i * 13) % 50 + "%")}</td>`).join("")}</tr>`;
+    $("#cuiPengRows").innerHTML = Array.from({ length: 6 }, () => row(10)).join(""); $("#cuiPengEmpty").hidden = true;
+    $("#cuiRows").innerHTML = Array.from({ length: 8 }, () => row(8)).join(""); $("#cuiEmpty").hidden = true;
+    $("#cuiCount").textContent = "Memuat data…"; $("#cuiPager").innerHTML = ""; $("#cuiAll").hidden = true;
   }
 
   /* ---------- Unggah file export Jarvis baru ---------- */
@@ -421,15 +436,15 @@
   const OUTDATED = "Apps Script yang aktif masih versi lama (belum ada fitur simpan CUI). Tempel Code.gs terbaru lalu Deploy → Manage deployments → Edit → Version: New version → Deploy.";
   async function loadRemote() {
     if (!API) return;
-    S.remote = "loading"; renderFilters();
+    S.remote = "loading"; if (S.rows.length) renderFilters(); else { render(); if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui"); }
     try {
       const j = await (await fetch(API + (API.includes("?") ? "&" : "?") + "action=cui")).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat data CUI");
       if (!("doc" in j)) throw new Error(OUTDATED); // versi lama mengabaikan ?action=cui
       S.history = j.history || [];
-      if (S.uploaded) { S.remote = j.doc ? "ok" : "empty"; renderFilters(); return; } // jangan timpa file yang sedang dilihat
-      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; renderFilters(); setUpdated("cui"); }
-    } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); renderFilters(); }
+      if (S.uploaded) { S.remote = j.doc ? "ok" : "empty"; renderFilters(); skeleton(); return; } // jangan timpa file yang sedang dilihat
+      if (j.doc) { S.remote = "ok"; load(j.doc, false); render(); } else { S.remote = "empty"; render(); setUpdated("cui"); }
+    } catch (e) { S.remote = "err"; S.remoteErr = String(e.message || e); if (S.rows.length) renderFilters(); else render(); }
     if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");
   }
 
@@ -477,7 +492,7 @@
 
   /* Tanggal "Diperbarui" di topbar = tanggal file export Jarvis diunggah */
   window.PAGE_UPDATED = window.PAGE_UPDATED || {};
-  window.PAGE_UPDATED.cui = () => !S.rows.length ? { text: "—", title: "Belum ada data CUI" } : S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
+  window.PAGE_UPDATED.cui = () => !S.rows.length ? (S.remote === "loading" ? { text: "memuat…", title: "Memuat data CUI terbaru" } : { text: "—", title: "Belum ada data CUI" }) : S.diunggah ? { date: S.diunggah, title: `File ${S.source} diunggah ${S.diunggah}${S.uploaded ? " (dimuat di browser, belum permanen)" : ""}` } : null;
   const EMPTY = { source: "", periode: null, keys: [], dict: {}, rows: [] };
   load(window.CUI_JARVIS && window.CUI_JARVIS.rows && window.CUI_JARVIS.rows.length ? window.CUI_JARVIS : EMPTY, false); render();
   if (location.hash === "#cui" && typeof setUpdated === "function") setUpdated("cui");

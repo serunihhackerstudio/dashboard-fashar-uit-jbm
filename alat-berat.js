@@ -20,6 +20,8 @@
   const ALL_IC = '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>';
   const svg = (p, cls = "ic") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
   const ST_TONE = { Tersedia: "info", Dipinjam: "warn", Perbaikan: "bad" };
+  const KONDISI_TONE = { "Baik": "ok", "Service Time": "info", "Rusak Ringan": "warn", "Rusak Berat": "bad" };
+  const kondisiChip = k => `<span class="badge ${KONDISI_TONE[k] || "muted"}">${esc(k || "-")}</span>`;
   const byId = id => AB.alat.find(a => a.id === id);
 
   /* Status alat diturunkan dari peminjaman aktif */
@@ -72,7 +74,7 @@
         <td>${esc(a.merk || "-")}</td><td class="num">${esc(a.kapasitas || "-")}</td><td class="num">${esc(a.tahun || "-")}</td><td><code>${esc(a.noSeri || "—")}</code></td>
         <td>${esc(a.lokasi)}<div class="muted sm">${esc(a.upt)}</div></td>
         <td><span class="badge ${ST_TONE[st]}">${st}</span></td><td><span class="badge ${a.layak ? "ok" : "bad"}">${a.layak ? "Layak" : "Tidak layak"}</span></td>
-        <td>${esc(a.kondisi)}</td><td class="izin">${esc(a.suratIzin)}</td>
+        <td>${kondisiChip(a.kondisi)}</td><td class="izin">${esc(a.suratIzin)}</td>
         <td class="act"><button type="button" class="btn ghost sm" data-id="${a.id}">Detail</button></td></tr>`;
     }).join("");
     $("#abEmpty").hidden = list.length > 0;
@@ -155,7 +157,7 @@
       <dl class="ab-dl">
         <div><dt>Merk/Type</dt><dd>${esc(a.merk || "-")}</dd></div><div><dt>Kapasitas</dt><dd>${esc(a.kapasitas || "-")}</dd></div>
         <div><dt>Tahun</dt><dd>${esc(a.tahun || "-")}</dd></div><div><dt>No. Seri</dt><dd>${esc(a.noSeri || "-")}</dd></div>
-        <div><dt>Kondisi</dt><dd>${esc(a.kondisi)}</dd></div><div><dt>Surat Izin</dt><dd>${esc(a.suratIzin)}</dd></div>
+        <div><dt>Kondisi</dt><dd>${kondisiChip(a.kondisi)}</dd></div><div><dt>Surat Izin</dt><dd>${esc(a.suratIzin)}</dd></div>
       </dl>
       ${last ? `<p class="ab-last">Terakhir dipinjam oleh <b>${esc(last.oleh)}</b> untuk pekerjaan <b>${esc(last.pekerjaan)}</b>.</p>` : ""}
     </article>`;

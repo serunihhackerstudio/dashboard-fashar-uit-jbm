@@ -91,6 +91,10 @@ function izinkanAkses() {
     'Folder foto: ' + DriveApp.getFolderById(p.getProperty('PHOTO_FOLDER_ID') || PHOTO_ROOT_ID).getName(),
     'Folder BA: ' + DriveApp.getFolderById(p.getProperty('BA_FOLDER_ID') || BA_ROOT_ID).getName()
   ];
+  // uji izin tulis Drive (butuh scope penuh .../auth/drive): buat lalu buang file uji
+  const tmp = cuiFolder_().createFile('cek_izin.txt', 'uji izin tulis ' + new Date());
+  tmp.setTrashed(true);
+  out.push('Tulis ke folder CUI: OK');
   Logger.log('Izin OK:\n' + out.join('\n'));
   return out;
 }

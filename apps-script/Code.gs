@@ -9,7 +9,12 @@
  * GET  <url>?action=photos&row=N      → daftar foto komponen di baris N
  * POST <url> (text/plain) → {token, action, row, expect, ...}
  *      action: "add" | "update" | "photo_upload" | "photo_replace" | "photo_caption" | "photo_delete"
- *              | "move_add" | "move_delete" | "ba_upload"
+ *              | "move_add" | "move_delete" | "ba_upload" | "cui_upload"
+ * GET  <url>?action=cui              → data CUI Jarvis terbaru + riwayat unggahan
+ *
+ * CUI Jarvis: file export Jarvis yang diunggah dari dashboard disimpan permanen di
+ * folder CUI_ROOT_ID (file asli + data ringkas JSON). Isi data terbaru juga ditulis
+ * ke sheet CUI_DATA_SHEET dan setiap unggahan dicatat di sheet CUI_LOG_SHEET.
  *
  * Dokumen BA mobilisasi disimpan di folder BA_ROOT_ID dengan nama
  * "BA_Mobilisasi_[GI_ASAL]_ke_[GI_TUJUAN]_[tanggal_diupload]".
@@ -54,6 +59,19 @@ const BA_MIME = {
   'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png',
   'application/msword': '.doc', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx'
 };
+// Folder Google Drive untuk file export CUI Jarvis. Bisa diganti lewat Script Properties: CUI_FOLDER_ID
+const CUI_ROOT_ID = '1s7bQoZpSj4pTjk1RMmU79KN39pqiXEZb';
+const CUI_LOG_SHEET = 'CUI JARVIS UPLOAD';
+const CUI_DATA_SHEET = 'CUI JARVIS DATA';
+const CUI_LOG_HEAD = ['ID UNGGAH', 'TANGGAL UNGGAH', 'WAKTU UNGGAH', 'NAMA FILE', 'JUMLAH KLEM', 'JUMLAH TOWER',
+  'PERIODE AWAL', 'PERIODE AKHIR', 'LINK FILE ASLI', 'LINK DATA JSON', 'ID FILE JSON'];
+const CUI_FIELDS = [['upt', 'UPT'], ['ultg', 'ULTG'], ['gi', 'GI'], ['penghantar', 'PENGHANTAR'], ['lokasi', 'LOKASI'], ['clamp', 'CLAMP'],
+  ['tanggal', 'TANGGAL INSPEKSI'], ['tipe', 'TIPE TOWER'], ['halaman', 'HALAMAN TOWER'], ['acd', 'ACD'], ['chimney', 'CHIMNEY'], ['stub', 'STUB'],
+  ['nomor', 'NOMOR TOWER'], ['plat', 'PLAT TANDA BAHAYA'], ['stepbolt', 'STEP BOLT'], ['row', 'RIGHT OF WAY'], ['isolator', 'ISOLATOR'],
+  ['aksCold', 'AKSESORIS SISI COLD'], ['aksHot', 'AKSESORIS SISI HOT'], ['konduktor', 'KONDUKTOR'], ['gap', 'GAP ARCHING'],
+  ['ewKond1', 'KONDUKTOR EARTH WIRE LINE 1'], ['ewKond2', 'KONDUKTOR EARTH WIRE LINE 2'], ['ewAks1', 'AKSESORIS EARTH WIRE LINE 1'],
+  ['ewAks2', 'AKSESORIS EARTH WIRE LINE 2'], ['ket', 'KETERANGAN']];
+const CUI_MAX_ROWS = 200000;
 
 function doGet(e) {
   try {
@@ -63,6 +81,7 @@ function doGet(e) {
       const folder = photoFolder_(sh, r, false);
       return json_({ ok: true, folder: folder ? folder.getUrl() : null, photos: folder ? listPhotos_(folder) : [] });
     }
+    if (p.action === 'cui') return json_(cuiLatest_());
     ensureIds_(sheet_());
     return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: readRows_(), moves: readMoves_() });
   } catch (err) {
@@ -78,6 +97,8 @@ function doPost(e) {
     const token = PropertiesService.getScriptProperties().getProperty('EDIT_TOKEN');
     if (!token) return json_({ ok: false, code: 'config', error: 'EDIT_TOKEN belum diatur di Script Properties.' });
     if (req.token !== token) return json_({ ok: false, code: 'auth', error: 'Kode akses edit salah.' });
+
+    if (req.action === 'cui_upload') return json_(cuiUpload_(req));
 
     const sh = sheet_();
     const data = validate_(req.data || {});
@@ -440,6 +461,126 @@ function toRec_(v, rowNum) {
     ba: String(v[RIWAYAT_COL + i * 2] || '').trim() || null
   }));
   return rec;
+}
+
+/* ---------- CUI Jarvis: penyimpanan permanen ---------- */
+function cuiFolder_() {
+  const id = PropertiesService.getScriptProperties().getProperty('CUI_FOLDER_ID') || CUI_ROOT_ID;
+  return DriveApp.getFolderById(id);
+}
+
+function cuiLogSheet_(create) {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(CUI_LOG_SHEET);
+  if (!sh && create) {
+    sh = ss.insertSheet(CUI_LOG_SHEET);
+    sh.getRange(1, 1, 1, CUI_LOG_HEAD.length).setValues([CUI_LOG_HEAD]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+/* Validasi data ringkas hasil parsing di browser: {source, periode, keys, dict, rows} */
+function cuiValidate_(doc) {
+  if (!doc || typeof doc !== 'object') throw new Error('Data CUI kosong.');
+  const allowed = CUI_FIELDS.map(f => f[0]);
+  const keys = Array.isArray(doc.keys) ? doc.keys.map(String) : [];
+  if (!keys.length || keys.some(k => allowed.indexOf(k) < 0)) throw new Error('Kolom data CUI tidak dikenali.');
+  if (keys.indexOf('lokasi') < 0 || keys.indexOf('tanggal') < 0) throw new Error('Kolom Lokasi/Tanggal Inspeksi tidak ada.');
+  const dict = {};
+  keys.forEach(k => {
+    const d = doc.dict && doc.dict[k];
+    if (!Array.isArray(d)) throw new Error('Kamus nilai kolom ' + k + ' tidak valid.');
+    dict[k] = d.map(v => String(v == null ? '' : v).slice(0, 500));
+  });
+  const rows = Array.isArray(doc.rows) ? doc.rows : [];
+  if (!rows.length) throw new Error('Tidak ada baris data CUI.');
+  if (rows.length > CUI_MAX_ROWS) throw new Error('Jumlah baris CUI terlalu banyak.');
+  rows.forEach(r => {
+    if (!Array.isArray(r) || r.length !== keys.length) throw new Error('Baris data CUI tidak valid.');
+    r.forEach((c, j) => { if (!(c >= 0 && c < dict[keys[j]].length && c % 1 === 0)) throw new Error('Baris data CUI tidak valid.'); });
+  });
+  const ti = keys.indexOf('tanggal'), ds = rows.map(r => dict.tanggal[r[ti]]).sort();
+  return {
+    source: String(doc.source || 'export Jarvis').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 150),
+    periode: [ds[0], ds[ds.length - 1]], keys: keys, dict: dict, rows: rows
+  };
+}
+
+function cuiUpload_(req) {
+  const doc = cuiValidate_(req.doc);
+  const tz = Session.getScriptTimeZone(), now = new Date();
+  const tanggal = Utilities.formatDate(now, tz, 'yyyy-MM-dd'), waktu = Utilities.formatDate(now, tz, 'HH:mm:ss');
+  const stamp = Utilities.formatDate(now, tz, 'yyyy-MM-dd_HHmmss');
+  const folder = cuiFolder_();
+  const li = doc.keys.indexOf('lokasi'), towers = {};
+  doc.rows.forEach(r => { towers[doc.dict.lokasi[r[li]]] = 1; });
+  const nTower = Object.keys(towers).length;
+
+  // 1) file asli (dikirim terkompresi gzip + base64 dari browser; opsional)
+  let asli = null;
+  if (req.file && req.file.gz) {
+    const gz = Utilities.newBlob(Utilities.base64Decode(String(req.file.gz)), 'application/x-gzip', 'f.gz');
+    const blob = Utilities.ungzip(gz);
+    blob.setName(stamp + '_' + doc.source).setContentType('application/vnd.ms-excel');
+    asli = folder.createFile(blob);
+  }
+  // 2) data ringkas JSON — dibaca dashboard sebagai data terbaru
+  const out = { source: doc.source, periode: doc.periode, diunggah: tanggal, diunggahPada: tanggal + ' ' + waktu,
+    keys: doc.keys, dict: doc.dict, rows: doc.rows };
+  const jf = folder.createFile(Utilities.newBlob(JSON.stringify(out), 'application/json', 'CUI_JARVIS_' + stamp + '.json'));
+
+  // 3) sheet data terbaru (ditimpa setiap unggahan)
+  cuiWriteData_(doc, tanggal);
+
+  // 4) log unggahan
+  const log = cuiLogSheet_(true), id = 'CUI-' + stamp;
+  const lr = log.getRange(log.getLastRow() + 1, 1, 1, CUI_LOG_HEAD.length);
+  lr.setNumberFormat('@'); // tanggal & periode disimpan sebagai teks yyyy-MM-dd
+  lr.setValues([[id, tanggal, waktu, doc.source, String(doc.rows.length), String(nTower), doc.periode[0], doc.periode[1],
+    asli ? asli.getUrl() : '', jf.getUrl(), jf.getId()]]);
+  const history = cuiHistory_(log);
+  return { ok: true, doc: out, upload: history[0], history: history };
+}
+
+function cuiWriteData_(doc, tanggal) {
+  const ss = SpreadsheetApp.getActive();
+  const sh = ss.getSheetByName(CUI_DATA_SHEET) || ss.insertSheet(CUI_DATA_SHEET);
+  sh.clearContents();
+  const fields = CUI_FIELDS.filter(f => doc.keys.indexOf(f[0]) >= 0);
+  const idx = fields.map(f => doc.keys.indexOf(f[0]));
+  const values = [fields.map(f => f[1])].concat(doc.rows.map(r => idx.map(j => {
+    const v = doc.dict[doc.keys[j]][r[j]];
+    return /^[=+\-@]/.test(v) ? "'" + v : v; // cegah teks dibaca sebagai rumus
+  })));
+  if (sh.getMaxRows() < values.length) sh.insertRowsAfter(sh.getMaxRows(), values.length - sh.getMaxRows());
+  if (sh.getMaxColumns() < fields.length) sh.insertColumnsAfter(sh.getMaxColumns(), fields.length - sh.getMaxColumns());
+  const rng = sh.getRange(1, 1, values.length, fields.length);
+  rng.setNumberFormat('@');
+  rng.setValues(values);
+  sh.getRange(1, 1, 1, fields.length).setFontWeight('bold');
+  sh.setFrozenRows(1);
+  sh.getRange(1, fields.length + 2).setValue('Data terbaru: ' + doc.source + ' (diunggah ' + tanggal + ')');
+}
+
+function cuiHistory_(log) {
+  if (!log || log.getLastRow() < 2) return [];
+  const n = Math.min(log.getLastRow() - 1, 50);
+  const v = log.getRange(log.getLastRow() - n + 1, 1, n, CUI_LOG_HEAD.length).getDisplayValues();
+  return v.reverse().map(r => ({ id: r[0], tanggal: r[1], waktu: r[2], file: r[3], klem: Number(r[4]) || 0, tower: Number(r[5]) || 0,
+    periode: [r[6], r[7]], asli: r[8] || null, json: r[9] || null, jsonId: r[10] }));
+}
+
+/* Data CUI terbaru (unggahan terakhir) + riwayat unggahan */
+function cuiLatest_() {
+  const history = cuiHistory_(cuiLogSheet_(false));
+  for (let i = 0; i < history.length; i++) {
+    try {
+      const doc = JSON.parse(DriveApp.getFileById(history[i].jsonId).getBlob().getDataAsString());
+      return { ok: true, doc: doc, history: history };
+    } catch (err) { /* file JSON terhapus — coba unggahan sebelumnya */ }
+  }
+  return { ok: true, doc: null, history: history };
 }
 
 function json_(o) {

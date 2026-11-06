@@ -258,6 +258,7 @@ function tdbMarkUpdated(iso) {
   if (location.hash === "#trafodb" && typeof setUpdated === "function") setUpdated("trafodb");
 }
 window.PAGE_UPDATED = window.PAGE_UPDATED || {};
+window.PAGE_UPDATED.tower = () => ({ label: "Dalam pengembangan", pending: true, title: "Halaman Tower Emergency sedang dalam pengembangan" });
 window.PAGE_UPDATED.trafodb = () => {
   if (!TDB.updated) return null;
   const d = new Date(TDB.updated.length > 10 ? TDB.updated : TDB.updated + "T00:00:00");

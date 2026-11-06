@@ -972,3 +972,36 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .ab-det-actions{display:flex;justify-content:flex-end;margin-top:14px}
 .ab-det-actions .btn{display:inline-flex;align-items:center;gap:6px}
 #abRows td.act{white-space:nowrap}
+
+/* Tower Emergency — halaman under maintenance */
+.uc-wrap{display:grid;place-items:center;min-height:calc(100vh - 180px);padding:8px 0}
+.uc-card{position:relative;width:min(1000px,100%);border-radius:22px;overflow:hidden;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg);animation:home-up .5s ease both}
+.uc-stripe{height:14px;background:repeating-linear-gradient(-45deg,#f5b400 0 18px,#1b2230 18px 36px);background-size:51px 14px;animation:uc-move 1.6s linear infinite}
+@keyframes uc-move{to{background-position:51px 0}}
+.uc-body{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:28px;align-items:center;padding:34px 38px 38px}
+.uc-svg{width:100%;max-width:340px;display:block;margin:auto}
+.uc-gear{transform-box:fill-box;transform-origin:center}
+.uc-gear.g1{animation:spin 6s linear infinite}
+.uc-gear.g2{animation:spin 4s linear infinite reverse}
+.uc-spark{animation:uc-blink 1.4s ease-in-out infinite}
+@keyframes uc-blink{50%{opacity:.15;r:9}}
+.uc-wire path{stroke-dasharray:6 6;animation:uc-dash 1.2s linear infinite}
+@keyframes uc-dash{to{stroke-dashoffset:-24}}
+.uc-tower{animation:uc-bob 4s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom}
+@keyframes uc-bob{50%{transform:translateY(-3px)}}
+.uc-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--p2);
+  background:color-mix(in srgb,var(--p2) 13%,transparent);padding:6px 12px;border-radius:99px}
+.uc-text h2{margin:14px 0 10px;font-size:clamp(22px,2.6vw,30px);line-height:1.2;font-weight:800}
+.uc-text p{margin:0;color:var(--text-2);line-height:1.6;font-size:14.5px}
+.uc-steps{list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.uc-steps li{position:relative;padding:10px 14px 10px 44px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)}
+.uc-steps li::before{content:"";position:absolute;left:14px;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;border:2px solid var(--border-2);background:var(--surface)}
+.uc-steps li.done::before{background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--ok)}
+.uc-steps li.now{border-color:color-mix(in srgb,var(--p2) 45%,var(--border));background:color-mix(in srgb,var(--p2) 8%,var(--surface))}
+.uc-steps li.now::before{border-color:var(--p2);border-top-color:transparent;animation:spin 1s linear infinite}
+.uc-steps b{display:block;font-size:13.5px}
+.uc-steps span{display:block;font-size:12px;color:var(--text-3);margin-top:1px}
+.uc-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.uc-cta .btn{text-decoration:none}
+@media (max-width:820px){.uc-body{grid-template-columns:1fr;padding:24px 20px 28px}.uc-svg{max-width:240px}}
+@media (prefers-reduced-motion:reduce){.uc-stripe,.uc-gear,.uc-spark,.uc-wire path,.uc-tower,.uc-steps li.now::before{animation:none}}

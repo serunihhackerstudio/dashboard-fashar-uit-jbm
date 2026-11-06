@@ -94,10 +94,12 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Memperbarui data: `python3 tools/xlsx_alat_to_js.py "FILTER_MINYAK_UIT_JBM.xlsx" data/filter-minyak.js FILTER_MINYAK` lalu commit.
 - Menu baru dengan format export aplikasi alat yang sama cukup: buat file data dengan perintah di atas, tambah `<section id="page-xx" class="page"></section>`, item menu, entri `PAGES` di `app.js`, dan satu baris `alatPage({...})` di akhir `alat-export.js`.
 
-### Alat Berat (data dummy)
-- Menu **Alat Berat** (Database Kesiapan Alat Berat UIT JBM) berisi **Daftar Alat**: filter kategori Crane/Forklift/Manlift/Alat Pendukung, filter kondisi, pencarian, **peta lokasi penyimpanan** yang memfilter tabel, **tabel** 10 data/halaman dengan Tampilkan semua, atau tampilan kartu, serta pop-up detail alat. Pemberitahuan data contoh tampil sekali dan tidak muncul lagi di perangkat itu setelah ditutup.
-- Semua data masih **contoh**, dibuat di `data/alat-berat-dummy.js` (52 alat, 18 data peminjaman contoh untuk status "Dipinjam" & info terakhir dipinjam, koordinat perkiraan 7 lokasi). Logika tampilan ada di `alat-berat.js`.
-- Untuk data asli: ganti isi `window.ALAT_BERAT_DUMMY` dengan struktur yang sama (`alat[]`: id, kategori, nama, merk, kapasitas, tahun, noSeri, upt, lokasi, status, layak, kondisi, fungsi, suratIzin, foto; `peminjaman[]`: id, alatId, peminjam, pic, pekerjaan, tujuan, mulai, selesai, status, histori[]), atau sambungkan ke Google Sheets seperti menu Trafo Mobile.
+### Alat Berat (data aplikasi WARNOTO)
+- Data dari export inventaris aplikasi **WARNOTO** (`Alat_Berat_UIT-JBM_<tanggal>.xlsx`, sheet `Inventaris` + `Lampiran Foto`): 52 alat, 6 UPT, 13 lokasi penyimpanan, 18 foto.
+- Memperbarui data: `python3 tools/xlsx_alat_berat_to_js.py "Alat_Berat_UIT-JBM_<tanggal>.xlsx"` → menulis `data/alat-berat.js` dan foto `assets/alat-berat/<ID>.jpg`, lalu commit. Tanggal **Diperbarui** = tanggal di nama file.
+- Penyesuaian dari export: kategori diseragamkan (crane, forklift, manlift, alat pendukung, truck); **kondisi** dikelompokkan dari *Status Alat* (Layak → Baik, Perlu Service, Rusak) dengan teks kondisi asli sebagai catatan; **status** Dipinjam dari *Status Ketersediaan*, Rusak → "Rusak / perbaikan"; **surat izin**: "Tidak ada", "Perlu perpanjangan" (PERPANJANGAN), tanggal → Berlaku/Kedaluwarsa dibanding tanggal export, tautan → "Ada dokumen".
+- Lokasi baru perlu koordinat perkiraan di `KOORDINAT` (`tools/xlsx_alat_berat_to_js.py`); skrip memberi peringatan bila ada yang belum.
+- Foto di export berupa thumbnail kecil; foto ditampilkan utuh di atas latar buram.
 
 ### CUI Jarvis (Climb Up Inspection)
 - Menu **CUI Jarvis** (grup Inspeksi Transmisi) menampilkan hasil inspeksi tower dari export Jarvis: filter UPT/ULTG/penghantar/tanggal/cari, ringkasan (tower diinspeksi, tower dengan temuan, temuan kritis, korosi P1/P2/P3, temuan lain), grafik per UPT & progres mingguan, **kondisi per item inspeksi** per bagian tower (klik segmen untuk memfilter), **rekap per penghantar** (bisa diurutkan), dan **tabel data per klem** dengan pop-up detail.

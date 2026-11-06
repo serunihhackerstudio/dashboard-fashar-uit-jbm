@@ -25,7 +25,7 @@
     const cui = window.CUI_SUMMARY ? window.CUI_SUMMARY() : null;
     const dcm = (window.DC_MOBILE && window.DC_MOBILE.rows) || [], fm = (window.FILTER_MINYAK && window.FILTER_MINYAK.rows) || [];
     const kal = (rows, re) => rows.filter(r => re.test(String(r.kalibrasi || ""))).length;
-    const ab = (window.ALAT_BERAT_DUMMY && window.ALAT_BERAT_DUMMY.alat) || [];
+    const ab = ((window.ALAT_BERAT || window.ALAT_BERAT_DUMMY) || {}).alat || [];
     const tw = (D.towerKpi || []).map(x => x[1]);
     return [
       { id: "health", g: "kondisi", ic: '<path d="M3 12h4l2-5 4 10 2-5h6"/>', t: "Health Index", d: "Sebaran prioritas temuan P1–P3 aset jaringan & gardu induk per kategori.",
@@ -41,7 +41,7 @@
         s: [["Komponen", tRows.length], ["Operasi", tSt("OPERASI")], ["Standby", tSt("STANDBY")], ["Rusak", tSt("RUSAK")]] },
       { id: "dcm", g: "ers", ic: '<rect x="3" y="7" width="14" height="10" rx="2"/><path d="M17 10h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2M9 9.5 7.5 12H11l-1.5 2.5"/>', t: "DC Mobile",
         d: "Unit sistem DC bergerak per UPT/ULTG beserta status kalibrasi.", s: [["Unit", dcm.length], ["Kedaluwarsa", kal(dcm, /EXPIRED/i)], ["Belum kalibrasi", kal(dcm, /BELUM/i)]] },
-      { id: "alat", g: "alat", ic: '<path d="M4 21h9M7 21V4l12 3.5M7 4 4 8M19 7.5V14"/><path d="M17 14h4v3h-4z"/>', t: "Alat Berat", d: "Database kesiapan crane, forklift, manlift & alat pendukung lengkap dengan peta lokasi.", pending: "Menunggu sinkronisasi WARNOTO",
+      { id: "alat", g: "alat", ic: '<path d="M4 21h9M7 21V4l12 3.5M7 4 4 8M19 7.5V14"/><path d="M17 14h4v3h-4z"/>', t: "Alat Berat", d: "Database kesiapan crane, forklift, manlift & alat pendukung lengkap dengan peta lokasi.", pending: window.ALAT_BERAT ? "" : "Menunggu sinkronisasi WARNOTO", src: window.ALAT_BERAT ? "Data WARNOTO" : "",
         s: [["Alat", ab.length], ["Lokasi", new Set(ab.map(a => a.lokasi)).size]] },
       { id: "fm", g: "alat", ic: '<path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11Z"/><path d="M9 14h6M10 17h4"/>', t: "Filter Minyak", d: "Unit filter minyak trafo per UPT/ULTG dan status kalibrasinya.",
         s: [["Unit", fm.length], ["Kalibrasi aktif", kal(fm, /AKTIF|BERLAKU/i)], ["Kedaluwarsa", kal(fm, /EXPIRED/i)]] }
@@ -89,7 +89,7 @@
       ${GROUPS.map(G => `<section class="home-group tone-${G.tone}">
         <div class="hg-head"><h3>${esc(G.label)}</h3><p>${esc(G.desc)}</p></div>
         <div class="hg-grid">${byG(G.key).map((f, i) => `<a class="card feat" href="#${f.id}" style="--d:${i * 70}ms" aria-label="Buka ${esc(f.t)}">
-          <div class="feat-top"><span class="feat-ic">${svg(f.ic)}</span>${f.live ? `<span class="feat-live"><i class="live-dot"></i>Live</span>` : ""}${f.pending ? `<span class="feat-pending">${esc(f.pending)}</span>` : ""}</div>
+          <div class="feat-top"><span class="feat-ic">${svg(f.ic)}</span>${f.live ? `<span class="feat-live"><i class="live-dot"></i>Live</span>` : ""}${f.pending ? `<span class="feat-pending">${esc(f.pending)}</span>` : ""}${f.src ? `<span class="feat-live"><i class="live-dot"></i>${esc(f.src)}</span>` : ""}</div>
           <h4>${esc(f.t)}</h4><p>${esc(f.d)}</p>
           ${f.s.length ? `<div class="feat-stats" style="--n:${f.s.length}">${f.s.map(([l, v]) => `<div><b>${n(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>` : ""}
           <span class="feat-go">Buka ${svg('<path d="M5 12h14M13 6l6 6-6 6"/>')}</span></a>`).join("")}</div>

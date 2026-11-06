@@ -947,3 +947,12 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 @media (prefers-reduced-motion:reduce){.ab-sync-ic svg{animation:none}}
 .feat-pending{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--p2);background:color-mix(in srgb,var(--p2) 14%,transparent);padding:4px 9px;border-radius:99px}
 .live-dot.pending{background:var(--p2);box-shadow:0 0 0 3px color-mix(in srgb,var(--p2) 22%,transparent)}
+.ab-sync.done{background:linear-gradient(135deg,color-mix(in srgb,var(--ok) 13%,var(--surface)),var(--surface));border-color:color-mix(in srgb,var(--ok) 38%,var(--border))}
+.ab-sync.done b{color:color-mix(in srgb,var(--ok) 60%,var(--text))}
+.ab-sync.done .ab-sync-ic{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.ab-sync.done .ab-sync-ic svg{animation:none}
+.ab-note{white-space:normal;max-width:220px;margin-top:3px}
+.ab-img{position:relative;width:100%;height:100%;overflow:hidden;background:#1b2230}
+.ab-img::before{content:"";position:absolute;inset:-16px;background:var(--bg) center/cover no-repeat;filter:blur(14px) brightness(.8) saturate(1.1)}
+.ab-photo .ab-img img{position:relative;width:100%;height:100%;object-fit:contain}
+#abChIzin .ab-bars li{grid-template-columns:128px minmax(0,1fr) 34px}

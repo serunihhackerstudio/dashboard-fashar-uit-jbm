@@ -94,12 +94,13 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Memperbarui data: `python3 tools/xlsx_alat_to_js.py "FILTER_MINYAK_UIT_JBM.xlsx" data/filter-minyak.js FILTER_MINYAK` lalu commit.
 - Menu baru dengan format export aplikasi alat yang sama cukup: buat file data dengan perintah di atas, tambah `<section id="page-xx" class="page"></section>`, item menu, entri `PAGES` di `app.js`, dan satu baris `alatPage({...})` di akhir `alat-export.js`.
 
-### Alat Berat (data aplikasi WARNOTO)
-- Data dari export inventaris aplikasi **WARNOTO** (`Alat_Berat_UIT-JBM_<tanggal>.xlsx`, sheet `Inventaris` + `Lampiran Foto`): 52 alat, 6 UPT, 13 lokasi penyimpanan, 18 foto.
-- Memperbarui data: `python3 tools/xlsx_alat_berat_to_js.py "Alat_Berat_UIT-JBM_<tanggal>.xlsx"` → menulis `data/alat-berat.js` dan foto `assets/alat-berat/<ID>.jpg`, lalu commit. Tanggal **Diperbarui** = tanggal di nama file.
-- Penyesuaian dari export: kategori diseragamkan (crane, forklift, manlift, alat pendukung, truck); **kondisi** dikelompokkan dari *Status Alat* (Layak → Baik, Perlu Service, Rusak) dengan teks kondisi asli sebagai catatan; **status** Dipinjam dari *Status Ketersediaan*, Rusak → "Rusak / perbaikan"; **surat izin**: "Tidak ada", "Perlu perpanjangan" (PERPANJANGAN), tanggal → Berlaku/Kedaluwarsa dibanding tanggal export, tautan → "Ada dokumen".
-- Lokasi baru perlu koordinat perkiraan di `KOORDINAT` (`tools/xlsx_alat_berat_to_js.py`); skrip memberi peringatan bila ada yang belum.
-- Foto di export berupa thumbnail kecil; foto ditampilkan utuh di atas latar buram.
+### Alat Berat (Google Sheets "3. ALAT BERAT (NEW)")
+- Database live di sheet **`3. ALAT BERAT (NEW)`** pada spreadsheet DATABASE ALAT BERAT UIT JBM, lewat Apps Script yang sama dengan Trafo Mobile (`apps-script/Code.gs`, bagian ALAT BERAT). Sheet dibuat otomatis (header, dropdown validasi, format teks).
+- **Pertama kali:** halaman Alat Berat menampilkan tombol **Salin 52 data ke sheet** (butuh kode akses edit) untuk mengisi sheet dari export WARNOTO.
+- **Tambah alat** / **Edit** (tabel atau pop-up detail) menyimpan ke sheet; ID baru otomatis `HE-xxx`. Kondisi (Baik / Perlu Service / Rusak), kelayakan, ketersediaan (Tersedia / Dipinjam), surat izin (Tidak ada / Ada / Perlu perpanjangan) + masa berlaku → status Berlaku/Kedaluwarsa dihitung otomatis.
+- **Foto per alat** diunggah dari form Edit ke folder Google Drive `AB_PHOTO_ROOT_ID` (subfolder per alat, link di kolom LINK FOTO); bisa pilih **foto utama** dan hapus. Tanpa foto Drive, dipakai thumbnail dari export WARNOTO (`assets/alat-berat/`).
+- Tanggal **Diperbarui** = perubahan terakhir (dashboard atau edit langsung di sheet lewat `onEdit`).
+- Tanpa koneksi Apps Script, halaman memakai data statis `data/alat-berat.js` (dibuat `python3 tools/xlsx_alat_berat_to_js.py "Alat_Berat_UIT-JBM_<tanggal>.xlsx"`).
 
 ### CUI Jarvis (Climb Up Inspection)
 - Menu **CUI Jarvis** (grup Inspeksi Transmisi) menampilkan hasil inspeksi tower dari export Jarvis: filter UPT/ULTG/penghantar/tanggal/cari, ringkasan (tower diinspeksi, tower dengan temuan, temuan kritis, korosi P1/P2/P3, temuan lain), grafik per UPT & progres mingguan, **kondisi per item inspeksi** per bagian tower (klik segmen untuk memfilter), **rekap per penghantar** (bisa diurutkan), dan **tabel data per klem** dengan pop-up detail.

@@ -956,3 +956,19 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .ab-img::before{content:"";position:absolute;inset:-16px;background:var(--bg) center/cover no-repeat;filter:blur(14px) brightness(.8) saturate(1.1)}
 .ab-photo .ab-img img{position:relative;width:100%;height:100%;object-fit:contain}
 #abChIzin .ab-bars li{grid-template-columns:128px minmax(0,1fr) 34px}
+
+/* Alat Berat — database Google Sheets */
+.ab-bar{margin-bottom:16px}
+.ab-seed{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.ab-seed[hidden]{display:none}
+.ab-seed-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ab-seed-act input{padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
+.ab-ph-sec{margin-bottom:16px}
+.ph-item.cover .ph-img{outline:3px solid var(--ok);outline-offset:-3px}
+.linkbtn.danger{color:var(--p1)}
+.ab-det-photos{margin-top:16px}
+.ab-det-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.ab-det-strip img{height:110px;width:auto;border-radius:10px;display:block;border:1px solid var(--border)}
+.ab-det-actions{display:flex;justify-content:flex-end;margin-top:14px}
+.ab-det-actions .btn{display:inline-flex;align-items:center;gap:6px}
+#abRows td.act{white-space:nowrap}

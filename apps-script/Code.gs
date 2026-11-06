@@ -11,6 +11,10 @@
  *      action: "add" | "update" | "photo_upload" | "photo_replace" | "photo_caption" | "photo_delete"
  *              | "move_add" | "move_delete" | "ba_upload" | "cui_upload"
  * GET  <url>?action=cui              → data CUI Jarvis terbaru + riwayat unggahan
+ * GET  <url>?action=ab               → data Alat Berat (sheet "3. ALAT BERAT (NEW)")
+ * GET  <url>?action=ab_photos&id=ID  → daftar foto satu alat berat
+ * POST action: "ab_add" | "ab_update" | "ab_seed" | "ab_photo_upload" | "ab_photo_delete" | "ab_photo_cover"
+ *      (data alat berat; foto disimpan per alat di folder AB_PHOTO_ROOT_ID)
  *
  * CUI Jarvis: file export Jarvis yang diunggah dari dashboard disimpan permanen di
  * folder CUI_ROOT_ID (file asli + data ringkas JSON). Isi data terbaru juga ditulis
@@ -92,7 +96,8 @@ function izinkanAkses() {
     'Spreadsheet CUI Jarvis: ' + cuiSpreadsheet_().getName(),
     'Folder CUI Jarvis: ' + cuiFolder_().getName(),
     'Folder foto: ' + DriveApp.getFolderById(p.getProperty('PHOTO_FOLDER_ID') || PHOTO_ROOT_ID).getName(),
-    'Folder BA: ' + DriveApp.getFolderById(p.getProperty('BA_FOLDER_ID') || BA_ROOT_ID).getName()
+    'Folder BA: ' + DriveApp.getFolderById(p.getProperty('BA_FOLDER_ID') || BA_ROOT_ID).getName(),
+    'Folder foto alat berat: ' + abPhotoRoot_().getName()
   ];
   // uji izin tulis Drive (butuh scope penuh .../auth/drive): buat lalu buang file uji
   const tmp = cuiFolder_().createFile('cek_izin.txt', 'uji izin tulis ' + new Date());
@@ -111,6 +116,8 @@ function doGet(e) {
       return json_({ ok: true, folder: folder ? folder.getUrl() : null, photos: folder ? listPhotos_(folder) : [] });
     }
     if (p.action === 'cui') return json_(cuiLatest_());
+    if (p.action === 'ab') return json_(abGet_());
+    if (p.action === 'ab_photos') return json_(abPhotos_(p.id));
     ensureIds_(sheet_());
     const rows = readRows_(), moves = readMoves_();
     return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: rows, moves: moves, updated: syncUpdated_(rows, moves) });
@@ -129,6 +136,7 @@ function doPost(e) {
     if (req.token !== token) return json_({ ok: false, code: 'auth', error: 'Kode akses edit salah.' });
 
     if (req.action === 'cui_upload') return json_(cuiUpload_(req));
+    if (String(req.action || '').indexOf('ab_') === 0) return json_(abAction_(req));
 
     const sh = sheet_();
     const data = validate_(req.data || {});
@@ -200,6 +208,7 @@ function onEdit(e) {
   try {
     const name = e && e.range && e.range.getSheet().getName();
     if (name === SHEET_NAME || name === MOVE_SHEET) markUpdated_();
+    if (name === AB_SHEET) PropertiesService.getScriptProperties().setProperty('AB_UPDATED', new Date().toISOString());
   } catch (err) { /* abaikan */ }
 }
 
@@ -659,4 +668,167 @@ function cuiLatest_() {
 
 function json_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* =========================================================
+   ALAT BERAT — sheet "3. ALAT BERAT (NEW)" + foto per alat di Google Drive
+   ========================================================= */
+const AB_SHEET = '3. ALAT BERAT (NEW)';
+// Folder Google Drive foto alat berat. Bisa diganti lewat Script Properties: AB_PHOTO_FOLDER_ID
+const AB_PHOTO_ROOT_ID = '1E6e3BLeYh4Y8ETWGfkz4aJ5RXA4RTUxL';
+const AB_COLS = [
+  ['id', 'ID'], ['upt', 'UPT'], ['lokasi', 'GUDANG / LOKASI'], ['nama', 'NAMA ALAT'], ['kategori', 'KATEGORI'], ['fungsi', 'FUNGSI'],
+  ['jenisAset', 'JENIS ASET'], ['merk', 'MERK / TYPE'], ['kapasitas', 'KAPASITAS'], ['noSeri', 'NO. SERI'], ['tahun', 'TAHUN'],
+  ['kondisi', 'KONDISI'], ['kondisiCatatan', 'CATATAN KONDISI'], ['kelayakan', 'KELAYAKAN'], ['ketersediaan', 'KETERSEDIAAN'],
+  ['jumlah', 'JUMLAH'], ['satuan', 'SATUAN'], ['suratIzin', 'SURAT IZIN'], ['izinBerlaku', 'MASA BERLAKU SURAT IZIN'],
+  ['suratIzinUrl', 'LINK SURAT IZIN'], ['spesifikasi', 'SPESIFIKASI'], ['linkFoto', 'LINK FOTO'], ['fotoUtama', 'ID FOTO UTAMA'],
+  ['diperbarui', 'DIPERBARUI']
+];
+const AB_KEYS = AB_COLS.map(c => c[0]);
+const AB_COL = Object.fromEntries(AB_COLS.map((c, i) => [c[0], i + 1]));
+const AB_SYSTEM = ['linkFoto', 'fotoUtama', 'diperbarui']; // diisi skrip, tidak dari form
+const AB_ENUM = {
+  kategori: ['Crane', 'Forklift', 'Manlift', 'Alat Pendukung', 'Truck'], kondisi: ['Baik', 'Perlu Service', 'Rusak'],
+  kelayakan: ['Layak', 'Tidak layak'], ketersediaan: ['Tersedia', 'Dipinjam'], suratIzin: ['Tidak ada', 'Ada', 'Perlu perpanjangan'],
+  jenisAset: ['Alat Berat', 'Alat Bantu']
+};
+
+function abSheet_(create) {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(AB_SHEET);
+  if (!sh && create) {
+    sh = ss.insertSheet(AB_SHEET);
+    sh.getRange(1, 1, 1, AB_COLS.length).setValues([AB_COLS.map(c => c[1])]).setFontWeight('bold').setBackground('#0b2545').setFontColor('#ffffff');
+    sh.setFrozenRows(1);
+    sh.getRange(2, 1, sh.getMaxRows() - 1, AB_COLS.length).setNumberFormat('@');
+    Object.keys(AB_ENUM).forEach(k => sh.getRange(2, AB_COL[k], sh.getMaxRows() - 1, 1)
+      .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(AB_ENUM[k], true).setAllowInvalid(false).build()));
+    sh.autoResizeColumns(1, AB_COLS.length);
+  }
+  return sh;
+}
+function abPhotoRoot_() {
+  return DriveApp.getFolderById(PropertiesService.getScriptProperties().getProperty('AB_PHOTO_FOLDER_ID') || AB_PHOTO_ROOT_ID);
+}
+function abRows_(sh) {
+  if (!sh || sh.getLastRow() < 2) return [];
+  const v = sh.getRange(2, 1, sh.getLastRow() - 1, AB_COLS.length).getDisplayValues();
+  const out = [];
+  v.forEach((r, i) => {
+    if (!String(r[0]).trim()) return;
+    const o = { _row: i + 2 };
+    AB_KEYS.forEach((k, j) => { o[k] = String(r[j]).trim() || null; });
+    o.fotoUrl = o.fotoUtama ? 'https://drive.google.com/thumbnail?id=' + o.fotoUtama + '&sz=w800' : null;
+    out.push(o);
+  });
+  return out;
+}
+function abGet_() {
+  const sh = abSheet_(false);
+  const p = PropertiesService.getScriptProperties();
+  return { ok: true, sheet: !!sh, source: 'DATABASE ALAT BERAT UIT JBM — ' + AB_SHEET, rows: abRows_(sh), updated: p.getProperty('AB_UPDATED') || fileUpdated_() };
+}
+function abFind_(sh, id) {
+  id = String(id || '').trim();
+  if (!id || sh.getLastRow() < 2) return 0;
+  const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getDisplayValues();
+  for (let i = 0; i < ids.length; i++) if (String(ids[i][0]).trim() === id) return i + 2;
+  return 0;
+}
+function abClean_(d, withId) {
+  const o = {};
+  AB_KEYS.forEach(k => {
+    if (AB_SYSTEM.indexOf(k) >= 0 || (k === 'id' && !withId) || !(k in (d || {}))) return;
+    let v = String(d[k] == null ? '' : d[k]).replace(/\s+/g, ' ').trim().slice(0, 500);
+    if (/^[=+\-@]/.test(v)) v = "'" + v; // cegah dibaca sebagai rumus
+    if (v && AB_ENUM[k] && AB_ENUM[k].indexOf(v) < 0) throw new Error('Nilai "' + v + '" tidak valid untuk ' + AB_COLS[AB_COL[k] - 1][1] + '.');
+    if (k === 'tahun' && v && !/^\d{4}$/.test(v)) throw new Error('Tahun harus 4 digit, mis. 2024.');
+    if (k === 'izinBerlaku' && v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) throw new Error('Masa berlaku surat izin harus berformat tanggal.');
+    if (k === 'jumlah' && v && !/^\d{1,5}$/.test(v)) throw new Error('Jumlah harus angka.');
+    if (k === 'suratIzinUrl' && v && !/^https?:\/\//.test(v)) throw new Error('Link surat izin harus diawali http(s)://');
+    o[k] = v;
+  });
+  return o;
+}
+function abWrite_(sh, r, o) {
+  o.diperbarui = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+  Object.keys(o).forEach(k => sh.getRange(r, AB_COL[k]).setNumberFormat('@').setValue(o[k]));
+}
+function abRowObj_(sh, r) { return abRows_(sh).filter(x => x._row === r)[0] || null; }
+function abNextId_(sh) {
+  let max = 0;
+  abRows_(sh).forEach(x => { const m = String(x.id).match(/^HE-(\d+)$/); if (m) max = Math.max(max, Number(m[1])); });
+  return 'HE-' + ('00' + (max + 1)).slice(-3);
+}
+function abChanged_(o) {
+  if (o && o.ok) { o.updated = new Date().toISOString(); PropertiesService.getScriptProperties().setProperty('AB_UPDATED', o.updated); }
+  return o;
+}
+function abPhotoFolder_(sh, r, create) {
+  const row = abRowObj_(sh, r);
+  const m = String(row.linkFoto || '').match(/folders\/([\w-]+)/);
+  if (m) {
+    try { return DriveApp.getFolderById(m[1]); } catch (err) { throw new Error('Folder foto alat ini tidak dapat diakses oleh skrip.'); }
+  }
+  if (!create) return null;
+  const folder = abPhotoRoot_().createFolder([row.id, row.nama, row.upt].filter(String).join(' - '));
+  sh.getRange(r, AB_COL.linkFoto).setValue(folder.getUrl());
+  return folder;
+}
+function abPhotos_(id) {
+  const sh = abSheet_(false), r = sh ? abFind_(sh, id) : 0;
+  if (!r) return { ok: false, error: 'Alat ' + id + ' tidak ditemukan di sheet ' + AB_SHEET + '.' };
+  const folder = abPhotoFolder_(sh, r, false), row = abRowObj_(sh, r);
+  return { ok: true, folder: folder ? folder.getUrl() : null, cover: row.fotoUtama, photos: folder ? listPhotos_(folder) : [] };
+}
+function abAction_(req) {
+  const sh = abSheet_(true);
+  if (req.action === 'ab_seed') {
+    if (abRows_(sh).length) return { ok: false, error: 'Sheet ' + AB_SHEET + ' sudah berisi data.' };
+    const rows = (Array.isArray(req.rows) ? req.rows : []).slice(0, 1000).map(d => abClean_(d, true)).filter(o => o.id);
+    if (!rows.length) return { ok: false, error: 'Tidak ada data untuk disalin.' };
+    const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+    const values = rows.map(o => AB_KEYS.map(k => k === 'diperbarui' ? now : (o[k] || '')));
+    sh.getRange(2, 1, values.length, AB_COLS.length).setNumberFormat('@').setValues(values);
+    return abChanged_({ ok: true, rows: abRows_(sh) });
+  }
+  if (req.action === 'ab_add') {
+    const o = abClean_(req.data, true);
+    if (!o.nama) return { ok: false, error: 'Nama alat wajib diisi.' };
+    if (o.id && abFind_(sh, o.id)) return { ok: false, error: 'ID ' + o.id + ' sudah dipakai.' };
+    if (!o.id) o.id = abNextId_(sh);
+    const r = Math.max(sh.getLastRow(), 1) + 1;
+    abWrite_(sh, r, o);
+    return abChanged_({ ok: true, row: abRowObj_(sh, r) });
+  }
+  const r = abFind_(sh, req.id);
+  if (!r) return { ok: false, code: 'conflict', error: 'Alat ' + req.id + ' tidak ditemukan di sheet. Muat ulang data lalu coba lagi.' };
+  if (req.action === 'ab_update') {
+    abWrite_(sh, r, abClean_(req.data, false));
+    return abChanged_({ ok: true, row: abRowObj_(sh, r) });
+  }
+  if (req.action === 'ab_photo_upload') {
+    const folder = abPhotoFolder_(sh, r, true);
+    const f = folder.createFile(photoBlob_(req));
+    const caption = String(req.caption || '').trim().slice(0, 500);
+    if (caption) f.setDescription(caption);
+    if (!abRowObj_(sh, r).fotoUtama) sh.getRange(r, AB_COL.fotoUtama).setValue(f.getId());
+    return abChanged_({ ok: true, photo: photoInfo_(f), row: abRowObj_(sh, r) });
+  }
+  const folder = abPhotoFolder_(sh, r, false);
+  if (!folder) return { ok: false, error: 'Alat ini belum punya foto.' };
+  const f = photoInFolder_(folder, req.fileId);
+  if (req.action === 'ab_photo_cover') {
+    sh.getRange(r, AB_COL.fotoUtama).setValue(f.getId());
+    return abChanged_({ ok: true, row: abRowObj_(sh, r) });
+  }
+  if (req.action === 'ab_photo_delete') {
+    f.setTrashed(true);
+    if (abRowObj_(sh, r).fotoUtama === f.getId()) {
+      const rest = listPhotos_(folder);
+      sh.getRange(r, AB_COL.fotoUtama).setValue(rest.length ? rest[0].id : '');
+    }
+    return abChanged_({ ok: true, row: abRowObj_(sh, r) });
+  }
+  return { ok: false, error: 'Aksi tidak dikenal.' };
 }

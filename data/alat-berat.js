@@ -28,6 +28,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-001.jpg"
   },
@@ -55,6 +56,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-002.jpg"
   },
@@ -82,6 +84,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -109,6 +112,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-004.jpg"
   },
@@ -136,6 +140,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-005.jpg"
   },
@@ -163,6 +168,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-006.jpg"
   },
@@ -190,6 +196,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-007.jpg"
   },
@@ -217,6 +224,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-008.jpg"
   },
@@ -244,6 +252,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-009.jpg"
   },
@@ -271,6 +280,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -298,6 +308,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -325,6 +336,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-012.jpg"
   },
@@ -352,6 +364,7 @@ window.ALAT_BERAT = {
    "izin": "Perlu perpanjangan",
    "suratIzin": "Perlu perpanjangan",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -379,6 +392,7 @@ window.ALAT_BERAT = {
    "izin": "Perlu perpanjangan",
    "suratIzin": "Perlu perpanjangan",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -406,6 +420,7 @@ window.ALAT_BERAT = {
    "izin": "Perlu perpanjangan",
    "suratIzin": "Perlu perpanjangan",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -433,6 +448,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -460,6 +476,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -487,6 +504,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -514,6 +532,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -541,6 +560,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -568,6 +588,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -595,6 +616,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -622,6 +644,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -649,6 +672,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -676,6 +700,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -703,6 +728,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -730,6 +756,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -757,6 +784,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -784,6 +812,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -811,6 +840,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -838,6 +868,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-031.jpg"
   },
@@ -865,6 +896,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-032.jpg"
   },
@@ -892,6 +924,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-033.jpg"
   },
@@ -919,6 +952,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-034.jpg"
   },
@@ -946,6 +980,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-035.jpg"
   },
@@ -973,6 +1008,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-036.jpg"
   },
@@ -1000,6 +1036,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-037.jpg"
   },
@@ -1027,6 +1064,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-038.jpg"
   },
@@ -1054,6 +1092,7 @@ window.ALAT_BERAT = {
    "izin": "Kedaluwarsa",
    "suratIzin": "Kedaluwarsa (28 Mei 2026)",
    "suratIzinUrl": null,
+   "izinBerlaku": "2026-05-28",
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1081,6 +1120,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1108,6 +1148,7 @@ window.ALAT_BERAT = {
    "izin": "Kedaluwarsa",
    "suratIzin": "Kedaluwarsa (28 Mei 2026)",
    "suratIzinUrl": null,
+   "izinBerlaku": "2026-05-28",
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1135,6 +1176,7 @@ window.ALAT_BERAT = {
    "izin": "Kedaluwarsa",
    "suratIzin": "Kedaluwarsa (28 Mei 2026)",
    "suratIzinUrl": null,
+   "izinBerlaku": "2026-05-28",
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1162,6 +1204,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1189,6 +1232,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1216,6 +1260,7 @@ window.ALAT_BERAT = {
    "izin": "Kedaluwarsa",
    "suratIzin": "Kedaluwarsa (Jun 2026)",
    "suratIzinUrl": null,
+   "izinBerlaku": "2026-06-30",
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1243,6 +1288,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1270,6 +1316,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1297,6 +1344,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1324,6 +1372,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1351,6 +1400,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1378,6 +1428,7 @@ window.ALAT_BERAT = {
    "izin": "Tidak ada",
    "suratIzin": "Tidak ada",
    "suratIzinUrl": null,
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": null
   },
@@ -1405,6 +1456,7 @@ window.ALAT_BERAT = {
    "izin": "Ada dokumen",
    "suratIzin": "Dokumen surat izin tersedia",
    "suratIzinUrl": "https://warnoto.com/storage/v1/object/public/tug-photos/alat-berat/surat-izin/HE-N99X68YV.jpg",
+   "izinBerlaku": null,
    "terakhirDipinjam": null,
    "foto": "assets/alat-berat/HE-N99X68YV.jpg"
   }

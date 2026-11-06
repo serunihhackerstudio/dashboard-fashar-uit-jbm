@@ -158,6 +158,11 @@
 
   <!-- ALAT BERAT (data dummy) -->
   <section id="page-alat" class="page">
+   <div class="tdb-bar card ab-bar">
+    <div class="tdb-bar-info"><span class="chip sync" id="abSyncChip"></span><span class="muted sm" id="abSyncNote"></span></div>
+    <div class="tdb-actions"><button class="btn ghost" type="button" id="abReload" hidden><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/></svg>Muat ulang</button><button class="btn primary" type="button" id="abAddBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah alat</button></div>
+   </div>
+   <div class="callout warn ab-seed" id="abSeed" hidden></div>
 
    <div id="abDaftar">
     <div class="ab-filters">
@@ -317,6 +322,24 @@
   <footer class="modal-foot"><div class="modal-btns"><button class="btn ghost" type="button" onclick="$('#cuiHistDlg').close()">Tutup</button></div></footer>
  </div>
 </dialog>
+<dialog class="modal modal-lg" id="abEditDlg" aria-labelledby="abEditTitle">
+ <form class="modal-wrap" id="abEditForm" novalidate>
+  <header class="modal-head"><div><h3 id="abEditTitle">Tambah alat</h3><p id="abEditSub">Disimpan ke sheet 3. ALAT BERAT (NEW)</p></div>
+   <button class="icon-btn" type="button" onclick="$('#abEditDlg').close()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="modal-body">
+   <section class="dsec ph-sec ab-ph-sec" id="abPhSec" hidden></section>
+   <div class="form-grid" id="abFields"></div>
+  </div>
+  <footer class="modal-foot">
+   <div class="fld token">
+    <label class="tok-in" id="abTokIn"><span>Kode akses edit</span><input type="password" id="ab_token" autocomplete="current-password" placeholder="Kode dari admin"><small class="hint">Cukup sekali — akan diingat di perangkat ini.</small></label>
+    <p class="token-saved" id="abTokSaved" hidden><svg class="ic xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Kode akses tersimpan di perangkat ini · <button type="button" class="linkbtn" id="abTokForget">Lupakan</button></p>
+   </div>
+   <p class="form-err" id="abEditErr" role="alert" hidden></p>
+   <div class="modal-btns"><button class="btn ghost" type="button" onclick="$('#abEditDlg').close()">Batal</button><button class="btn primary" type="submit" id="abSave">Simpan</button></div>
+  </footer>
+ </form>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js"></script>
@@ -330,6 +353,7 @@
 <script src="alat-export.js"></script>
 <script src="data/alat-berat.js"></script>
 <script src="alat-berat.js"></script>
+<script src="alat-berat-db.js"></script>
 <script src="home.js"></script>
 </body>
 </html>

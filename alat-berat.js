@@ -81,7 +81,7 @@
         <td>${esc(a.lokasi)}<div class="muted sm">${esc(a.upt)}</div></td>
         <td><span class="badge ${ST_TONE[st]}">${st}</span></td><td><span class="badge ${a.layak ? "ok" : "bad"}">${a.layak ? "Layak" : "Tidak layak"}</span></td>
         <td>${kondisiChip(a.kondisi, a.kondisiCatatan)}${a.kondisiCatatan ? `<div class="muted sm ab-note">${esc(a.kondisiCatatan)}</div>` : ""}</td><td class="izin">${izinCell(a)}</td>
-        <td class="act"><button type="button" class="btn ghost sm" data-id="${a.id}">Detail</button></td></tr>`;
+        <td class="act"><button type="button" class="btn ghost sm" data-id="${a.id}">Detail</button>${window.abEdit ? ` <button type="button" class="btn ghost sm" data-edit="${esc(a.id)}">Edit</button>` : ""}</td></tr>`;
     }).join("");
     $("#abEmpty").hidden = list.length > 0;
     $("#abTCount").textContent = list.length ? `Menampilkan ${from + 1}–${from + rows.length} dari ${list.length} alat` : "Menampilkan 0 alat";
@@ -250,6 +250,7 @@
           ["Catatan kondisi", a.kondisiCatatan], ["Surat Izin (SIA/SILO)", a.suratIzin], ["Spesifikasi", a.spesifikasi], ["Lokasi", `${a.upt} • ${a.lokasi}`]]
           .filter(([l, v]) => v || !["Jenis aset", "Status alat", "Catatan kondisi", "Spesifikasi", "Jumlah"].includes(l))
           .map(([l, v]) => `<div${l === "Catatan kondisi" || l === "Lokasi" ? ' class="span2"' : ""}><dt>${l}</dt><dd class="${v ? "" : "nil"}">${esc(v || "—")}${l === "Surat Izin (SIA/SILO)" && a.suratIzinUrl ? ` · <a class="linkbtn" href="${esc(a.suratIzinUrl)}" target="_blank" rel="noopener">Lihat dokumen</a>` : ""}</dd></div>`).join("")}</dl></div>`;
+    if (window.abOnDetail) window.abOnDetail(a);
     $("#abDetail").showModal();
   }
 
@@ -269,7 +270,7 @@
   $("#abView").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { AB.view = b.dataset.v; renderDaftar(); } });
   $("#abPager").addEventListener("click", e => { const b = e.target.closest("button[data-p]"); if (b && !b.disabled) { AB.page = +b.dataset.p; renderDaftar(true); } });
   $("#abAll").addEventListener("click", () => { AB.all = !AB.all; renderDaftar(); });
-  $("#abRows").addEventListener("click", e => { const t = e.target.closest("[data-id]"); if (t) openDetail(t.dataset.id); });
+  $("#abRows").addEventListener("click", e => { const ed = e.target.closest("[data-edit]"); if (ed && window.abEdit) return window.abEdit(ed.dataset.edit); const t = e.target.closest("[data-id]"); if (t) openDetail(t.dataset.id); });
   $("#abRows").addEventListener("keydown", e => { const t = e.target.closest("tr[data-id]"); if (t && e.key === "Enter") openDetail(t.dataset.id); });
   $("#abLocPanel").addEventListener("click", e => { const b = e.target.closest("[data-lok]"); if (b) selectLok(b.dataset.lok); });
   $("#abShown").addEventListener("click", e => { if (e.target.closest("[data-clear-lok]")) selectLok(""); });
@@ -278,6 +279,8 @@
   $("#abGrid").addEventListener("click", e => { const c = e.target.closest("[data-id]"); if (c) openDetail(c.dataset.id); });
   $("#abGrid").addEventListener("keydown", e => { const c = e.target.closest("[data-id]"); if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDetail(c.dataset.id); } });
   $("#abDetail").addEventListener("click", e => { if (e.target === $("#abDetail")) $("#abDetail").close(); });
+  /* Akses untuk modul database (alat-berat-db.js): ganti data dengan isi Google Sheets & render ulang */
+  window.AB_CTX = { AB, render: renderDaftar, byId, openDetail, KAT, refreshMap: () => { MAP.fitted = false; mapResize(); } };
   renderDaftar();
   onShow();
   window.abMapTheme = () => { if (MAP.tiles) MAP.tiles.getContainer && MAP.tiles.getContainer().classList.toggle("tiles-dark", typeof tdbIsDark === "function" && tdbIsDark()); };

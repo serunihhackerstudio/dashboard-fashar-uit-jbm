@@ -62,14 +62,14 @@ def kondisi(status_alat, teks):
 
 
 def surat_izin(v, today):
-    """-> (kategori, teks tampilan, url)"""
+    """-> (kategori, teks tampilan, url, tanggal berlaku ISO)"""
     v = txt(v)
     if not v or v.lower() in ("tidak ada", "belum ada"):
-        return "Tidak ada", "Tidak ada", None
+        return "Tidak ada", "Tidak ada", None, None
     if v.startswith("http"):
-        return "Ada dokumen", "Dokumen surat izin tersedia", v
+        return "Ada dokumen", "Dokumen surat izin tersedia", v, None
     if "PERPANJANG" in v.upper():
-        return "Perlu perpanjangan", "Perlu perpanjangan", None
+        return "Perlu perpanjangan", "Perlu perpanjangan", None, None
     m = re.fullmatch(r"(?:(\d{1,2}) )?([A-Za-z]+) (\d{4})", v)
     if m and m.group(2)[:3].lower() in BULAN:
         mon, yr = BULAN[m.group(2)[:3].lower()], int(m.group(3))
@@ -77,9 +77,9 @@ def surat_izin(v, today):
         d = datetime.date(yr, mon, day)
         label = (f"{day} " if m.group(1) else "") + f"{BULAN_ID[mon - 1]} {yr}"
         if d < today:
-            return "Kedaluwarsa", f"Kedaluwarsa ({label})", None
-        return "Berlaku", f"Berlaku s.d. {label}", None
-    return "Ada dokumen", v, None
+            return "Kedaluwarsa", f"Kedaluwarsa ({label})", None, d.isoformat()
+        return "Berlaku", f"Berlaku s.d. {label}", None, d.isoformat()
+    return "Ada dokumen", v, None, None
 
 
 def main(path):
@@ -130,7 +130,7 @@ def main(path):
         ketersediaan = (txt(g(r, "Status Ketersediaan")) or "").upper()
         kond_teks = txt(g(r, "Kondisi"))
         kond = kondisi(st_alat, kond_teks)
-        iz, iz_teks, iz_url = surat_izin(g(r, "Surat Izin"), today)
+        iz, iz_teks, iz_url, iz_tgl = surat_izin(g(r, "Surat Izin"), today)
         alat.append({
             "id": aid, "kategori": KATEGORI.get(kat_src, "pendukung"), "nama": txt(g(r, "Nama")),
             "merk": txt(g(r, "Merk/Type")), "tipe": "", "kapasitas": kapasitas(g(r, "Kapasitas")),
@@ -140,7 +140,7 @@ def main(path):
             "kondisi": kond, "kondisiCatatan": kond_teks if kond_teks and kond_teks.lower() != kond.lower() else None,
             "fungsi": title_case(txt(g(r, "Jenis")) or ""), "jenisAset": (txt(g(r, "Jenis Aset")) or "").replace("_", " ").title(),
             "spesifikasi": txt(g(r, "Spesifikasi")), "jumlah": g(r, "Jumlah") or 1, "satuan": txt(g(r, "Satuan")),
-            "izin": iz, "suratIzin": iz_teks, "suratIzinUrl": iz_url, "terakhirDipinjam": None, "foto": fotos.get(aid),
+            "izin": iz, "suratIzin": iz_teks, "suratIzinUrl": iz_url, "izinBerlaku": iz_tgl, "terakhirDipinjam": None, "foto": fotos.get(aid),
         })
     lokasi = sorted({a["lokasi"] for a in alat})
     missing = [l for l in lokasi if l not in KOORDINAT]

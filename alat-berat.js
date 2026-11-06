@@ -1,32 +1,37 @@
 /* =========================================================
-   MENU ALAT BERAT — Daftar Alat (data dummy)
-   Sumber data: window.ALAT_BERAT_DUMMY (data/alat-berat-dummy.js)
-   Status "Dipinjam" & info terakhir dipinjam diturunkan dari data peminjaman contoh.
+   MENU ALAT BERAT — Daftar Alat
+   Sumber data: window.ALAT_BERAT (data/alat-berat.js, export aplikasi WARNOTO,
+   dibuat oleh tools/xlsx_alat_berat_to_js.py). Foto: assets/alat-berat/<ID>.jpg
    ========================================================= */
 (function () {
-  if (!$("#page-alat") || !window.ALAT_BERAT_DUMMY) return;
+  const SRC = window.ALAT_BERAT || window.ALAT_BERAT_DUMMY;
+  if (!$("#page-alat") || !SRC) return;
   const AB = {
-    alat: window.ALAT_BERAT_DUMMY.alat.map(a => ({ ...a })),
-    pj: window.ALAT_BERAT_DUMMY.peminjaman.map(p => ({ ...p, histori: p.histori.map(h => ({ ...h })) })),
+    alat: SRC.alat.map(a => ({ ...a })),
+    pj: (SRC.peminjaman || []).map(p => ({ ...p, histori: (p.histori || []).map(h => ({ ...h })) })),
     kat: "", kondisi: "", q: "",
-    view: "tabel", lok: "", page: 1, all: false, coords: window.ALAT_BERAT_DUMMY.koordinat || {}
+    view: "tabel", lok: "", page: 1, all: false, coords: SRC.koordinat || {}
   };
   const KAT = {
     crane: { label: "Crane", ic: '<path d="M4 21h9M7 21V4l12 3.5M7 4 4 8M19 7.5V14"/><path d="M17 14h4v3h-4z"/>' },
     forklift: { label: "Forklift", ic: '<path d="M3 18h10M5 18V9h5l3 4v5M16 4v14M16 15h5"/><circle cx="6" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/>' },
     manlift: { label: "Manlift", ic: '<path d="M6 21h12M8 21v-3h8v3M9 18l6-5M15 18l-6-5M8 10h8V5H8z"/>' },
-    pendukung: { label: "Alat Pendukung", ic: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5 2.5-2.5Z"/>' }
+    pendukung: { label: "Alat Pendukung", ic: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5 2.5-2.5Z"/>' },
+    truck: { label: "Truck", ic: '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/>' }
   };
   const ALL_IC = '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>';
   const svg = (p, cls = "ic") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
   const ST_TONE = { Tersedia: "info", Dipinjam: "warn", Perbaikan: "bad" };
-  const KONDISI_TONE = { "Baik": "ok", "Service Time": "info", "Rusak Ringan": "warn", "Rusak Berat": "bad" };
-  const kondisiChip = k => `<span class="badge ${KONDISI_TONE[k] || "muted"}">${esc(k || "-")}</span>`;
+  const KONDISI_TONE = SRC === window.ALAT_BERAT ? { "Baik": "ok", "Perlu Service": "warn", "Rusak": "bad" }
+    : { "Baik": "ok", "Service Time": "info", "Rusak Ringan": "warn", "Rusak Berat": "bad" };
+  const kondisiChip = (k, note) => `<span class="badge ${KONDISI_TONE[k] || "muted"}"${note ? ` title="${esc(note)}"` : ""}>${esc(k || "-")}</span>`;
+  const katLabel = a => (KAT[a.kategori] || KAT.pendukung).label;
   const byId = id => AB.alat.find(a => a.id === id);
 
   /* Status alat diturunkan dari peminjaman aktif */
   function statusOf(a) {
     if (a.status === "Perbaikan") return "Perbaikan";
+    if (a.status === "Dipinjam") return "Dipinjam";
     return AB.pj.some(p => p.alatId === a.id && p.status === "Dipinjam") ? "Dipinjam" : "Tersedia";
   }
   function lastLoan(a) {
@@ -35,7 +40,7 @@
   }
   const KONDISI_OPT = [
     ["", "Semua Alat", () => true], ["Tersedia", "Tersedia", a => statusOf(a) === "Tersedia"], ["Dipinjam", "Sedang dipinjam", a => statusOf(a) === "Dipinjam"],
-    ["Perbaikan", "Dalam perbaikan", a => statusOf(a) === "Perbaikan"], ["Layak", "Layak", a => a.layak], ["TidakLayak", "Tidak layak", a => !a.layak]
+    ["Perbaikan", "Rusak / perbaikan", a => statusOf(a) === "Perbaikan"], ["Layak", "Layak", a => a.layak], ["TidakLayak", "Tidak layak", a => !a.layak]
   ];
 
   /* ---------------- Daftar Alat ---------------- */
@@ -45,7 +50,7 @@
     const inKat = AB.alat.filter(a => !AB.kat || a.kategori === AB.kat);
     const kf = KONDISI_OPT.find(k => k[0] === AB.kondisi)[2];
     const q = AB.q.trim().toLowerCase();
-    return { inKat, list: inKat.filter(kf).filter(a => !q || [a.id, a.nama, a.merk, a.kapasitas, a.noSeri, a.upt, a.lokasi].join(" ").toLowerCase().includes(q)) };
+    return { inKat, list: inKat.filter(kf).filter(a => !q || [a.id, a.nama, a.merk, a.kapasitas, a.noSeri, a.upt, a.lokasi, a.kondisiCatatan, a.fungsi].join(" ").toLowerCase().includes(q)) };
   }
   function renderDaftar(keepPage) {
     if (!keepPage) AB.page = 1;
@@ -71,11 +76,11 @@
     $("#abRows").innerHTML = rows.map((a, i) => {
       const st = statusOf(a);
       return `<tr data-id="${a.id}" tabindex="0"><td class="num no">${from + i + 1}</td><td class="muted">${a.id}</td>
-        <td><b>${esc(a.nama)}</b><div class="muted sm">${esc(KAT[a.kategori].label)}${a.fungsi !== KAT[a.kategori].label ? " · " + esc(a.fungsi) : ""}</div></td>
+        <td><b>${esc(a.nama)}</b><div class="muted sm">${esc(katLabel(a))}${a.fungsi && a.fungsi !== katLabel(a) ? " · " + esc(a.fungsi) : ""}${a.foto ? " · 📷" : ""}</div></td>
         <td>${esc(a.merk || "-")}</td><td class="num">${esc(a.kapasitas || "-")}</td><td class="num">${esc(a.tahun || "-")}</td><td><code>${esc(a.noSeri || "—")}</code></td>
         <td>${esc(a.lokasi)}<div class="muted sm">${esc(a.upt)}</div></td>
         <td><span class="badge ${ST_TONE[st]}">${st}</span></td><td><span class="badge ${a.layak ? "ok" : "bad"}">${a.layak ? "Layak" : "Tidak layak"}</span></td>
-        <td>${kondisiChip(a.kondisi)}</td><td class="izin">${esc(a.suratIzin)}</td>
+        <td>${kondisiChip(a.kondisi, a.kondisiCatatan)}${a.kondisiCatatan ? `<div class="muted sm ab-note">${esc(a.kondisiCatatan)}</div>` : ""}</td><td class="izin">${izinCell(a)}</td>
         <td class="act"><button type="button" class="btn ghost sm" data-id="${a.id}">Detail</button></td></tr>`;
     }).join("");
     $("#abEmpty").hidden = list.length > 0;
@@ -92,7 +97,15 @@
   /* ---------------- Ringkasan & grafik ---------------- */
   const ST_COLOR = { Tersedia: "var(--primary)", Dipinjam: "var(--p2)", Perbaikan: "var(--p1)" };
   const KD_COLOR = { "Baik": "var(--ok)", "Service Time": "var(--primary)", "Rusak Ringan": "var(--p2)", "Rusak Berat": "var(--p1)" };
-  const izinOf = a => /berlaku/i.test(a.suratIzin || "") ? "Berlaku" : /kedaluwarsa|kadaluarsa/i.test(a.suratIzin || "") ? "Kedaluwarsa" : "Belum ada data";
+  const izinOf = a => a.izin || (/berlaku/i.test(a.suratIzin || "") ? "Berlaku" : /kedaluwarsa|kadaluarsa/i.test(a.suratIzin || "") ? "Kedaluwarsa" : "Belum ada data");
+  const IZIN_KEYS = a => a.izin !== undefined ? ["Berlaku", "Ada dokumen", "Perlu perpanjangan", "Kedaluwarsa", "Tidak ada"] : ["Berlaku", "Kedaluwarsa", "Belum ada data"];
+  const IZIN_TL = ["Kedaluwarsa", "Perlu perpanjangan"]; // perlu tindak lanjut
+  const IZIN_TONE = { "Berlaku": "ok", "Ada dokumen": "info", "Perlu perpanjangan": "warn", "Kedaluwarsa": "bad" };
+  function izinCell(a) {
+    const k = izinOf(a), tone = IZIN_TONE[k];
+    const t = tone ? `<span class="badge ${tone}">${esc(a.suratIzin || k)}</span>` : `<span class="muted">${esc(a.suratIzin || "—")}</span>`;
+    return a.suratIzinUrl ? `${t} <a class="linkbtn" href="${esc(a.suratIzinUrl)}" target="_blank" rel="noopener">Lihat</a>` : t;
+  }
   const umurOf = a => { const t = parseInt(a.tahun, 10); if (!t) return "Tidak diketahui"; const u = new Date().getFullYear() - t; return u < 10 ? "< 10 tahun" : u < 20 ? "10–19 tahun" : u < 30 ? "20–29 tahun" : "≥ 30 tahun"; };
   const countBy = (list, fn, keys) => { const m = new Map(keys.map(k => [k, 0])); list.forEach(a => { const k = fn(a); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()]; };
   const pctTxt = (n, t) => t ? Math.round(n / t * 100) + "%" : "0%";
@@ -102,9 +115,9 @@
   }
   function renderCharts(list) {
     const n = list.length, st = s => list.filter(a => statusOf(a) === s).length;
-    const izinBad = list.filter(a => izinOf(a) !== "Berlaku").length;
+    const izinBad = list.filter(a => SRC === window.ALAT_BERAT ? IZIN_TL.includes(izinOf(a)) : izinOf(a) !== "Berlaku").length;
     $("#abKpi").innerHTML = [["Total alat", n, "tower", "primary"], ["Tersedia", st("Tersedia"), "check", "p3"], ["Dipinjam", st("Dipinjam"), "out", "p2"],
-      ["Dalam perbaikan", st("Perbaikan"), "wrench", "p1"], ["Tidak layak", list.filter(a => !a.layak).length, "x", "p1"], ["Surat izin perlu tindak lanjut", izinBad, "doc", "p2"]]
+      ["Rusak / perbaikan", st("Perbaikan"), "wrench", "p1"], ["Tidak layak", list.filter(a => !a.layak).length, "x", "p1"], ["Surat izin perlu tindak lanjut", izinBad, "doc", "p2"]]
       .map(([l, v, ic, t]) => `<div class="card kpi tone-${t}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div>${l !== "Total alat" ? `<div class="kpi-sub">${pctTxt(v, n)} dari total</div>` : ""}</div></div>`).join("");
     $("#abLegStatus").innerHTML = Object.entries(ST_COLOR).map(([k, c]) => `<span><i class="swatch" style="background:${c}"></i>${k}</span>`).join("");
     // per kategori
@@ -127,7 +140,7 @@
     const maxU = Math.max(1, ...ups.map(x => x[1].length));
     $("#abChUpt").innerHTML = ups.length ? `<ul class="bars ab-bars">${ups.map(([u, xs]) => stackRow(u.replace(/^UPT /, ""), Object.keys(ST_COLOR).map(s => [s, xs.filter(a => statusOf(a) === s).length, ST_COLOR[s]]), xs.length, maxU)).join("")}</ul>` : `<p class="dnil">Tidak ada data.</p>`;
     // surat izin & umur
-    const iz = countBy(list, izinOf, ["Berlaku", "Kedaluwarsa", "Belum ada data"]), IZ_C = { "Berlaku": "var(--ok)", "Kedaluwarsa": "var(--p1)", "Belum ada data": "var(--text-3)" };
+    const iz = countBy(list, izinOf, IZIN_KEYS(list[0] || {})), IZ_C = { "Berlaku": "var(--ok)", "Ada dokumen": "var(--primary)", "Perlu perpanjangan": "var(--p2)", "Kedaluwarsa": "var(--p1)", "Belum ada data": "var(--text-3)", "Tidak ada": "var(--text-3)" };
     const um = countBy(list, umurOf, ["< 10 tahun", "10–19 tahun", "20–29 tahun", "≥ 30 tahun", "Tidak diketahui"]), UM_C = ["var(--ok)", "var(--primary)", "var(--p2)", "var(--p1)", "var(--text-3)"];
     const mini = (title, rows, colorOf) => { const mx = Math.max(1, ...rows.map(r => r[1])); return `<div><h5>${title}</h5><ul class="bars ab-bars">${rows.map(([k, v], i) =>
       `<li><span class="bl">${esc(k)}</span><span class="bt"><i style="width:${v / mx * 100}%;background:${colorOf(k, i)}"></i></span><b>${v}</b></li>`).join("")}</ul></div>`; };
@@ -208,19 +221,20 @@
     animate ? MAP.map.flyToBounds(pts, { padding: [40, 40], duration: .6 }) : MAP.map.fitBounds(pts, { padding: [40, 40] });
   }
   function photo(a, big) {
-    return a.foto ? `<img src="${esc(a.foto)}" alt="${esc(a.nama)}" loading="lazy">`
-      : `<div class="ab-ph${big ? " big" : ""}">${svg(KAT[a.kategori].ic)}<span>${esc(KAT[a.kategori].label)}</span><small>Foto belum tersedia</small></div>`;
+    // foto dari export WARNOTO berupa thumbnail kecil: tampil utuh (contain) di atas latar foto yang diburamkan
+    return a.foto ? `<div class="ab-img" style="--bg:url('${esc(a.foto)}')"><img src="${esc(a.foto)}" alt="${esc(a.nama)}" loading="lazy"></div>`
+      : `<div class="ab-ph${big ? " big" : ""}">${svg((KAT[a.kategori] || KAT.pendukung).ic)}<span>${esc(katLabel(a))}</span><small>Foto belum tersedia</small></div>`;
   }
   function card(a) {
     const st = statusOf(a), last = lastLoan(a);
     return `<article class="card ab-card" tabindex="0" role="button" aria-label="Detail ${esc(a.nama)} ${esc(a.id)}" data-id="${a.id}">
       <div class="ab-photo">${photo(a)}</div>
       <div class="ab-title"><div><h3>${esc(a.nama)}</h3><p>${esc(a.upt.replace(/^UPT /, ""))} • ${esc(a.lokasi)}</p></div><span class="badge ${ST_TONE[st]}">${st}</span></div>
-      <div class="ab-tags"><span class="badge ${a.layak ? "ok" : "bad"}">${a.layak ? "Layak" : "Tidak layak"}</span><span class="badge muted">${esc(a.fungsi)}</span></div>
+      <div class="ab-tags"><span class="badge ${a.layak ? "ok" : "bad"}">${a.layak ? "Layak" : "Tidak layak"}</span>${a.fungsi ? `<span class="badge muted">${esc(a.fungsi)}</span>` : ""}</div>
       <dl class="ab-dl">
         <div><dt>Merk/Type</dt><dd>${esc(a.merk || "-")}</dd></div><div><dt>Kapasitas</dt><dd>${esc(a.kapasitas || "-")}</dd></div>
         <div><dt>Tahun</dt><dd>${esc(a.tahun || "-")}</dd></div><div><dt>No. Seri</dt><dd>${esc(a.noSeri || "-")}</dd></div>
-        <div><dt>Kondisi</dt><dd>${kondisiChip(a.kondisi)}</dd></div><div><dt>Surat Izin</dt><dd>${esc(a.suratIzin)}</dd></div>
+        <div><dt>Kondisi</dt><dd>${kondisiChip(a.kondisi, a.kondisiCatatan)}</dd></div><div><dt>Surat Izin</dt><dd>${esc(a.suratIzin || "—")}</dd></div>
       </dl>
       ${last ? `<p class="ab-last">Terakhir dipinjam oleh <b>${esc(last.oleh)}</b> untuk pekerjaan <b>${esc(last.pekerjaan)}</b>.</p>` : ""}
     </article>`;
@@ -230,17 +244,28 @@
     const st = statusOf(a);
     $("#abDetailTitle").textContent = a.nama;
     $("#abDetailSub").innerHTML = `${esc(a.id)} · ${esc(a.upt)} • ${esc(a.lokasi)} <span class="badge ${ST_TONE[st]}">${st}</span>`;
-    $("#abDetailBody").innerHTML = `<div class="ab-detail-top"><div class="ab-photo big">${photo(a, true)}</div>
-        <dl class="dgrid ab-dgrid">${[["Kategori", KAT[a.kategori].label], ["Merk/Type", a.merk], ["Kapasitas", a.kapasitas], ["Tahun", a.tahun], ["No. Seri", a.noSeri],
-          ["Fungsi", a.fungsi], ["Kelayakan", a.layak ? "Layak" : "Tidak layak"], ["Kondisi", a.kondisi], ["Surat Izin (SIA/SILO)", a.suratIzin], ["Lokasi", `${a.upt} • ${a.lokasi}`]]
-          .map(([l, v]) => `<div><dt>${l}</dt><dd class="${v ? "" : "nil"}">${esc(v || "—")}</dd></div>`).join("")}</dl></div>`;
+    $("#abDetailBody").innerHTML = `<div class="ab-detail-top"><div class="ab-photo big">${a.foto ? `<a href="${esc(a.foto)}" target="_blank" rel="noopener" title="Buka foto ukuran penuh">${photo(a, true)}</a>` : photo(a, true)}</div>
+        <dl class="dgrid ab-dgrid">${[["Kategori", katLabel(a)], ["Jenis aset", a.jenisAset], ["Merk/Type", a.merk], ["Kapasitas", a.kapasitas], ["Tahun", a.tahun], ["No. Seri", a.noSeri],
+          ["Fungsi", a.fungsi], ["Jumlah", a.jumlah ? `${a.jumlah} ${a.satuan || ""}` : ""], ["Status alat", a.statusAlat], ["Kelayakan", a.layak ? "Layak" : "Tidak layak"], ["Kondisi", a.kondisi],
+          ["Catatan kondisi", a.kondisiCatatan], ["Surat Izin (SIA/SILO)", a.suratIzin], ["Spesifikasi", a.spesifikasi], ["Lokasi", `${a.upt} • ${a.lokasi}`]]
+          .filter(([l, v]) => v || !["Jenis aset", "Status alat", "Catatan kondisi", "Spesifikasi", "Jumlah"].includes(l))
+          .map(([l, v]) => `<div${l === "Catatan kondisi" || l === "Lokasi" ? ' class="span2"' : ""}><dt>${l}</dt><dd class="${v ? "" : "nil"}">${esc(v || "—")}${l === "Surat Izin (SIA/SILO)" && a.suratIzinUrl ? ` · <a class="linkbtn" href="${esc(a.suratIzinUrl)}" target="_blank" rel="noopener">Lihat dokumen</a>` : ""}</dd></div>`).join("")}</dl></div>`;
     $("#abDetail").showModal();
   }
 
   /* ---------------- Umum ---------------- */
-  /* Data menunggu sinkronisasi dari aplikasi WARNOTO: chip "Diperbarui" menampilkan status ini */
+  /* Sumber data: export aplikasi WARNOTO (tanggal export = tanggal "Diperbarui") */
   window.PAGE_UPDATED = window.PAGE_UPDATED || {};
-  window.PAGE_UPDATED.alat = () => ({ label: "Menunggu sinkronisasi WARNOTO", pending: true, title: "Menunggu sinkronisasi data dari aplikasi WARNOTO" });
+  const synced = SRC === window.ALAT_BERAT;
+  window.PAGE_UPDATED.alat = () => synced
+    ? { date: SRC.generated, title: `Sinkron dari ${SRC.sumber || "aplikasi WARNOTO"} · file ${SRC.source}` }
+    : { label: "Menunggu sinkronisasi WARNOTO", pending: true, title: "Menunggu sinkronisasi data dari aplikasi WARNOTO" };
+  if (synced) {
+    const nf = AB.alat.filter(a => a.foto).length;
+    $("#abSync").classList.add("done");
+    $("#abSync").innerHTML = `<span class="ab-sync-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div><b>Data tersinkron dari ${esc(SRC.sumber || "Aplikasi WARNOTO")}</b><p>Export inventaris ${esc(fmtTanggal(SRC.generated))} · ${AB.alat.length} alat di ${new Set(AB.alat.map(a => a.upt)).size} UPT · ${nf} foto · sumber: ${esc(SRC.source)}</p></div>`;
+  }
   if (location.hash === "#alat" && typeof setUpdated === "function") setUpdated("alat");
 
   $("#abKat").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { AB.kat = b.dataset.k; AB.kondisi = AB.kondisi; renderDaftar(); } });

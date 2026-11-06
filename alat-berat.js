@@ -260,12 +260,6 @@
   window.PAGE_UPDATED.alat = () => synced
     ? { date: SRC.generated, title: `Sinkron dari ${SRC.sumber || "aplikasi WARNOTO"} · file ${SRC.source}` }
     : { label: "Menunggu sinkronisasi WARNOTO", pending: true, title: "Menunggu sinkronisasi data dari aplikasi WARNOTO" };
-  if (synced) {
-    const nf = AB.alat.filter(a => a.foto).length;
-    $("#abSync").classList.add("done");
-    $("#abSync").innerHTML = `<span class="ab-sync-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
-      <div><b>Data tersinkron dari ${esc(SRC.sumber || "Aplikasi WARNOTO")}</b><p>Export inventaris ${esc(fmtTanggal(SRC.generated))} · ${AB.alat.length} alat di ${new Set(AB.alat.map(a => a.upt)).size} UPT · ${nf} foto · sumber: ${esc(SRC.source)}</p></div>`;
-  }
   if (location.hash === "#alat" && typeof setUpdated === "function") setUpdated("alat");
 
   $("#abKat").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { AB.kat = b.dataset.k; AB.kondisi = AB.kondisi; renderDaftar(); } });

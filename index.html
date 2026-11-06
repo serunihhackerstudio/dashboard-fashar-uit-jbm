@@ -104,6 +104,48 @@
 
   <!-- TOWER EMERGENCY -->
   <section id="page-tower" class="page">
+   <div class="uc-wrap" role="status">
+    <div class="uc-card">
+     <div class="uc-stripe" aria-hidden="true"></div>
+     <div class="uc-body">
+      <div class="uc-art" aria-hidden="true">
+       <svg viewBox="0 0 240 200" class="uc-svg">
+        <defs><linearGradient id="ucSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--primary)" stop-opacity=".18"/><stop offset="1" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>
+        <circle cx="120" cy="100" r="92" fill="url(#ucSky)"/>
+        <g class="uc-tower" fill="none" stroke="var(--text)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+         <path d="M120 22 96 176M120 22l24 154M101 140h38M104 112h32M108 84h24M112 58h16"/>
+         <path d="M101 140l35-28M139 140l-35-28M104 112l28-28M136 112l-28-28M108 84l20-26M132 84l-20-26"/>
+         <path d="M78 58h84M84 58v8M156 58v8M90 84h60M94 84v7M146 84v7"/>
+         <path d="M82 192h76" stroke-width="4"/>
+        </g>
+        <g class="uc-wire" fill="none" stroke="var(--p2)" stroke-width="2"><path d="M10 72 Q45 86 84 66"/><path d="M156 66 Q195 86 230 72"/></g>
+        <g class="uc-gear g1"><circle cx="186" cy="150" r="20" fill="var(--p2)"/><circle cx="186" cy="150" r="8" fill="var(--surface)"/>
+         <path d="M186 124v8M186 168v8M160 150h8M204 150h8M168 132l6 6M198 162l6 6M168 168l6-6M198 138l6-6" stroke="var(--p2)" stroke-width="7" stroke-linecap="round"/></g>
+        <g class="uc-gear g2"><circle cx="214" cy="118" r="11" fill="var(--primary)"/><circle cx="214" cy="118" r="4" fill="var(--surface)"/>
+         <path d="M214 103v5M214 128v5M199 118h5M224 118h5" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/></g>
+        <g class="uc-cone"><path d="M40 190 52 150 64 190z" fill="var(--p2)"/><path d="M45 174h14M48 162h8" stroke="#fff" stroke-width="4"/><rect x="34" y="188" width="36" height="5" rx="2" fill="var(--p2)"/></g>
+        <circle class="uc-spark" cx="120" cy="22" r="5" fill="var(--p2)"/>
+       </svg>
+      </div>
+      <div class="uc-text">
+       <span class="uc-kicker"><i class="live-dot pending"></i>Under maintenance</span>
+       <h2>Halaman Tower Emergency sedang dalam pengembangan</h2>
+       <p>Kami sedang menyiapkan database tower emergency (ERS) yang lengkap dan terhubung langsung dengan data lapangan. Halaman ini akan segera hadir dengan tampilan baru.</p>
+       <ol class="uc-steps">
+        <li class="done"><b>Rancangan tampilan</b><span>Ringkasan, peta persebaran &amp; inventaris material</span></li>
+        <li class="now"><b>Pendataan aset tower ERS</b><span>Pengumpulan data tower &amp; material per UPT</span></li>
+        <li><b>Integrasi database</b><span>Tersambung ke Google Sheets seperti Trafo Mobile</span></li>
+       </ol>
+       <div class="uc-cta">
+        <a class="btn primary" href="#trafodb">Buka Trafo Mobile</a>
+        <a class="btn ghost" href="#dcm">DC Mobile</a>
+        <a class="btn ghost" href="#home">Kembali ke Beranda</a>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="tower-legacy" hidden>
    <div class="grid g4" id="towerKpi"></div>
    <div class="card map-card mt">
     <div class="card-head"><div><h3>Persebaran Tower ERS</h3><p>Status ketersediaan tower emergency</p></div></div>
@@ -111,6 +153,7 @@
    </div>
    <div class="section-head"><h2>Inventaris Material</h2><p>Ketik untuk mencari material di setiap tipe tower</p></div>
    <div class="grid g3" id="materialTables"></div>
+   </div>
   </section>
 
 

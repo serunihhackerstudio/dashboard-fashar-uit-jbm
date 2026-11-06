@@ -8,7 +8,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 2. Asesmen JAR
 3. Asesmen GI
 4. CUI Jarvis (hasil Climb Up Inspection tower dari export Jarvis)
-5. Tower Emergency *(Peralatan ERS)*
+5. Tower Emergency *(Peralatan ERS — sementara menampilkan halaman "under maintenance"; konten lama disembunyikan di `.tower-legacy`)*
 6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
 7. DC Mobile *(Peralatan ERS — data unit DC mobile dari `DATA_DC_MOBILE_UIT_JBM.xlsx`: ringkasan, peta per ULTG, grafik, tabel & detail)*
 8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM; data dummy, menunggu sinkronisasi data dari aplikasi WARNOTO)*

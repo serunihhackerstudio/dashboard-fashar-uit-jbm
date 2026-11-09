@@ -89,6 +89,8 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Memperbarui data: `python3 tools/xlsx_alat_to_js.py "DATA_DC_MOBILE_UIT_JBM.xlsx" data/dc-mobile.js DC_MOBILE` lalu commit `data/dc-mobile.js`. Tanggal **Diperbarui** = tanggal `updated_at`/`created_at` terbaru di file.
 - Koordinat ULTG/UPT untuk peta ada di `ULTG_COORD` (`alat-export.js`); tambahkan jika ada lokasi baru.
 
+- **Database Google Sheets `4. DC MOBILE (NEW)`** (Apps Script bagian PERALATAN LAIN, `EQ_CFG.dcm`): sheet dibuat otomatis; tombol **Salin 7 data ke sheet** saat sheet kosong; **Tambah DC mobile** / **Edit** (tabel & pop-up detail) menyimpan ke sheet (ID baru `DCM-xxx`); foto per unit diunggah ke subfolder Drive (default folder `FOTO DC MOBILE` di dalam folder foto alat berat, bisa diganti lewat Script Property `DCM_PHOTO_FOLDER_ID`). Modul dashboard: `alat-export-db.js` (aktif bila `alatPage({ db: { kind, sheet } })`).
+
 ### Filter Minyak (Alat Berat & Alat Bantu)
 - Tampilan sama dengan DC Mobile (modul bersama `alat-export.js`, fungsi `alatPage()`), data dari `FILTER_MINYAK_UIT_JBM.xlsx`.
 - Memperbarui data: `python3 tools/xlsx_alat_to_js.py "FILTER_MINYAK_UIT_JBM.xlsx" data/filter-minyak.js FILTER_MINYAK` lalu commit.

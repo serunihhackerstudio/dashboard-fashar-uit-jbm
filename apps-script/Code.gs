@@ -15,6 +15,9 @@
  * GET  <url>?action=ab_photos&id=ID  → daftar foto satu alat berat
  * POST action: "ab_add" | "ab_update" | "ab_seed" | "ab_photo_upload" | "ab_photo_delete" | "ab_photo_cover"
  *      (data alat berat; foto disimpan per alat di folder AB_PHOTO_ROOT_ID)
+ * GET  <url>?action=eq&kind=dcm      → data DC Mobile (sheet "4. DC MOBILE (NEW)")
+ * GET  <url>?action=eq_photos&kind=dcm&id=ID
+ * POST action: "eq_seed" | "eq_add" | "eq_update" | "eq_photo_upload" | "eq_photo_delete" | "eq_photo_cover"  + kind
  *
  * CUI Jarvis: file export Jarvis yang diunggah dari dashboard disimpan permanen di
  * folder CUI_ROOT_ID (file asli + data ringkas JSON). Isi data terbaru juga ditulis
@@ -97,7 +100,8 @@ function izinkanAkses() {
     'Folder CUI Jarvis: ' + cuiFolder_().getName(),
     'Folder foto: ' + DriveApp.getFolderById(p.getProperty('PHOTO_FOLDER_ID') || PHOTO_ROOT_ID).getName(),
     'Folder BA: ' + DriveApp.getFolderById(p.getProperty('BA_FOLDER_ID') || BA_ROOT_ID).getName(),
-    'Folder foto alat berat: ' + abPhotoRoot_().getName()
+    'Folder foto alat berat: ' + abPhotoRoot_().getName(),
+    'Folder foto DC Mobile: ' + eqPhotoRoot_(EQ_CFG.dcm).getName()
   ];
   // uji izin tulis Drive (butuh scope penuh .../auth/drive): buat lalu buang file uji
   const tmp = cuiFolder_().createFile('cek_izin.txt', 'uji izin tulis ' + new Date());
@@ -118,6 +122,8 @@ function doGet(e) {
     if (p.action === 'cui') return json_(cuiLatest_());
     if (p.action === 'ab') return json_(abGet_());
     if (p.action === 'ab_photos') return json_(abPhotos_(p.id));
+    if (p.action === 'eq') return json_(eqGet_(p.kind));
+    if (p.action === 'eq_photos') return json_(eqPhotos_(p.kind, p.id));
     ensureIds_(sheet_());
     const rows = readRows_(), moves = readMoves_();
     return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: rows, moves: moves, updated: syncUpdated_(rows, moves) });
@@ -137,6 +143,7 @@ function doPost(e) {
 
     if (req.action === 'cui_upload') return json_(cuiUpload_(req));
     if (String(req.action || '').indexOf('ab_') === 0) return json_(abAction_(req));
+    if (String(req.action || '').indexOf('eq_') === 0) return json_(eqAction_(req));
 
     const sh = sheet_();
     const data = validate_(req.data || {});
@@ -209,6 +216,7 @@ function onEdit(e) {
     const name = e && e.range && e.range.getSheet().getName();
     if (name === SHEET_NAME || name === MOVE_SHEET) markUpdated_();
     if (name === AB_SHEET) PropertiesService.getScriptProperties().setProperty('AB_UPDATED', new Date().toISOString());
+    Object.keys(EQ_CFG).forEach(k => { if (name === EQ_CFG[k].sheet) PropertiesService.getScriptProperties().setProperty('EQ_UPDATED_' + k, new Date().toISOString()); });
   } catch (err) { /* abaikan */ }
 }
 
@@ -829,6 +837,171 @@ function abAction_(req) {
       sh.getRange(r, AB_COL.fotoUtama).setValue(rest.length ? rest[0].id : '');
     }
     return abChanged_({ ok: true, row: abRowObj_(sh, r) });
+  }
+  return { ok: false, error: 'Aksi tidak dikenal.' };
+}
+
+/* =========================================================
+   PERALATAN LAIN (format export aplikasi alat) — DC Mobile, dst.
+   Satu set fungsi untuk beberapa sheet; konfigurasi di EQ_CFG.
+   ========================================================= */
+const EQ_COLS = [
+  ['id', 'ID ALAT'], ['upt', 'UPT'], ['ultg', 'ULTG / SUBUNIT'], ['gi', 'GARDU INDUK'], ['lokasi', 'LOKASI PENYIMPANAN'], ['nama', 'NAMA ALAT'],
+  ['kategori', 'KATEGORI'], ['bidang', 'BIDANG'], ['merk', 'MERK'], ['tipe', 'TYPE'], ['satuan', 'SATUAN'], ['jumlah', 'JUMLAH'],
+  ['tahun', 'TAHUN PEROLEHAN'], ['sn', 'SERIAL NUMBER'], ['kalibrasi', 'STATUS KALIBRASI'], ['sertifikat', 'SERTIFIKAT KALIBRASI'],
+  ['tglKalibrasi', 'TGL KALIBRASI TERAKHIR'], ['tglKadaluarsa', 'TGL KEDALUWARSA KALIBRASI'], ['rencanaKalibrasi', 'RENCANA KALIBRASI'],
+  ['lembaga', 'LEMBAGA KALIBRASI'], ['kondisi', 'KONDISI'], ['kondisiPerbaikan', 'KONDISI PERBAIKAN'], ['anomali', 'ANOMALI'],
+  ['keterangan', 'KETERANGAN'], ['harga', 'HARGA PEROLEHAN'], ['noAktiva', 'NO. AKTIVA'], ['noKontrak', 'NO. KONTRAK'],
+  ['linkFoto', 'LINK FOTO'], ['fotoUtama', 'ID FOTO UTAMA'], ['diperbarui', 'DIPERBARUI']
+];
+const EQ_KEYS = EQ_COLS.map(c => c[0]);
+const EQ_COL = Object.fromEntries(EQ_COLS.map((c, i) => [c[0], i + 1]));
+const EQ_ENUM = { kalibrasi: ['AKTIF', 'BELUM KALIBRASI', 'EXPIRED'], kondisi: ['NORMAL', 'PERLU PERBAIKAN', 'RUSAK'] };
+const EQ_DATE = ['tglKalibrasi', 'tglKadaluarsa', 'rencanaKalibrasi'];
+// Folder foto: Script Property <photoProp> bila diisi; jika tidak, subfolder <photoName> dibuat otomatis di folder foto alat berat
+const EQ_CFG = {
+  dcm: { sheet: '4. DC MOBILE (NEW)', idPrefix: 'DCM-', photoProp: 'DCM_PHOTO_FOLDER_ID', photoName: 'FOTO DC MOBILE' }
+};
+
+function eqCfg_(kind) {
+  const c = EQ_CFG[String(kind || '')];
+  if (!c) throw new Error('Jenis data tidak dikenal: ' + kind);
+  return c;
+}
+function eqSheet_(c, create) {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(c.sheet);
+  if (!sh && create) {
+    sh = ss.insertSheet(c.sheet);
+    sh.getRange(1, 1, 1, EQ_COLS.length).setValues([EQ_COLS.map(x => x[1])]).setFontWeight('bold').setBackground('#0b2545').setFontColor('#ffffff');
+    sh.setFrozenRows(1);
+    sh.getRange(2, 1, sh.getMaxRows() - 1, EQ_COLS.length).setNumberFormat('@');
+    Object.keys(EQ_ENUM).forEach(k => sh.getRange(2, EQ_COL[k], sh.getMaxRows() - 1, 1)
+      .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(EQ_ENUM[k], true).setAllowInvalid(false).build()));
+    sh.autoResizeColumns(1, EQ_COLS.length);
+  }
+  return sh;
+}
+function eqPhotoRoot_(c) {
+  const id = PropertiesService.getScriptProperties().getProperty(c.photoProp);
+  if (id) return DriveApp.getFolderById(id);
+  const root = abPhotoRoot_(), it = root.getFoldersByName(c.photoName);
+  return it.hasNext() ? it.next() : root.createFolder(c.photoName);
+}
+function eqRows_(sh) {
+  if (!sh || sh.getLastRow() < 2) return [];
+  const v = sh.getRange(2, 1, sh.getLastRow() - 1, EQ_COLS.length).getDisplayValues(), out = [];
+  v.forEach((r, i) => {
+    if (!String(r[0]).trim()) return;
+    const o = { _row: i + 2 };
+    EQ_KEYS.forEach((k, j) => { o[k] = String(r[j]).trim() || null; });
+    o.fotoUrl = o.fotoUtama ? 'https://drive.google.com/thumbnail?id=' + o.fotoUtama + '&sz=w800' : null;
+    out.push(o);
+  });
+  return out;
+}
+function eqGet_(kind) {
+  const c = eqCfg_(kind), sh = eqSheet_(c, false);
+  return { ok: true, kind: kind, sheet: !!sh, source: 'DATABASE ALAT BERAT UIT JBM — ' + c.sheet, rows: eqRows_(sh),
+    updated: PropertiesService.getScriptProperties().getProperty('EQ_UPDATED_' + kind) || fileUpdated_() };
+}
+function eqFind_(sh, id) {
+  id = String(id || '').trim();
+  if (!id || sh.getLastRow() < 2) return 0;
+  const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getDisplayValues();
+  for (let i = 0; i < ids.length; i++) if (String(ids[i][0]).trim() === id) return i + 2;
+  return 0;
+}
+function eqClean_(d, withId) {
+  const o = {};
+  EQ_KEYS.forEach(k => {
+    if (['linkFoto', 'fotoUtama', 'diperbarui'].indexOf(k) >= 0 || (k === 'id' && !withId) || !(k in (d || {}))) return;
+    let v = String(d[k] == null ? '' : d[k]).replace(/\s+/g, ' ').trim().slice(0, 500);
+    if (/^[=+\-@]/.test(v)) v = "'" + v;
+    if (k === 'kalibrasi' || k === 'kondisi') v = v.toUpperCase();
+    if (v && EQ_ENUM[k] && EQ_ENUM[k].indexOf(v) < 0) throw new Error('Nilai "' + v + '" tidak valid untuk ' + EQ_COLS[EQ_COL[k] - 1][1] + '.');
+    if (k === 'tahun' && v && !/^\d{4}$/.test(v)) throw new Error('Tahun perolehan harus 4 digit.');
+    if (EQ_DATE.indexOf(k) >= 0 && v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) throw new Error('Tanggal harus berformat yyyy-mm-dd.');
+    if (k === 'jumlah' && v && !/^\d{1,5}$/.test(v)) throw new Error('Jumlah harus angka.');
+    o[k] = v;
+  });
+  return o;
+}
+function eqWrite_(sh, r, o) {
+  o.diperbarui = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+  Object.keys(o).forEach(k => sh.getRange(r, EQ_COL[k]).setNumberFormat('@').setValue(o[k]));
+}
+function eqRowObj_(sh, r) { return eqRows_(sh).filter(x => x._row === r)[0] || null; }
+function eqChanged_(kind, o) {
+  if (o && o.ok) { o.updated = new Date().toISOString(); PropertiesService.getScriptProperties().setProperty('EQ_UPDATED_' + kind, o.updated); }
+  return o;
+}
+function eqPhotoFolder_(c, sh, r, create) {
+  const row = eqRowObj_(sh, r), m = String(row.linkFoto || '').match(/folders\/([\w-]+)/);
+  if (m) {
+    try { return DriveApp.getFolderById(m[1]); } catch (err) { throw new Error('Folder foto alat ini tidak dapat diakses oleh skrip.'); }
+  }
+  if (!create) return null;
+  const folder = eqPhotoRoot_(c).createFolder([row.id, row.nama, row.ultg || row.upt].filter(String).join(' - '));
+  sh.getRange(r, EQ_COL.linkFoto).setValue(folder.getUrl());
+  return folder;
+}
+function eqPhotos_(kind, id) {
+  const c = eqCfg_(kind), sh = eqSheet_(c, false), r = sh ? eqFind_(sh, id) : 0;
+  if (!r) return { ok: false, error: 'Data ' + id + ' tidak ditemukan di sheet ' + c.sheet + '.' };
+  const folder = eqPhotoFolder_(c, sh, r, false), row = eqRowObj_(sh, r);
+  return { ok: true, folder: folder ? folder.getUrl() : null, cover: row.fotoUtama, photos: folder ? listPhotos_(folder) : [] };
+}
+function eqAction_(req) {
+  const kind = req.kind, c = eqCfg_(kind), sh = eqSheet_(c, true);
+  if (req.action === 'eq_seed') {
+    if (eqRows_(sh).length) return { ok: false, error: 'Sheet ' + c.sheet + ' sudah berisi data.' };
+    const rows = (Array.isArray(req.rows) ? req.rows : []).slice(0, 2000).map(d => eqClean_(d, true)).filter(o => o.id);
+    if (!rows.length) return { ok: false, error: 'Tidak ada data untuk disalin.' };
+    const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+    sh.getRange(2, 1, rows.length, EQ_COLS.length).setNumberFormat('@').setValues(rows.map(o => EQ_KEYS.map(k => k === 'diperbarui' ? now : (o[k] || ''))));
+    return eqChanged_(kind, { ok: true, rows: eqRows_(sh) });
+  }
+  if (req.action === 'eq_add') {
+    const o = eqClean_(req.data, true);
+    if (!o.nama) return { ok: false, error: 'Nama alat wajib diisi.' };
+    if (o.id && eqFind_(sh, o.id)) return { ok: false, error: 'ID ' + o.id + ' sudah dipakai.' };
+    if (!o.id) {
+      let max = 0;
+      eqRows_(sh).forEach(x => { const m = String(x.id).match(new RegExp('^' + c.idPrefix + '(\\d+)$')); if (m) max = Math.max(max, Number(m[1])); });
+      o.id = c.idPrefix + ('00' + (max + 1)).slice(-3);
+    }
+    const r = Math.max(sh.getLastRow(), 1) + 1;
+    eqWrite_(sh, r, o);
+    return eqChanged_(kind, { ok: true, row: eqRowObj_(sh, r) });
+  }
+  const r = eqFind_(sh, req.id);
+  if (!r) return { ok: false, code: 'conflict', error: 'Data ' + req.id + ' tidak ditemukan di sheet. Muat ulang data lalu coba lagi.' };
+  if (req.action === 'eq_update') {
+    eqWrite_(sh, r, eqClean_(req.data, false));
+    return eqChanged_(kind, { ok: true, row: eqRowObj_(sh, r) });
+  }
+  if (req.action === 'eq_photo_upload') {
+    const folder = eqPhotoFolder_(c, sh, r, true), f = folder.createFile(photoBlob_(req));
+    const caption = String(req.caption || '').trim().slice(0, 500);
+    if (caption) f.setDescription(caption);
+    if (!eqRowObj_(sh, r).fotoUtama) sh.getRange(r, EQ_COL.fotoUtama).setValue(f.getId());
+    return eqChanged_(kind, { ok: true, photo: photoInfo_(f), row: eqRowObj_(sh, r) });
+  }
+  const folder = eqPhotoFolder_(c, sh, r, false);
+  if (!folder) return { ok: false, error: 'Data ini belum punya foto.' };
+  const f = photoInFolder_(folder, req.fileId);
+  if (req.action === 'eq_photo_cover') {
+    sh.getRange(r, EQ_COL.fotoUtama).setValue(f.getId());
+    return eqChanged_(kind, { ok: true, row: eqRowObj_(sh, r) });
+  }
+  if (req.action === 'eq_photo_delete') {
+    f.setTrashed(true);
+    if (eqRowObj_(sh, r).fotoUtama === f.getId()) {
+      const rest = listPhotos_(folder);
+      sh.getRange(r, EQ_COL.fotoUtama).setValue(rest.length ? rest[0].id : '');
+    }
+    return eqChanged_(kind, { ok: true, row: eqRowObj_(sh, r) });
   }
   return { ok: false, error: 'Aksi tidak dikenal.' };
 }

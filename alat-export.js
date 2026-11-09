@@ -10,7 +10,9 @@ function alatPage(C) {
   sec.innerHTML = alatPageHtml(P, C);
   document.body.insertAdjacentHTML("beforeend", alatDetailHtml(P));
   const DOC = C.data;
-  const ROWS = (DOC.rows || []).map((r, i) => ({ ...r, _i: i, merk: r.merk ? r.merk.toUpperCase() : r.merk }));
+  const prep = rows => (rows || []).map((r, i) => ({ ...r, _i: i, merk: r.merk ? r.merk.toUpperCase() : r.merk, jumlah: Number(r.jumlah) || 1 }));
+  let ROWS = prep(DOC.rows);
+  const X = { editable: false, onDetail: null }; // diisi alat-export-db.js bila halaman punya database (C.db)
 
   /* Posisi perkiraan kantor ULTG (untuk peta) */
   const ULTG_COORD = {
@@ -173,7 +175,7 @@ function alatPage(C) {
       <td><b>${esc(r.merk || "—")}</b><div class="muted sm">${esc(r.tipe || "—")}</div></td><td>${esc(r.upt || "—")}<div class="muted sm">${esc(r.ultg || "")}</div></td>
       <td class="num">${esc(r.tahun || "—")}</td><td>${r.sn ? esc(r.sn) : `<span class="muted">—</span>`}</td>
       <td>${chip(KAL[k].tone, KAL[k].label)}</td><td>${chip(kondisiTone(r.kondisi), title1(r.kondisi || "Tidak ada data"))}</td>
-      <td class="izin">${esc(r.keterangan || "—")}</td><td class="act"><button type="button" class="btn ghost sm" data-id="${r._i}">Detail</button></td></tr>`; }).join("");
+      <td class="izin">${esc(r.keterangan || "—")}</td><td class="act"><button type="button" class="btn ghost sm" data-id="${r._i}">Detail</button>${X.editable ? ` <button type="button" class="btn ghost sm" data-edit="${esc(r.id)}">Edit</button>` : ""}</td></tr>`; }).join("");
     $(`#${P}Empty`).hidden = list.length > 0;
     $(`#${P}Count`).textContent = `${list.length} dari ${ROWS.length} unit`;
     $(`#${P}Src`).textContent = `Sumber: ${DOC.source || "file Excel"}`;
@@ -195,6 +197,7 @@ function alatPage(C) {
         ["Rencana kalibrasi", r.rencanaKalibrasi], ["Jenis lembaga", r.jenisLembaga], ["Nama lembaga", r.lembaga, "span2"]]) +
       sec("Kondisi & keterangan", [["Kondisi", r.kondisi], ["Kondisi perbaikan", r.kondisiPerbaikan], ["Anomali", r.anomali, "span2"], ["Keterangan", r.keterangan, "wide"]]) +
       sec("Administrasi", [["No. aktiva", r.noAktiva], ["No. kontrak", r.noKontrak, "span2"], ["File IK", r.fileIk], ["File foto", r.namaFile], ["Dicatat oleh", r.dibuatOleh], ["Dibuat", r.dibuat], ["Diperbarui", r.diperbarui]]);
+    if (X.onDetail) X.onDetail(r);
     $(`#${P}Detail`).showModal();
   }
 
@@ -213,7 +216,7 @@ function alatPage(C) {
   $(`#${P}Search`).addEventListener("input", e => { S.q = e.target.value; render(); });
   $(`#${P}LocPanel`).addEventListener("click", e => { const b = e.target.closest("[data-lok]"); if (b) return selectLok(b.dataset.lok); const d = e.target.closest("[data-id]"); if (d) openDetail(+d.dataset.id); });
   $(`#${P}Shown`).addEventListener("click", e => { if (e.target.closest("[data-clear-lok]")) selectLok(""); });
-  $(`#${P}Rows`).addEventListener("click", e => { const t = e.target.closest("[data-id]"); if (t) openDetail(+t.dataset.id); });
+  $(`#${P}Rows`).addEventListener("click", e => { const ed = e.target.closest("[data-edit]"); if (ed && X.edit) return X.edit(ed.dataset.edit); const t = e.target.closest("[data-id]"); if (t) openDetail(+t.dataset.id); });
   $(`#${P}Rows`).addEventListener("keydown", e => { const t = e.target.closest("tr[data-id]"); if (t && e.key === "Enter") openDetail(+t.dataset.id); });
   $(`#${P}Detail`).addEventListener("click", e => { if (e.target === $(`#${P}Detail`)) $(`#${P}Detail`).close(); });
   const onShow = () => { if (location.hash === "#" + PAGE) setTimeout(mapResize, 80); };
@@ -224,10 +227,22 @@ function alatPage(C) {
   render();
   onShow();
   if (location.hash === "#" + PAGE && typeof setUpdated === "function") setUpdated(PAGE);
+  /* Database Google Sheets (tambah/edit/foto) — lihat alat-export-db.js */
+  if (C.db && typeof alatDbInit === "function") alatDbInit({
+    P, C, X, DOC, ULTG_COORD,
+    rows: () => ROWS, byId: id => ROWS.find(r => r.id === id),
+    setRows: rows => { ROWS = prep(rows); render(); },
+    render, staticUpdated: window.PAGE_UPDATED[PAGE]
+  });
 }
 
 function alatPageHtml(P, C) {
-  return `<div class="ab-filters">
+  const bar = C.db ? `<div class="tdb-bar card ab-bar">
+    <div class="tdb-bar-info"><span class="chip sync" id="${P}SyncChip"></span><span class="muted sm" id="${P}SyncNote"></span></div>
+    <div class="tdb-actions"><button class="btn ghost" type="button" id="${P}Reload" hidden><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/></svg>Muat ulang</button><button class="btn primary" type="button" id="${P}AddBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah ${esc(C.noun)}</button></div>
+   </div>
+   <div class="callout warn ab-seed" id="${P}Seed" hidden></div>` : "";
+  return bar + `<div class="ab-filters">
     <div class="ab-chips" id="${P}Upt" role="group" aria-label="Filter UPT"></div>
     <div class="ab-filter-right">
      <div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="${P}Search" type="search" placeholder="Cari ID, merk, tipe, no. seri, lokasi…" aria-label="Cari ${C.noun}"></div>
@@ -266,5 +281,5 @@ function alatDetailHtml(P) {
 </dialog>`;
 }
 
-alatPage({ page: "dcm", data: window.DC_MOBILE, title: "DC Mobile", noun: "DC mobile" });
+alatPage({ page: "dcm", data: window.DC_MOBILE, title: "DC Mobile", noun: "DC mobile", db: { kind: "dcm", sheet: "4. DC MOBILE (NEW)" } });
 alatPage({ page: "fm", data: window.FILTER_MINYAK, title: "Filter Minyak", noun: "filter minyak" });

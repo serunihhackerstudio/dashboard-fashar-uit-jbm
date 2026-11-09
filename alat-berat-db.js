@@ -73,7 +73,8 @@
     try {
       const j = await (await fetch(API + (API.includes("?") ? "&" : "?") + "action=ab", { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat");
-      if (!("rows" in j)) throw new Error("Apps Script masih versi lama (belum ada fitur Alat Berat). Tempel Code.gs terbaru lalu deploy New version.");
+      // Apps Script versi lama mengabaikan ?action=ab dan mengirim data Trafo Mobile (punya "rows" tetapi tanpa "sheet")
+      if (!("sheet" in j) || !Array.isArray(j.rows)) throw new Error("Apps Script masih versi lama (belum ada fitur Alat Berat). Tempel Code.gs terbaru lalu deploy New version.");
       DB.sheet = j.sheet; DB.updated = j.updated || null;
       if (!j.rows.length) {
         DB.live = false;

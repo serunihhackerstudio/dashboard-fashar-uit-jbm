@@ -182,7 +182,7 @@ function alatDbInit(ctx) {
   X.onDetail = r => {
     if (!DB.live) return;
     const body = $(`#${P}DetBody`);
-    body.insertAdjacentHTML("afterbegin", `<section class="dsec ab-det-photos" id="${P}DetPh"><h4>Foto</h4><div class="ab-det-strip sk-strip"><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></section>`);
+    body.insertAdjacentHTML("afterbegin", `<section class="dsec ab-det-photos" id="${P}DetPh"><h4>Foto</h4><div class="ld-inline"><i class="ld-spin"></i>Memuat foto…</div></section>`);
     body.insertAdjacentHTML("beforeend", `<div class="ab-det-actions"><button type="button" class="btn primary sm" id="${P}DetEdit">${icon("gear", "ic xs")}Edit data &amp; foto</button></div>`);
     $(`#${P}DetEdit`).addEventListener("click", () => openEdit(r.id));
     fetch(q("eq_photos", `&id=${encodeURIComponent(r.id)}`), { cache: "no-store" }).then(x => x.json()).then(j => {

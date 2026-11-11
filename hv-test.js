@@ -122,7 +122,7 @@
     $("#hvDetTitle").textContent = r.nama;
     $("#hvDetSub").innerHTML = `${esc([r.merk, r.tipe].filter(Boolean).join(" · "))} ${chip(r)}`;
     const item = (l, v, cls) => `<div${cls ? ` class="${cls}"` : ""}><dt>${l}</dt><dd class="${v ? "pre" : "nil"}">${v || "—"}</dd></div>`;
-    $("#hvDetBody").innerHTML = `${S.live ? `<section class="dsec ab-det-photos" id="hvDetPh"><h4>Foto</h4><div class="ab-det-strip sk-strip"><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></section>` : ""}
+    $("#hvDetBody").innerHTML = `${S.live ? `<section class="dsec ab-det-photos" id="hvDetPh"><h4>Foto</h4><div class="ld-inline"><i class="ld-spin"></i>Memuat foto…</div></section>` : ""}
       <dl class="dgrid">${item("No", esc(r.no))}${item("Merek", esc(r.merk))}${item("Tipe", esc(r.tipe))}${item("Tahun", esc(r.tahun) + (umur(r) != null ? ` <span class="muted">(${umur(r)} tahun)</span>` : ""))}
         ${item("Kondisi", chip(r))}${item("Lokasi", lines(r.lokasi).map(esc).join("\n"), "span2")}${item("Keterangan", lines(r.keterangan).map(x => "• " + esc(x)).join("\n"), "wide")}
         ${item("Instruksi kerja", (lines(r.ik).map(esc).join("\n") || "") + (r.ikUrl ? `\n<a href="${esc(r.ikUrl)}" target="_blank" rel="noopener">Buka dokumen IK ↗</a>` : ""), "wide")}

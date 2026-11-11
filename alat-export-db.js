@@ -57,13 +57,14 @@ function alatDbInit(ctx) {
 
   async function post(body, tokInput) {
     const token = ((tokInput && tokInput.value) || tokenGet() || "").trim();
-    if (!token) throw new Error("Masukkan kode akses edit.");
+    if (!token) { if (tokInput && tokInput.focus) tokInput.focus(); throw new Error("Masukkan kode akses edit (kolom di bagian bawah form) — wajib setiap kali menyimpan perubahan."); }
     const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token, kind: KIND, ...body }) })).json();
     if (!j.ok) {
       if (j.code === "auth") { tokenForget(true); tokUi(); }
       throw new Error(/Aksi tidak dikenal|Jenis data tidak dikenal/i.test(j.error || "") ? "Apps Script masih versi lama. Tempel Code.gs terbaru lalu deploy New version." : (j.error || "Gagal menyimpan"));
     }
-    tokenSave(token); if (j.updated) DB.updated = j.updated;
+    if (!DB.batch) tokenClear(); // kode akses wajib diisi ulang untuk perubahan berikutnya
+    if (j.updated) DB.updated = j.updated;
     return j;
   }
 
@@ -71,7 +72,7 @@ function alatDbInit(ctx) {
   function showSeed() {
     el("Seed").hidden = false;
     el("Seed").innerHTML = `<div><b>Sheet "${esc(SHEET)}" masih kosong.</b> Salin ${STATIC.length} data ${esc(C.noun)} dari file Excel ke sheet agar bisa diedit dari dashboard.</div>
-      <div class="ab-seed-act">${tokenGet() ? "" : `<input type="password" id="${P}SeedTok" placeholder="Kode akses edit" autocomplete="current-password">`}
+      <div class="ab-seed-act">${tokenGet() ? "" : `<input type="password" id="${P}SeedTok" placeholder="Kode akses edit" autocomplete="new-password">`}
       <button class="btn primary sm" type="button" id="${P}SeedBtn">Salin ${STATIC.length} data ke sheet</button></div>`;
   }
   el("Seed").addEventListener("click", async e => {
@@ -102,7 +103,7 @@ function alatDbInit(ctx) {
      <button class="icon-btn" type="button" onclick="this.closest('dialog').close()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
     <div class="modal-body"><section class="dsec ph-sec ab-ph-sec" id="${P}PhSec"></section><div class="form-grid" id="${P}Fields"></div></div>
     <footer class="modal-foot">
-     <div class="fld token"><label class="tok-in" id="${P}TokIn"><span>Kode akses edit</span><input type="password" id="${P}_token" autocomplete="current-password" placeholder="Kode dari admin"><small class="hint">Cukup sekali — akan diingat di perangkat ini.</small></label>
+     <div class="fld token"><label class="tok-in" id="${P}TokIn"><span>Kode akses edit</span><input type="password" id="${P}_token" autocomplete="new-password" placeholder="Kode dari admin"><small class="hint">Wajib diisi setiap kali menyimpan perubahan.</small></label>
       <p class="token-saved" id="${P}TokSaved" hidden><svg class="ic xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Kode akses tersimpan di perangkat ini · <button type="button" class="linkbtn" id="${P}TokForget">Lupakan</button></p></div>
      <p class="form-err" id="${P}EditErr" role="alert" hidden></p>
      <div class="modal-btns"><button class="btn ghost" type="button" onclick="this.closest('dialog').close()">Batal</button><button class="btn primary" type="submit" id="${P}Save">Simpan</button></div>
@@ -171,7 +172,7 @@ function alatDbInit(ctx) {
     try {
       const j = await (await fetch(q("eq_photos", `&id=${encodeURIComponent(DB.editing.id)}`), { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      DB.photos = j.photos || []; DB.cover = j.cover; DB.folder = j.folder; DB.phErr = "";
+      DB.photos = j.photos || []; DB.cover = j.cover; DB.folder = j.folder;
     } catch (x) { DB.phErr = String(x.message || x); }
     DB.phBusy = ""; renderPhotos();
   }
@@ -190,6 +191,7 @@ function alatDbInit(ctx) {
   el("PhSec").addEventListener("change", async e => {
     if (e.target.id !== `${P}PhFile` || !e.target.files.length) return;
     const files = [...e.target.files]; e.target.value = "";
+    DB.batch = true;
     for (let i = 0; i < files.length; i++) {
       DB.phBusy = `Mengunggah foto ${i + 1} dari ${files.length}…`; DB.phErr = ""; renderPhotos();
       try { const p = await phPrepare(files[i]); const j = await post({ action: "eq_photo_upload", id: DB.editing.id, ...p }, $(`#${P}_token`)); upsert(j.row); }
@@ -201,9 +203,10 @@ function alatDbInit(ctx) {
     const c = e.target.closest("[data-cover]"), d = e.target.closest("[data-del]");
     if (!c && !d) return;
     if (d && !confirm("Hapus foto ini? File dipindah ke sampah Google Drive.")) return;
-    DB.phBusy = c ? "Menyimpan foto utama…" : "Menghapus foto…"; renderPhotos();
+    DB.phErr = ""; DB.phBusy = c ? "Menyimpan foto utama…" : "Menghapus foto…"; renderPhotos();
     try { const j = await post({ action: c ? "eq_photo_cover" : "eq_photo_delete", id: DB.editing.id, fileId: (c || d).dataset[c ? "cover" : "del"] }, $(`#${P}_token`)); upsert(j.row); }
     catch (x) { DB.phErr = String(x.message || x); }
+    DB.batch = false; tokenClear();
     DB.phBusy = ""; await loadPhotos();
   });
   $("#" + dlgId).addEventListener("close", () => { DB.editing = null; });

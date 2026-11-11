@@ -108,13 +108,13 @@
   }
   async function post(body, tokenInput) {
     const token = ((tokenInput && tokenInput.value) || tokenGet() || "").trim();
-    if (!token) throw new Error("Masukkan kode akses edit.");
+    if (!token) { if (tokenInput && tokenInput.focus) tokenInput.focus(); throw new Error("Masukkan kode akses edit (kolom di bagian bawah form) — wajib setiap kali menyimpan perubahan."); }
     const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token, ...body }) })).json();
     if (!j.ok) {
       if (j.code === "auth") { tokenForget(true); if ($("#abEditDlg").open) tokUi("ab"); }
       throw new Error(/Aksi tidak dikenal/i.test(j.error || "") ? "Apps Script masih versi lama. Tempel Code.gs terbaru lalu deploy New version." : (j.error || "Gagal menyimpan"));
     }
-    tokenSave(token);
+    if (!DB.batch) tokenClear(); // kode akses wajib diisi ulang untuk perubahan berikutnya
     if (j.updated) DB.updated = j.updated;
     return j;
   }
@@ -123,7 +123,7 @@
   function showSeed() {
     $("#abSeed").hidden = false;
     $("#abSeed").innerHTML = `<div><b>Sheet "${esc(SHEET)}" masih kosong.</b> Salin ${STATIC.length} data alat dari export WARNOTO ke sheet agar bisa diedit dari dashboard.</div>
-      <div class="ab-seed-act">${tokenGet() ? "" : `<input type="password" id="abSeedTok" placeholder="Kode akses edit" autocomplete="current-password">`}
+      <div class="ab-seed-act">${tokenGet() ? "" : `<input type="password" id="abSeedTok" placeholder="Kode akses edit" autocomplete="new-password">`}
       <button class="btn primary sm" type="button" id="abSeedBtn">Salin ${STATIC.length} data ke sheet</button></div>`;
   }
   $("#abSeed").addEventListener("click", async e => {
@@ -229,7 +229,7 @@
     try {
       const j = await (await fetch(`${API}${API.includes("?") ? "&" : "?"}action=ab_photos&id=${encodeURIComponent(a.id)}`, { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      DB.photos = j.photos || []; DB.cover = j.cover; DB.folder = j.folder; DB.phErr = "";
+      DB.photos = j.photos || []; DB.cover = j.cover; DB.folder = j.folder;
     } catch (e) { DB.phErr = String(e.message || e); }
     DB.phBusy = ""; renderPhotos();
   }
@@ -249,6 +249,7 @@
   $("#abPhSec").addEventListener("change", async e => {
     if (e.target.id !== "abPhFile" || !e.target.files.length) return;
     const files = [...e.target.files]; e.target.value = "";
+    DB.batch = true;
     for (let i = 0; i < files.length; i++) {
       DB.phBusy = `Mengunggah foto ${i + 1} dari ${files.length}…`; DB.phErr = ""; renderPhotos();
       try {
@@ -257,13 +258,14 @@
         DB.photos.push(j.photo); upsert(j.row); DB.cover = j.row.fotoUtama;
       } catch (x) { DB.phErr = String(x.message || x); break; }
     }
+    DB.batch = false; tokenClear();
     DB.phBusy = ""; await loadPhotos();
   });
   $("#abPhSec").addEventListener("click", async e => {
     const c = e.target.closest("[data-cover]"), d = e.target.closest("[data-del]");
     if (!c && !d) return;
     if (d && !confirm("Hapus foto ini? File dipindah ke sampah Google Drive.")) return;
-    DB.phBusy = c ? "Menyimpan foto utama…" : "Menghapus foto…"; renderPhotos();
+    DB.phErr = ""; DB.phBusy = c ? "Menyimpan foto utama…" : "Menghapus foto…"; renderPhotos();
     try {
       const j = await post({ action: c ? "ab_photo_cover" : "ab_photo_delete", id: DB.editing.id, fileId: (c || d).dataset[c ? "cover" : "del"] }, $("#ab_token"));
       upsert(j.row);

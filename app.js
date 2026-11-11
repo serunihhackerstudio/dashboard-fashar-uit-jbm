@@ -799,26 +799,20 @@ async function tdbSubmit(ev) {
     btn.disabled = false; btn.textContent = "Simpan";
   }
 }
-/* Kode akses edit diingat permanen di browser ini (cukup dimasukkan sekali per perangkat) */
+/* Kode akses edit TIDAK disimpan di perangkat: wajib dimasukkan setiap kali menyimpan perubahan.
+   Setelah satu perubahan berhasil, semua kolom kode akses dikosongkan (tokenClear). */
 const TOKEN_KEY = "fashar-edit-token";
-function tokenGet() {
-  try {
-    const legacy = sessionStorage.getItem(TOKEN_KEY); // versi lama menyimpan di sessionStorage
-    if (legacy) { localStorage.setItem(TOKEN_KEY, legacy); sessionStorage.removeItem(TOKEN_KEY); }
-    return localStorage.getItem(TOKEN_KEY) || "";
-  } catch (e) { return ""; }
+try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch (e) { } // hapus kode lama yang pernah diingat
+function tokenGet() { return ""; }
+function tokenSave() { /* sengaja tidak menyimpan */ }
+function tokenClear() {
+  document.querySelectorAll('input[type="password"][id$="_token"], input[type="password"][id$="SeedTok"], #f_token').forEach(i => { i.value = ""; });
 }
-function tokenSave(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) { } }
-function tokenForget(silent) {
-  try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch (e) { }
-  if ($("#tdbDialog").open) { $("#f_token").value = ""; tdbTokenUi(); }
-  if (!silent) toast("Kode akses dihapus dari perangkat ini");
-}
+function tokenForget() { tokenClear(); }
 function tdbTokenUi() {
-  const tok = tokenGet();
-  $("#f_token").value = tok;
-  $("#tokenInput").hidden = !!tok;
-  $("#tokenSaved").hidden = !tok;
+  $("#f_token").value = "";
+  $("#tokenInput").hidden = false;
+  $("#tokenSaved").hidden = true;
 }
 
 function tdbErr(msg) { const el = $("#tdbFormErr"); el.textContent = msg; el.hidden = false; }
@@ -959,9 +953,9 @@ async function phPost(action, payload) {
     if (j.code === "auth") { tokenForget(true); PH.needToken = true; PH.tok = ""; }
     throw new Error(j.error || "Gagal menyimpan foto");
   }
-  tokenSave(token); PH.needToken = false; PH.tok = "";
+  PH.needToken = false; PH.tok = "";
   tdbMarkUpdated(j.updated || new Date().toISOString());
-  if ($("#tdbDialog").open) tdbTokenUi();
+  if (!PH.batch) tokenClear();
   if (j.folder) r.linkFoto = j.folder;
   return j;
 }
@@ -982,7 +976,7 @@ async function phUpload(files) {
   files = [...(files || [])]; if (!files.length || PH.busy) return;
   if (files.length > PH_MAX_FILES) { PH.err = `Maksimal ${PH_MAX_FILES} foto per unggahan.`; return phRender(); }
   if (!phToken()) return;
-  const r = PH.r; PH.err = ""; let ok = 0; const fails = [];
+  const r = PH.r; PH.err = ""; let ok = 0; const fails = []; PH.batch = true;
   for (let i = 0; i < files.length; i++) {
     PH.busy = `Mengunggah foto ${i + 1} dari ${files.length}…`; phRender();
     try {
@@ -991,6 +985,7 @@ async function phUpload(files) {
       if (PH.r === r) PH.list.push(j.photo); ok++;
     } catch (e) { fails.push(String(e.message || e)); if (PH.needToken) break; }
   }
+  PH.batch = false; if (ok) tokenClear();
   PH.busy = ""; if (fails.length) PH.err = fails.join(" · ");
   phRender(); if (ok) toast(`${ok} foto berhasil diunggah ke Google Drive`);
 }
@@ -1080,7 +1075,7 @@ async function mvPost(action, payload) {
   try {
     const j = await (await fetch(TDB_API, { method: "POST", body: JSON.stringify({ token, action, row: r._row, expect: r.komponen, ...payload }) })).json();
     if (!j.ok) { if (j.code === "auth") tokenForget(true); throw new Error(j.error || "Gagal menyimpan riwayat"); }
-    tokenSave(token); if ($("#tdbDialog").open) tdbTokenUi();
+    tokenClear();
     tdbMarkUpdated(j.updated || new Date().toISOString());
     TDB.moves = j.moves || TDB.moves;
     mvStatus("");

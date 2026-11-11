@@ -172,8 +172,8 @@ function alatDbInit(ctx) {
     try {
       const j = await (await fetch(q("eq_photos", `&id=${encodeURIComponent(r.id)}`), { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      if (DB.editing === r) PS.reset({ photos: j.photos, cover: j.cover, folder: j.folder });
-    } catch (x) { if (DB.editing === r) PS.reset({ err: String(x.message || x) }); }
+      if (DB.editing === r) PS.setExisting({ photos: j.photos, cover: j.cover, folder: j.folder });
+    } catch (x) { if (DB.editing === r) PS.setExisting({ err: String(x.message || x) }); }
   }
   $("#" + dlgId).addEventListener("close", () => { DB.editing = null; PS.reset(); });
 

@@ -215,8 +215,8 @@
     try {
       const j = await (await fetch(`${API}${API.includes("?") ? "&" : "?"}action=hv_photos&row=${r._row}&expect=${encodeURIComponent(r.nama)}`, { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      if (S.editing === r) PS.reset({ photos: j.photos, cover: j.cover, folder: j.folder });
-    } catch (x) { if (S.editing === r) PS.reset({ err: String(x.message || x) }); }
+      if (S.editing === r) PS.setExisting({ photos: j.photos, cover: j.cover, folder: j.folder });
+    } catch (x) { if (S.editing === r) PS.setExisting({ err: String(x.message || x) }); }
   }
   $("#hvEditForm").addEventListener("submit", async e => {
     e.preventDefault();

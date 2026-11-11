@@ -75,5 +75,11 @@ function photoStager(sec, opts) {
     } finally { S.busy = ""; render(); }
     return lastRow;
   }
-  return { reset, render, hasChanges, commit, setLoading: v => { S.loading = v; render(); }, setErr: m => { S.err = m || ""; render(); } };
+  /* Isi foto yang sudah ada di Drive tanpa menghapus foto baru / tanda hapus yang dipilih selama memuat */
+  function setExisting(o) {
+    Object.assign(S, { existing: (o && o.photos) || [], cover: (o && o.cover) || null, folder: (o && o.folder) || null, loading: false });
+    if (o && o.err) S.err = o.err;
+    render();
+  }
+  return { reset, setExisting, render, hasChanges, commit, setLoading: v => { S.loading = v; render(); }, setErr: m => { S.err = m || ""; render(); } };
 }

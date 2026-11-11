@@ -1036,3 +1036,11 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .hv-view button{display:inline-flex;align-items:center;gap:6px}
 .hv-view svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .hv-grid[hidden],.hv-table-card[hidden]{display:none}
+
+/* Foto disiapkan dulu, disimpan bersama data */
+.ps-note{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:8px 12px;border-radius:10px;font-size:12.5px;font-weight:600;
+  color:color-mix(in srgb,var(--p2) 55%,var(--text));background:color-mix(in srgb,var(--p2) 12%,transparent)}
+.ph-item.ps-new .ph-img{outline:2px dashed var(--primary);outline-offset:-2px}
+.ph-item.ps-del{opacity:.5}
+.ph-item.ps-del .ph-img img{filter:grayscale(1)}
+.ph-item figcaption .badge{margin-right:4px}

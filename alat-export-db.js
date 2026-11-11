@@ -128,7 +128,7 @@ function alatDbInit(ctx) {
     $(`#${P}f_id`).disabled = !!r;
     el("EditTitle").textContent = r ? `Edit ${r.nama || r.id}` : `Tambah ${C.noun}`;
     el("EditSub").textContent = `${r ? r.id + " · " : ""}disimpan ke sheet ${SHEET}`;
-    tokUi(); r ? loadPhotos() : renderPhotos();
+    tokUi(); PS.reset({ loading: !!r }); if (r) loadPhotos(r);
     if ($(`#${P}Detail`).open) $(`#${P}Detail`).close();
     $("#" + dlgId).showModal();
   }
@@ -141,20 +141,21 @@ function alatDbInit(ctx) {
     F.forEach(([k]) => { const x = $(`#${P}f_${k}`); if (x && !x.disabled) data[k] = x.value.trim(); });
     if (!data.nama) return err("Nama alat wajib diisi.");
     if (data.tahun && !/^\d{4}$/.test(data.tahun)) return err("Tahun perolehan harus 4 digit.");
-    let body;
-    if (r) {
-      const changed = Object.fromEntries(Object.entries(data).filter(([k, v]) => String(r[k] == null ? "" : (k === "merk" ? (r._raw || r)[k] : r[k])) !== v));
-      if (!Object.keys(changed).length) { $("#" + dlgId).close(); return toast("Tidak ada perubahan"); }
-      body = { action: "eq_update", id: r.id, data: changed };
-    } else body = { action: "eq_add", data };
-    const btn = el("Save"); btn.disabled = true; btn.textContent = "Menyimpan…"; err("");
+    const changed = r ? Object.fromEntries(Object.entries(data).filter(([k, v]) => String(r[k] == null ? "" : r[k]) !== v)) : data;
+    const phChange = PS.hasChanges();
+    if (r && !Object.keys(changed).length && !phChange) { $("#" + dlgId).close(); return toast("Tidak ada perubahan"); }
+    const tok = $(`#${P}_token`);
+    if (!tok.value.trim()) { tok.focus(); return err("Masukkan kode akses edit untuk menyimpan perubahan."); }
+    const btn = el("Save"); btn.disabled = true; btn.textContent = "Menyimpan…"; err(""); DB.batch = true;
     try {
-      const j = await post(body, $(`#${P}_token`));
-      upsert(j.row);
-      if (r) { $("#" + dlgId).close(); toast("Perubahan tersimpan ke Google Sheets"); }
-      else { toast(`${j.row.id} ditambahkan — sekarang Anda bisa menambah foto`); openEdit(j.row.id); }
+      let id = r && r.id;
+      if (!r) { const j = await post({ action: "eq_add", data }, tok); upsert(j.row); id = j.row.id; }
+      else if (Object.keys(changed).length) upsert((await post({ action: "eq_update", id, data: changed }, tok)).row);
+      if (phChange) { const last = await PS.commit((act, payload) => post({ action: "eq_photo_" + act, id, ...payload }, tok)); if (last) upsert(last); }
+      tokenClear(); $("#" + dlgId).close();
+      toast(r ? "Perubahan tersimpan ke Google Sheets" : `${id} ditambahkan ke Google Sheets`);
     } catch (x) { err(String(x.message || x)); }
-    finally { btn.disabled = false; btn.textContent = "Simpan"; }
+    finally { DB.batch = false; btn.disabled = false; btn.textContent = "Simpan"; }
   });
   function upsert(row) {
     if (!row) return;
@@ -165,51 +166,16 @@ function alatDbInit(ctx) {
     afterChange();
   }
 
-  /* ---------- Foto (Google Drive) ---------- */
-  async function loadPhotos() {
-    if (!DB.editing) return;
-    DB.phBusy = "Memuat foto…"; renderPhotos();
+  /* ---------- Foto (Google Drive) — disiapkan di form, dikirim saat Simpan ---------- */
+  const PS = photoStager(el("PhSec"), { prefix: P });
+  async function loadPhotos(r) {
     try {
-      const j = await (await fetch(q("eq_photos", `&id=${encodeURIComponent(DB.editing.id)}`), { cache: "no-store" })).json();
+      const j = await (await fetch(q("eq_photos", `&id=${encodeURIComponent(r.id)}`), { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      DB.photos = j.photos || []; DB.cover = j.cover; DB.folder = j.folder;
-    } catch (x) { DB.phErr = String(x.message || x); }
-    DB.phBusy = ""; renderPhotos();
+      if (DB.editing === r) PS.reset({ photos: j.photos, cover: j.cover, folder: j.folder });
+    } catch (x) { if (DB.editing === r) PS.reset({ err: String(x.message || x) }); }
   }
-  function renderPhotos() {
-    const sec = el("PhSec");
-    if (!DB.editing) { sec.innerHTML = `<h4>Foto</h4><p class="muted sm">Foto dapat ditambahkan setelah data disimpan.</p>`; return; }
-    sec.innerHTML = `<div class="ph-head"><h4>Foto <small>${DB.photos.length} foto${DB.folder ? ` · <a href="${esc(DB.folder)}" target="_blank" rel="noopener">buka folder Drive</a>` : ""}</small></h4>
-      <label class="btn ghost sm${DB.phBusy ? " disabled" : ""}">${icon("camera", "ic xs")}Tambah foto<input type="file" id="${P}PhFile" accept="image/*" multiple hidden></label></div>
-      ${DB.phBusy ? `<p class="muted sm">${esc(DB.phBusy)}</p>` : ""}${DB.phErr ? `<p class="form-err">${esc(DB.phErr)}</p>` : ""}
-      <div class="ph-grid">${DB.photos.map(p => `<figure class="ph-item${p.id === DB.cover ? " cover" : ""}">
-        <a class="ph-img" href="${esc(p.view)}" target="_blank" rel="noopener"><img src="${esc(p.thumb)}" alt="${esc(p.caption || p.name)}" loading="lazy"></a>
-        <figcaption>${p.id === DB.cover ? `<span class="badge ok">Foto utama</span>` : ""}<div class="ph-act">
-          ${p.id === DB.cover ? "" : `<button type="button" class="linkbtn" data-cover="${esc(p.id)}">Jadikan utama</button>`}
-          <button type="button" class="linkbtn danger" data-del="${esc(p.id)}">Hapus</button></div></figcaption></figure>`).join("")}</div>`;
-  }
-  el("PhSec").addEventListener("change", async e => {
-    if (e.target.id !== `${P}PhFile` || !e.target.files.length) return;
-    const files = [...e.target.files]; e.target.value = "";
-    DB.batch = true;
-    for (let i = 0; i < files.length; i++) {
-      DB.phBusy = `Mengunggah foto ${i + 1} dari ${files.length}…`; DB.phErr = ""; renderPhotos();
-      try { const p = await phPrepare(files[i]); const j = await post({ action: "eq_photo_upload", id: DB.editing.id, ...p }, $(`#${P}_token`)); upsert(j.row); }
-      catch (x) { DB.phErr = String(x.message || x); break; }
-    }
-    DB.phBusy = ""; await loadPhotos();
-  });
-  el("PhSec").addEventListener("click", async e => {
-    const c = e.target.closest("[data-cover]"), d = e.target.closest("[data-del]");
-    if (!c && !d) return;
-    if (d && !confirm("Hapus foto ini? File dipindah ke sampah Google Drive.")) return;
-    DB.phErr = ""; DB.phBusy = c ? "Menyimpan foto utama…" : "Menghapus foto…"; renderPhotos();
-    try { const j = await post({ action: c ? "eq_photo_cover" : "eq_photo_delete", id: DB.editing.id, fileId: (c || d).dataset[c ? "cover" : "del"] }, $(`#${P}_token`)); upsert(j.row); }
-    catch (x) { DB.phErr = String(x.message || x); }
-    DB.batch = false; tokenClear();
-    DB.phBusy = ""; await loadPhotos();
-  });
-  $("#" + dlgId).addEventListener("close", () => { DB.editing = null; });
+  $("#" + dlgId).addEventListener("close", () => { DB.editing = null; PS.reset(); });
 
   /* ---------- Detail: foto & tombol edit ---------- */
   X.onDetail = r => {

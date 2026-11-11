@@ -1135,6 +1135,7 @@ async function mvDelete(id) {
 
 /* Penampil foto besar */
 function phView(i) {
+  if (window.openLightbox) { return window.openLightbox(PH.list.map(p => ({ thumb: p.full || p.thumb, view: p.view, alt: p.caption || p.name })), i); }
   if (!PH.list.length) return;
   PH.view = (i + PH.list.length) % PH.list.length;
   const p = PH.list[PH.view];

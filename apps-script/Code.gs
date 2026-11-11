@@ -108,7 +108,8 @@ function izinkanAkses() {
     'Folder foto DC Mobile: ' + eqPhotoRoot_(EQ_CFG.dcm).getName(),
     'Folder foto Filter Minyak: ' + eqPhotoRoot_(EQ_CFG.fm).getName(),
     'Folder foto HV test: ' + hvPhotoRoot_().getName(),
-    'Sheet HV test: ' + (SpreadsheetApp.getActive().getSheetByName(HV_SHEET) ? HV_SHEET : 'TIDAK DITEMUKAN')
+    'Sheet HV test: ' + (SpreadsheetApp.getActive().getSheetByName(HV_SHEET) ? HV_SHEET : 'belum ada (dibuat saat salin data awal)'),
+    'Sheet sumber HV test: ' + (SpreadsheetApp.getActive().getSheetByName(HV_SRC_SHEET) ? HV_SRC_SHEET : 'TIDAK DITEMUKAN')
   ];
   // uji izin tulis Drive (butuh scope penuh .../auth/drive): buat lalu buang file uji
   const tmp = cuiFolder_().createFile('cek_izin.txt', 'uji izin tulis ' + new Date());
@@ -1020,21 +1021,34 @@ function eqAction_(req) {
 }
 
 /* =========================================================
-   ALAT HV TEST — sheet yang sudah ada "7. ALAT HV TEST"
-   Kolom dibaca dari judul di baris 1 (NO, NAMA ALAT, MEREK, TIPE, KONDISI, TAHUN, LOKASI,
-   KETERANGAN, INSTRUKSI KERJA). Kolom LINK FOTO, ID FOTO UTAMA, DIPERBARUI ditambahkan
-   di kanan bila belum ada. Baris diidentifikasi dengan nomor baris + nama alat (expect).
+   ALAT HV TEST — sheet baru "7. ALAT HV TEST (NEW)"
+   Dibuat otomatis (header + dropdown kondisi) dan diisi sekali dari sheet lama
+   "7. ALAT HV TEST" lewat aksi hv_seed (sheet lama tidak diubah).
+   Kolom dibaca dari judul baris 1. Baris diidentifikasi dengan nomor baris + nama alat (expect).
    ========================================================= */
-const HV_SHEET = '7. ALAT HV TEST';
+const HV_SHEET = '7. ALAT HV TEST (NEW)';
+const HV_SRC_SHEET = '7. ALAT HV TEST';
 const HV_HEAD = { no: 'NO', nama: 'NAMA ALAT', merk: 'MEREK', tipe: 'TIPE', kondisi: 'KONDISI', tahun: 'TAHUN', lokasi: 'LOKASI',
   keterangan: 'KETERANGAN', ik: 'INSTRUKSI KERJA', linkFoto: 'LINK FOTO', fotoUtama: 'ID FOTO UTAMA', diperbarui: 'DIPERBARUI' };
 const HV_EXTRA = ['linkFoto', 'fotoUtama', 'diperbarui'];
 const HV_EDIT = ['nama', 'merk', 'tipe', 'kondisi', 'tahun', 'lokasi', 'keterangan', 'ik', 'ikUrl'];
 const HV_KONDISI = ['NORMAL', 'ANOMALI', 'RUSAK'];
 
-function hvSheet_() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(HV_SHEET);
-  if (!sh) throw new Error('Sheet "' + HV_SHEET + '" tidak ditemukan.');
+function hvSheet_(create) {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(HV_SHEET);
+  if (!sh && create) {
+    sh = ss.insertSheet(HV_SHEET);
+    const keys = Object.keys(HV_HEAD);
+    sh.getRange(1, 1, 1, keys.length).setValues([keys.map(k => HV_HEAD[k])]).setFontWeight('bold').setBackground('#0b2545').setFontColor('#ffffff');
+    sh.setFrozenRows(1);
+    sh.getRange(2, keys.indexOf('kondisi') + 1, sh.getMaxRows() - 1, 1)
+      .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(HV_KONDISI, true).setAllowInvalid(false).build());
+    sh.getRange(2, 1, sh.getMaxRows() - 1, keys.length).setWrap(true).setVerticalAlignment('top');
+    sh.setColumnWidth(keys.indexOf('nama') + 1, 220); sh.setColumnWidth(keys.indexOf('lokasi') + 1, 260);
+    sh.setColumnWidth(keys.indexOf('keterangan') + 1, 360); sh.setColumnWidth(keys.indexOf('ik') + 1, 280);
+  }
+  if (!sh) throw new Error('Sheet "' + HV_SHEET + '" belum dibuat.');
   return sh;
 }
 function hvPhotoRoot_() {
@@ -1083,7 +1097,8 @@ function hvRows_(sh, col) {
   return out;
 }
 function hvGet_() {
-  const sh = hvSheet_(), col = hvCols_(sh, false);
+  if (!SpreadsheetApp.getActive().getSheetByName(HV_SHEET)) return { ok: true, sheet: HV_SHEET, exists: false, rows: [], updated: null };
+  const sh = hvSheet_(false), col = hvCols_(sh, false);
   return { ok: true, sheet: HV_SHEET, source: 'DATABASE ALAT BERAT UIT JBM — ' + HV_SHEET, rows: hvRows_(sh, col),
     updated: PropertiesService.getScriptProperties().getProperty('HV_UPDATED') || fileUpdated_() };
 }
@@ -1141,13 +1156,31 @@ function hvPhotoFolder_(sh, col, r, create) {
   return folder;
 }
 function hvPhotos_(row, expect) {
-  const sh = hvSheet_(), col = hvCols_(sh, false), r = hvCheckRow_(sh, col, row, expect);
+  const sh = hvSheet_(false), col = hvCols_(sh, false), r = hvCheckRow_(sh, col, row, expect);
   if (!col.linkFoto) return { ok: true, folder: null, cover: null, photos: [] };
   const folder = hvPhotoFolder_(sh, col, r, false), o = hvRowObj_(sh, col, r);
   return { ok: true, folder: folder ? folder.getUrl() : null, cover: o.fotoUtama, photos: folder ? listPhotos_(folder) : [] };
 }
+/* Salin data dari sheet lama "7. ALAT HV TEST" ke sheet baru (hanya bila sheet baru masih kosong) */
+function hvSeed_() {
+  const src = SpreadsheetApp.getActive().getSheetByName(HV_SRC_SHEET);
+  if (!src) return { ok: false, error: 'Sheet sumber "' + HV_SRC_SHEET + '" tidak ditemukan.' };
+  const sh = hvSheet_(true), col = hvCols_(sh, true);
+  if (hvRows_(sh, col).length) return { ok: false, error: 'Sheet ' + HV_SHEET + ' sudah berisi data.' };
+  const rows = hvRows_(src, hvCols_(src, false));
+  if (!rows.length) return { ok: false, error: 'Sheet sumber tidak berisi data.' };
+  rows.forEach((o, i) => {
+    const r = i + 2, d = {};
+    ['no', 'nama', 'merk', 'tipe', 'kondisi', 'tahun', 'lokasi', 'keterangan', 'ik', 'ikUrl'].forEach(k => { d[k] = o[k] || ''; });
+    if (d.kondisi) d.kondisi = String(d.kondisi).toUpperCase();
+    if (HV_KONDISI.indexOf(d.kondisi) < 0) d.kondisi = '';
+    hvWrite_(sh, col, r, d, null);
+  });
+  return hvChanged_({ ok: true, rows: hvRows_(sh, col) });
+}
 function hvAction_(req) {
-  const sh = hvSheet_(), col = hvCols_(sh, true);
+  if (req.action === 'hv_seed') return hvSeed_();
+  const sh = hvSheet_(true), col = hvCols_(sh, true);
   if (req.action === 'hv_add') {
     const o = hvClean_(req.data);
     if (!o.nama) return { ok: false, error: 'Nama alat wajib diisi.' };

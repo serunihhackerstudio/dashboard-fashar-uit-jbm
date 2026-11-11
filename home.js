@@ -46,7 +46,7 @@
         s: [["Alat", ab.length], ["Lokasi", new Set(ab.map(a => a.lokasi)).size]] },
       { id: "fm", g: "alat", ic: '<path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11Z"/><path d="M9 14h6M10 17h4"/>', t: "Filter Minyak", d: "Unit filter minyak trafo per UPT/ULTG dan status kalibrasinya.",
         s: [["Unit", fm.length], ["Kalibrasi aktif", kal(fm, /AKTIF|BERLAKU/i)], ["Kedaluwarsa", kal(fm, /EXPIRED/i)]] },
-      { id: "hv", g: "alat", ic: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>', t: "HV Test", d: "Alat uji tegangan tinggi: kondisi, lokasi, keterangan & instruksi kerja, terhubung ke sheet 7. ALAT HV TEST.",
+      { id: "hv", g: "alat", ic: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>', t: "HV Test", d: "Alat uji tegangan tinggi: kondisi, lokasi, keterangan & instruksi kerja, terhubung ke sheet 7. ALAT HV TEST (NEW).",
         live: hv && hv.live, s: hv ? [["Alat", hv.total], ["Normal", hv.normal], ["Anomali / rusak", hv.anomali + hv.rusak]] : [] }
     ];
   }

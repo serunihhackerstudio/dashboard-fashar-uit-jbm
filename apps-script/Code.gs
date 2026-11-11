@@ -16,6 +16,7 @@
  * POST action: "ab_add" | "ab_update" | "ab_seed" | "ab_photo_upload" | "ab_photo_delete" | "ab_photo_cover"
  *      (data alat berat; foto disimpan per alat di folder AB_PHOTO_ROOT_ID)
  * GET  <url>?action=eq&kind=dcm      → data DC Mobile (sheet "4. DC MOBILE (NEW)")
+ * GET  <url>?action=eq&kind=fm       → data Filter Minyak (sheet "8. FILTER MINYAK (NEW)")
  * GET  <url>?action=eq_photos&kind=dcm&id=ID
  * POST action: "eq_seed" | "eq_add" | "eq_update" | "eq_photo_upload" | "eq_photo_delete" | "eq_photo_cover"  + kind
  *
@@ -101,7 +102,8 @@ function izinkanAkses() {
     'Folder foto: ' + DriveApp.getFolderById(p.getProperty('PHOTO_FOLDER_ID') || PHOTO_ROOT_ID).getName(),
     'Folder BA: ' + DriveApp.getFolderById(p.getProperty('BA_FOLDER_ID') || BA_ROOT_ID).getName(),
     'Folder foto alat berat: ' + abPhotoRoot_().getName(),
-    'Folder foto DC Mobile: ' + eqPhotoRoot_(EQ_CFG.dcm).getName()
+    'Folder foto DC Mobile: ' + eqPhotoRoot_(EQ_CFG.dcm).getName(),
+    'Folder foto Filter Minyak: ' + eqPhotoRoot_(EQ_CFG.fm).getName()
   ];
   // uji izin tulis Drive (butuh scope penuh .../auth/drive): buat lalu buang file uji
   const tmp = cuiFolder_().createFile('cek_izin.txt', 'uji izin tulis ' + new Date());
@@ -861,7 +863,8 @@ const EQ_ENUM = { kalibrasi: ['AKTIF', 'BELUM KALIBRASI', 'EXPIRED'], kondisi: [
 const EQ_DATE = ['tglKalibrasi', 'tglKadaluarsa', 'rencanaKalibrasi'];
 // Folder foto: Script Property <photoProp> bila diisi; jika tidak, subfolder <photoName> dibuat otomatis di folder foto alat berat
 const EQ_CFG = {
-  dcm: { sheet: '4. DC MOBILE (NEW)', idPrefix: 'DCM-', photoProp: 'DCM_PHOTO_FOLDER_ID', photoName: 'FOTO DC MOBILE' }
+  dcm: { sheet: '4. DC MOBILE (NEW)', idPrefix: 'DCM-', photoProp: 'DCM_PHOTO_FOLDER_ID', photoName: 'FOTO DC MOBILE' },
+  fm: { sheet: '8. FILTER MINYAK (NEW)', idPrefix: 'FM-', photoProp: 'FM_PHOTO_FOLDER_ID', photoName: 'FOTO FILTER MINYAK' }
 };
 
 function eqCfg_(kind) {

@@ -1183,7 +1183,8 @@ const PAGES = {
   trafodb: ["Peralatan ERS", "Trafo Mobile", "Kumpulan data trafo mobile per trailer"],
   dcm: ["Peralatan ERS", "DC Mobile", "Data unit DC mobile (sistem DC bergerak) UIT JBM"],
   alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"],
-  fm: ["Alat Berat & Alat Bantu", "Filter Minyak", "Data unit filter minyak trafo UIT JBM"]
+  fm: ["Alat Berat & Alat Bantu", "Filter Minyak", "Data unit filter minyak trafo UIT JBM"],
+  hv: ["Alat Berat & Alat Bantu", "HV Test", "Database alat uji tegangan tinggi (HV test) UIT JBM"]
 };
 /* Tanggal "Diperbarui" di topbar: halaman boleh mendaftarkan tanggalnya sendiri lewat window.PAGE_UPDATED[id]() */
 const UPDATED_DEFAULT = "3 Okt 2026";

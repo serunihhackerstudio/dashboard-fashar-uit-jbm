@@ -28,6 +28,10 @@
      <button class="btn primary" type="button" id="hvAddBtn" hidden>${svg('<path d="M12 5v14M5 12h14"/>')}Tambah alat HV test</button></div>
    </div>
    <div class="ab-kpis" id="hvKpi"></div>
+   <div class="grid g2 ab-charts">
+    <div class="card"><div class="card-head"><div><h3>Kondisi alat</h3><p>Komposisi kondisi alat HV test</p></div></div><div class="card-body ab-donut-wrap" id="hvChK"></div></div>
+    <div class="card"><div class="card-head"><div><h3>Umur alat</h3><p>Berdasarkan tahun pembuatan / perolehan</p></div></div><div class="card-body" id="hvChU"></div></div>
+   </div>
    <div class="ab-filters hv-filters">
     <div class="ab-chips" id="hvK" role="group" aria-label="Filter kondisi"></div>
     <div class="ab-filter-right"><div class="seg hv-view" id="hvView" role="group" aria-label="Tampilan">
@@ -39,10 +43,6 @@
     <div class="table-wrap ab-table hv-table"><table class="table"><thead><tr><th class="num">No</th><th>Nama alat</th><th>Merek / Tipe</th><th>Kondisi</th><th class="num">Tahun</th><th>Lokasi</th><th>Instruksi kerja</th><th></th></tr></thead>
      <tbody id="hvRows"></tbody></table><div class="empty" id="hvEmpty" hidden>Tidak ada alat yang cocok dengan filter.</div></div>
     <div class="card-foot tdb-foot"><span class="muted" id="hvCount"></span><span class="muted sm" id="hvSrc"></span></div>
-   </div>
-   <div class="grid g2 ab-charts">
-    <div class="card"><div class="card-head"><div><h3>Kondisi alat</h3><p>Komposisi kondisi alat HV test</p></div></div><div class="card-body ab-donut-wrap" id="hvChK"></div></div>
-    <div class="card"><div class="card-head"><div><h3>Umur alat</h3><p>Berdasarkan tahun pembuatan / perolehan</p></div></div><div class="card-body" id="hvChU"></div></div>
    </div>
 `;
   document.body.insertAdjacentHTML("beforeend", `

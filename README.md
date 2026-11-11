@@ -53,6 +53,7 @@ Jika `Code.gs` diubah, gunakan **Deploy → Manage deployments → Edit → Vers
 - Arahkan kursor ke chip **Diperbarui** untuk melihat jam perubahannya.
 
 ### Cara kerja & keamanan
+- **Foto di form Edit (Alat Berat, DC Mobile, Filter Minyak, HV Test) disiapkan dulu**: memilih, menghapus, atau menjadikan foto utama tidak langsung dikirim; semuanya diunggah bersama data saat menekan **Simpan** (sekali isi kode akses). Komponen: `photo-stage.js`.
 - **Kode akses edit tidak disimpan di perangkat**: wajib diketik setiap kali menyimpan perubahan (edit, tambah, foto, riwayat, BA, unggah CUI, salin data awal) di semua menu. Setelah satu perubahan berhasil, kolom kode akses dikosongkan.
 - Siapa pun yang membuka dashboard dapat **melihat** data (sama seperti sebelumnya). **Menyimpan** perubahan wajib memasukkan kode akses edit (`EDIT_TOKEN`); kode **tidak diingat** dan harus diketik ulang untuk setiap perubahan.
 - Tombol **Detail** menampilkan seluruh informasi baris (termasuk informasi aset, tautan dokumentasi, dan riwayat lokasi). Kolom nilai aset, referensi, dan riwayat hanya bisa diubah langsung di Google Sheets.

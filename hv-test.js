@@ -196,37 +196,47 @@
 
   const F = ["nama", "merk", "tipe", "kondisi", "tahun", "lokasi", "keterangan", "ik", "ikUrl"];
   function err(m) { $("#hvEditErr").textContent = m || ""; $("#hvEditErr").hidden = !m; }
+  /* Foto disiapkan di form dan baru dikirim saat Simpan (photo-stage.js) */
+  const PS = photoStager($("#hvPhSec"), { prefix: "hv" });
   function openEdit(row) {
     if (!S.live) return;
     const r = row ? byRow(row) : null;
-    S.editing = r; S.photos = []; S.phErr = ""; err("");
+    S.editing = r; err("");
     F.forEach(k => { $("#hvf_" + k).value = r ? (r[k] || "") : (k === "kondisi" ? "NORMAL" : ""); });
     $("#hv_token").value = "";
     $("#hvEditTitle").textContent = r ? `Edit ${r.nama}` : "Tambah alat HV test";
     $("#hvEditSub").textContent = `${r ? "Baris " + r._row + " · " : ""}disimpan ke sheet ${SHEET}`;
-    r ? loadPhotos() : renderPhotos();
+    PS.reset({ loading: !!r });
+    if (r) loadPhotos(r);
     if ($("#hvDetail").open) $("#hvDetail").close();
     $("#hvEditDlg").showModal();
+  }
+  async function loadPhotos(r) {
+    try {
+      const j = await (await fetch(`${API}${API.includes("?") ? "&" : "?"}action=hv_photos&row=${r._row}&expect=${encodeURIComponent(r.nama)}`, { cache: "no-store" })).json();
+      if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
+      if (S.editing === r) PS.reset({ photos: j.photos, cover: j.cover, folder: j.folder });
+    } catch (x) { if (S.editing === r) PS.reset({ err: String(x.message || x) }); }
   }
   $("#hvEditForm").addEventListener("submit", async e => {
     e.preventDefault();
     const r = S.editing, data = {};
     F.forEach(k => { data[k] = $("#hvf_" + k).value.replace(/\r/g, "").trim(); });
     if (!data.nama) return err("Nama alat wajib diisi.");
-    let body;
-    if (r) {
-      const ch = Object.fromEntries(Object.entries(data).filter(([k, v]) => (r[k] || "") !== v));
-      if (!Object.keys(ch).length) { $("#hvEditDlg").close(); return toast("Tidak ada perubahan"); }
-      body = { action: "hv_update", row: r._row, expect: r.nama, data: ch };
-    } else body = { action: "hv_add", data };
-    const b = $("#hvSave"); b.disabled = true; b.textContent = "Menyimpan…"; err("");
+    const ch = r ? Object.fromEntries(Object.entries(data).filter(([k, v]) => (r[k] || "") !== v)) : data;
+    const phChange = PS.hasChanges();
+    if (r && !Object.keys(ch).length && !phChange) { $("#hvEditDlg").close(); return toast("Tidak ada perubahan"); }
+    if (!$("#hv_token").value.trim()) { $("#hv_token").focus(); return err("Masukkan kode akses edit untuk menyimpan perubahan."); }
+    const b = $("#hvSave"); b.disabled = true; b.textContent = "Menyimpan…"; err(""); S.batch = true;
     try {
-      const j = await post(body);
-      upsert(j.row);
-      if (r) { $("#hvEditDlg").close(); toast("Perubahan tersimpan ke Google Sheets"); }
-      else { toast("Alat baru ditambahkan — sekarang Anda bisa menambah foto"); openEdit(j.row._row); }
+      let row = r;
+      if (!r) { row = (await post({ action: "hv_add", data })).row; upsert(row); S.editing = row; }
+      else if (Object.keys(ch).length) { row = (await post({ action: "hv_update", row: r._row, expect: r.nama, data: ch })).row; upsert(row); }
+      if (phChange) { const last = await PS.commit((act, payload) => post({ action: "hv_photo_" + act, row: row._row, expect: row.nama, ...payload })); if (last) upsert(last); }
+      tokenClear(); $("#hvEditDlg").close();
+      toast(r ? "Perubahan tersimpan ke Google Sheets" : "Alat baru ditambahkan ke Google Sheets");
     } catch (x) { err(String(x.message || x)); }
-    finally { b.disabled = false; b.textContent = "Simpan"; }
+    finally { S.batch = false; b.disabled = false; b.textContent = "Simpan"; }
   });
   function upsert(row) {
     if (!row) return;
@@ -235,48 +245,7 @@
     if (S.editing && S.editing._row === row._row) S.editing = row;
     render(); changed();
   }
-
-  /* ---------- Foto ---------- */
-  async function loadPhotos() {
-    const r = S.editing; if (!r) return;
-    S.phBusy = "Memuat foto…"; renderPhotos();
-    try {
-      const j = await (await fetch(`${API}${API.includes("?") ? "&" : "?"}action=hv_photos&row=${r._row}&expect=${encodeURIComponent(r.nama)}`, { cache: "no-store" })).json();
-      if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      S.photos = j.photos || []; S.cover = j.cover; S.folder = j.folder;
-    } catch (x) { S.phErr = String(x.message || x); }
-    S.phBusy = ""; renderPhotos();
-  }
-  function renderPhotos() {
-    const el = $("#hvPhSec");
-    if (!S.editing) { el.innerHTML = `<h4>Foto alat</h4><p class="muted sm">Foto dapat ditambahkan setelah data alat disimpan.</p>`; return; }
-    el.innerHTML = `<div class="ph-head"><h4>Foto alat <small>${S.photos.length} foto${S.folder ? ` · <a href="${esc(S.folder)}" target="_blank" rel="noopener">buka folder Drive</a>` : ""}</small></h4>
-      <label class="btn ghost sm${S.phBusy ? " disabled" : ""}">${icon("camera", "ic xs")}Tambah foto<input type="file" id="hvPhFile" accept="image/*" multiple hidden></label></div>
-      ${S.phBusy ? `<p class="muted sm">${esc(S.phBusy)}</p>` : ""}${S.phErr ? `<p class="form-err">${esc(S.phErr)}</p>` : ""}
-      <div class="ph-grid">${S.photos.map(p => `<figure class="ph-item${p.id === S.cover ? " cover" : ""}"><a class="ph-img" href="${esc(p.view)}" target="_blank" rel="noopener"><img src="${esc(p.thumb)}" alt="${esc(p.name)}" loading="lazy"></a>
-        <figcaption>${p.id === S.cover ? `<span class="badge ok">Foto utama</span>` : ""}<div class="ph-act">${p.id === S.cover ? "" : `<button type="button" class="linkbtn" data-cover="${esc(p.id)}">Jadikan utama</button>`}
-        <button type="button" class="linkbtn danger" data-del="${esc(p.id)}">Hapus</button></div></figcaption></figure>`).join("")}</div>`;
-  }
-  $("#hvPhSec").addEventListener("change", async e => {
-    if (e.target.id !== "hvPhFile" || !e.target.files.length) return;
-    const files = [...e.target.files]; e.target.value = ""; S.batch = true; S.phErr = "";
-    for (let i = 0; i < files.length; i++) {
-      S.phBusy = `Mengunggah foto ${i + 1} dari ${files.length}…`; renderPhotos();
-      try { const p = await phPrepare(files[i]); const j = await post({ action: "hv_photo_upload", row: S.editing._row, expect: S.editing.nama, ...p }); upsert(j.row); }
-      catch (x) { S.phErr = String(x.message || x); break; }
-    }
-    S.batch = false; tokenClear(); S.phBusy = ""; await loadPhotos();
-  });
-  $("#hvPhSec").addEventListener("click", async e => {
-    const c = e.target.closest("[data-cover]"), d = e.target.closest("[data-del]");
-    if (!c && !d) return;
-    if (d && !confirm("Hapus foto ini? File dipindah ke sampah Google Drive.")) return;
-    S.phErr = ""; S.phBusy = c ? "Menyimpan foto utama…" : "Menghapus foto…"; renderPhotos();
-    try { const j = await post({ action: c ? "hv_photo_cover" : "hv_photo_delete", row: S.editing._row, expect: S.editing.nama, fileId: (c || d).dataset[c ? "cover" : "del"] }); upsert(j.row); }
-    catch (x) { S.phErr = String(x.message || x); }
-    S.phBusy = ""; await loadPhotos();
-  });
-  $("#hvEditDlg").addEventListener("close", () => { S.editing = null; });
+  $("#hvEditDlg").addEventListener("close", () => { S.editing = null; PS.reset(); });
 
   /* ---------- Event ---------- */
   $("#hvView").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; S.view = b.dataset.v; try { localStorage.setItem("fashar-hv-view", S.view); } catch (x) { } render(); });

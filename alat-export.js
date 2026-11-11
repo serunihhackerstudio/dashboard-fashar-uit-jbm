@@ -282,4 +282,4 @@ function alatDetailHtml(P) {
 }
 
 alatPage({ page: "dcm", data: window.DC_MOBILE, title: "DC Mobile", noun: "DC mobile", db: { kind: "dcm", sheet: "4. DC MOBILE (NEW)" } });
-alatPage({ page: "fm", data: window.FILTER_MINYAK, title: "Filter Minyak", noun: "filter minyak" });
+alatPage({ page: "fm", data: window.FILTER_MINYAK, title: "Filter Minyak", noun: "filter minyak", db: { kind: "fm", sheet: "8. FILTER MINYAK (NEW)" } });

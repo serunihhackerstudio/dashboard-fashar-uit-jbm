@@ -95,6 +95,7 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 ### Filter Minyak (Alat Berat & Alat Bantu)
 - Tampilan sama dengan DC Mobile (modul bersama `alat-export.js`, fungsi `alatPage()`), data dari `FILTER_MINYAK_UIT_JBM.xlsx`.
 - Memperbarui data: `python3 tools/xlsx_alat_to_js.py "FILTER_MINYAK_UIT_JBM.xlsx" data/filter-minyak.js FILTER_MINYAK` lalu commit.
+- **Database Google Sheets `8. FILTER MINYAK (NEW)`** (`EQ_CFG.fm`): sama seperti DC Mobile — salin 9 data awal, tambah/edit (ID baru `FM-xxx`), foto per unit di subfolder `FOTO FILTER MINYAK` (atau Script Property `FM_PHOTO_FOLDER_ID`).
 - Menu baru dengan format export aplikasi alat yang sama cukup: buat file data dengan perintah di atas, tambah `<section id="page-xx" class="page"></section>`, item menu, entri `PAGES` di `app.js`, dan satu baris `alatPage({...})` di akhir `alat-export.js`.
 
 ### Alat Berat (Google Sheets "3. ALAT BERAT (NEW)")

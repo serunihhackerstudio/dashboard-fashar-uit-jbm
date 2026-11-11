@@ -123,7 +123,7 @@ function alatDbInit(ctx) {
     if (!DB.live) return;
     const r = id ? ctx.byId(id) : null;
     DB.editing = r; DB.photos = []; DB.phErr = ""; buildForm(); err("");
-    const v = r || { upt: UPTS[0], kalibrasi: "BELUM KALIBRASI", kondisi: "NORMAL", jumlah: "1", satuan: "Set", bidang: "HARPRO", nama: C.title.toUpperCase() };
+    const v = r || { upt: UPTS[0], kalibrasi: "BELUM KALIBRASI", kondisi: "NORMAL", jumlah: "1", satuan: "Set", bidang: (STATIC[0] && STATIC[0].bidang) || "", nama: C.title.toUpperCase() };
     F.forEach(([k]) => { const x = $(`#${P}f_${k}`); if (x) x.value = v[k] == null ? "" : String(v[k]); });
     $(`#${P}f_id`).disabled = !!r;
     el("EditTitle").textContent = r ? `Edit ${r.nama || r.id}` : `Tambah ${C.noun}`;

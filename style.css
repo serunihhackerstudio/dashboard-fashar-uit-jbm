@@ -1044,3 +1044,16 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 .ph-item.ps-del{opacity:.5}
 .ph-item.ps-del .ph-img img{filter:grayscale(1)}
 .ph-item figcaption .badge{margin-right:4px}
+
+/* Shimmer umum saat memuat data (semua menu) */
+.sk-strip .sk{width:150px;height:110px;flex:0 0 150px;border-radius:10px}
+.sk-grid .sk{height:auto;aspect-ratio:4/3;border-radius:10px}
+.page-loading .kpi-value,.page-loading .kpi-sub,.page-loading .table tbody td,.page-loading .hv-body h3,.page-loading .hv-body>p,
+.page-loading .hv-info ul,.page-loading .bars .bl,.page-loading .bars b,.page-loading .plist li,.page-loading .hv-photo,.page-loading .lp-list li,.page-loading .ab-card{
+  color:transparent!important;border-radius:8px;
+  background:linear-gradient(90deg,var(--track) 25%,color-mix(in srgb,var(--track) 35%,var(--surface)) 50%,var(--track) 75%)!important;
+  background-size:200% 100%!important;animation:sk-shimmer 1.3s ease-in-out infinite}
+.page-loading .table tbody td *,.page-loading .hv-photo *,.page-loading .hv-info ul *,.page-loading .plist li *,.page-loading .lp-list li *,.page-loading .ab-card *{visibility:hidden}
+.page-loading .bars .bt i,.page-loading .ab-stk i,.page-loading .donut circle:not(.d-track){opacity:.25}
+.page-loading .table tbody td{border-radius:0;border-color:var(--surface)}
+@media (prefers-reduced-motion:reduce){.page-loading *{animation:none!important}}

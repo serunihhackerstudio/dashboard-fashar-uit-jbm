@@ -550,6 +550,7 @@ function tdbReset() {
 function tdbSetSync(state, text) {
   const el = $("#tdbSync");
   el.className = "chip sync " + state;
+  $("#page-trafodb").classList.toggle("page-loading", state === "loading");
   el.innerHTML = `<i class="live-dot"></i>${esc(text)}`;
 }
 

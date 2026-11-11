@@ -56,6 +56,7 @@
   /* ---------- Status sinkronisasi ---------- */
   function setSync(state, text, note) {
     $("#abSyncChip").className = "chip sync " + state;
+    $("#page-alat").classList.toggle("page-loading", state === "loading");
     $("#abSyncChip").innerHTML = `<i class="live-dot"></i>${esc(text)}`;
     $("#abSyncNote").textContent = note || "";
   }
@@ -236,7 +237,7 @@
   /* ---------- Detail: galeri foto & tombol edit ---------- */
   window.abOnDetail = a => {
     if (!DB.live) return;
-    $("#abDetailBody").insertAdjacentHTML("beforeend", `<section class="dsec ab-det-photos" id="abDetPh"><h4>Foto <small>memuat…</small></h4></section>
+    $("#abDetailBody").insertAdjacentHTML("beforeend", `<section class="dsec ab-det-photos" id="abDetPh"><h4>Foto</h4><div class="ab-det-strip sk-strip"><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></section>
       <div class="ab-det-actions"><button type="button" class="btn primary sm" id="abDetEdit">${icon("gear", "ic xs")}Edit data &amp; foto</button></div>`);
     $("#abDetEdit").addEventListener("click", () => openEdit(a.id));
     fetch(`${API}${API.includes("?") ? "&" : "?"}action=ab_photos&id=${encodeURIComponent(a.id)}`, { cache: "no-store" }).then(r => r.json()).then(j => {

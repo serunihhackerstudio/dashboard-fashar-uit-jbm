@@ -1,13 +1,14 @@
 /* =========================================================
    MENU HV TEST — alat uji tegangan tinggi
-   Data live: sheet "7. ALAT HV TEST" (Apps Script ?action=hv), cadangan: data/hv-test.js
+   Data live: sheet "7. ALAT HV TEST (NEW)" (Apps Script ?action=hv), cadangan: data/hv-test.js
+   Sheet baru diisi sekali dari sheet lama "7. ALAT HV TEST" (tombol Salin data awal).
    Tambah / edit / foto dengan kode akses (wajib setiap perubahan).
    ========================================================= */
 (function () {
   const sec = $("#page-hv");
   if (!sec) return;
   const API = typeof TDB_API === "string" ? TDB_API : "";
-  const SHEET = "7. ALAT HV TEST";
+  const SHEET = "7. ALAT HV TEST (NEW)", SRC_SHEET = "7. ALAT HV TEST";
   const DOC = window.HV_TEST || { rows: [] };
   const K = { NORMAL: { label: "Normal", tone: "ok", color: "var(--ok)" }, ANOMALI: { label: "Anomali", tone: "warn", color: "var(--p2)" },
     RUSAK: { label: "Rusak", tone: "bad", color: "var(--p1)" }, "": { label: "Belum diisi", tone: "muted", color: "var(--text-3)" } };
@@ -27,6 +28,7 @@
     <div class="tdb-actions"><button class="btn ghost" type="button" id="hvReload" hidden>${svg('<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/>')}Muat ulang</button>
      <button class="btn primary" type="button" id="hvAddBtn" hidden>${svg('<path d="M12 5v14M5 12h14"/>')}Tambah alat HV test</button></div>
    </div>
+   <div class="callout warn ab-seed" id="hvSeed" hidden></div>
    <div class="ab-kpis" id="hvKpi"></div>
    <div class="grid g2 ab-charts">
     <div class="card"><div class="card-head"><div><h3>Kondisi alat</h3><p>Komposisi kondisi alat HV test</p></div></div><div class="card-body ab-donut-wrap" id="hvChK"></div></div>
@@ -110,7 +112,7 @@
       <td class="act"><button type="button" class="btn ghost sm" data-row="${r._row}">Detail</button>${S.live ? ` <button type="button" class="btn ghost sm" data-edit="${r._row}">Edit</button>` : ""}</td></tr>`).join("");
     $("#hvEmpty").hidden = L.length > 0;
     $("#hvCount").textContent = `${L.length} dari ${all.length} alat`;
-    $("#hvSrc").textContent = S.live ? `Sumber: Google Sheets · ${SHEET}` : `Sumber: ${DOC.source || SHEET} (data cadangan)`;
+    $("#hvSrc").textContent = S.live ? `Sumber: Google Sheets · ${SHEET}` : `Sumber: ${DOC.source || SRC_SHEET} (data cadangan)`;
   }
   const byRow = row => S.rows.find(r => String(r._row) === String(row));
 
@@ -147,7 +149,13 @@
     try {
       const j = await (await fetch(`${API}${API.includes("?") ? "&" : "?"}action=hv`, { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat");
-      if (j.sheet !== SHEET || !Array.isArray(j.rows)) throw new Error("Apps Script masih versi lama (belum ada fitur HV Test). Tempel Code.gs terbaru lalu deploy New version.");
+      if (j.sheet !== SHEET || !Array.isArray(j.rows)) throw new Error("Apps Script masih versi lama (belum ada sheet " + SHEET + "). Tempel Code.gs terbaru lalu deploy New version.");
+      if (!j.rows.length) {
+        S.live = false; $("#hvAddBtn").hidden = true;
+        setSync("error", "Sheet belum berisi data", `Sheet "${SHEET}" ${j.exists === false ? "belum dibuat" : "masih kosong"} — menampilkan data cadangan.`);
+        showSeed(); render(); return;
+      }
+      $("#hvSeed").hidden = true;
       S.rows = j.rows; S.live = true; S.updated = j.updated; $("#hvAddBtn").hidden = false;
       setSync("live", "Live · Google Sheets", `Sheet ${SHEET} · ${j.rows.length} alat · dimuat ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`);
       render(); changed();
@@ -164,15 +172,28 @@
   window.HV_SUMMARY = () => ({ total: S.rows.length, normal: S.rows.filter(r => kOf(r) === "NORMAL").length, anomali: S.rows.filter(r => kOf(r) === "ANOMALI").length, rusak: S.rows.filter(r => kOf(r) === "RUSAK").length, live: S.live });
 
   /* ---------- Simpan (kode akses wajib setiap perubahan) ---------- */
-  async function post(body) {
-    const token = ($("#hv_token").value || "").trim();
-    if (!token) { $("#hv_token").focus(); throw new Error("Masukkan kode akses edit (kolom di bagian bawah form) — wajib setiap kali menyimpan perubahan."); }
+  async function post(body, tokInput) {
+    const inp = tokInput || $("#hv_token"), token = (inp.value || "").trim();
+    if (!token) { inp.focus(); throw new Error("Masukkan kode akses edit (kolom di bagian bawah form) — wajib setiap kali menyimpan perubahan."); }
     const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token, ...body }) })).json();
     if (!j.ok) throw new Error(/Aksi tidak dikenal/i.test(j.error || "") ? "Apps Script masih versi lama. Tempel Code.gs terbaru lalu deploy New version." : (j.error || "Gagal menyimpan"));
     if (!S.batch) tokenClear();
     if (j.updated) S.updated = j.updated;
     return j;
   }
+  /* ---------- Salin data awal dari sheet lama ---------- */
+  function showSeed() {
+    $("#hvSeed").hidden = false;
+    $("#hvSeed").innerHTML = `<div><b>Sheet "${esc(SHEET)}" ${S.rows.length ? "masih kosong" : "belum berisi data"}.</b> Salin data alat dari sheet lama <b>"${esc(SRC_SHEET)}"</b> (sheet lama tidak diubah) agar bisa diedit dari dashboard.</div>
+      <div class="ab-seed-act"><input type="password" id="hvSeedTok" placeholder="Kode akses edit" autocomplete="new-password"><button class="btn primary sm" type="button" id="hvSeedBtn">Salin data ke sheet baru</button></div>`;
+  }
+  $("#hvSeed").addEventListener("click", async e => {
+    if (!e.target.closest("#hvSeedBtn")) return;
+    const b = $("#hvSeedBtn"); b.disabled = true; b.textContent = "Menyalin…";
+    try { const j = await post({ action: "hv_seed" }, $("#hvSeedTok")); toast(`${j.rows.length} data alat disalin ke sheet ${SHEET}`); await load(); }
+    catch (x) { toast(String(x.message || x)); b.disabled = false; b.textContent = "Salin data ke sheet baru"; }
+  });
+
   const F = ["nama", "merk", "tipe", "kondisi", "tahun", "lokasi", "keterangan", "ik", "ikUrl"];
   function err(m) { $("#hvEditErr").textContent = m || ""; $("#hvEditErr").hidden = !m; }
   function openEdit(row) {

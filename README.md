@@ -13,7 +13,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 7. DC Mobile *(Peralatan ERS — data unit DC mobile dari `DATA_DC_MOBILE_UIT_JBM.xlsx`: ringkasan, peta per ULTG, grafik, tabel & detail)*
 8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM; data dummy, menunggu sinkronisasi data dari aplikasi WARNOTO)*
 9. Filter Minyak *(Alat Berat & Alat Bantu — data unit filter minyak trafo dari `FILTER_MINYAK_UIT_JBM.xlsx`)*
-10. HV Test *(Alat Berat & Alat Bantu — alat uji tegangan tinggi, live dari sheet `7. ALAT HV TEST`: kartu per alat, grafik kondisi & umur, tabel, detail, tambah/edit & foto)*
+10. HV Test *(Alat Berat & Alat Bantu — alat uji tegangan tinggi, live dari sheet `7. ALAT HV TEST (NEW)`: kartu per alat, grafik kondisi & umur, tabel, detail, tambah/edit & foto)*
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
@@ -94,7 +94,7 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - **Database Google Sheets `4. DC MOBILE (NEW)`** (Apps Script bagian PERALATAN LAIN, `EQ_CFG.dcm`): sheet dibuat otomatis; tombol **Salin 7 data ke sheet** saat sheet kosong; **Tambah DC mobile** / **Edit** (tabel & pop-up detail) menyimpan ke sheet (ID baru `DCM-xxx`); foto per unit diunggah ke subfolder Drive (default folder `FOTO DC MOBILE` di dalam folder foto alat berat, bisa diganti lewat Script Property `DCM_PHOTO_FOLDER_ID`). Modul dashboard: `alat-export-db.js` (aktif bila `alatPage({ db: { kind, sheet } })`).
 
 ### HV Test (Alat Berat & Alat Bantu)
-- Terhubung ke sheet **yang sudah ada** `7. ALAT HV TEST` (Apps Script bagian ALAT HV TEST). Kolom dibaca dari judul baris 1 (NO, NAMA ALAT, MEREK, TIPE, KONDISI, TAHUN, LOKASI, KETERANGAN, INSTRUKSI KERJA); kolom **LINK FOTO, ID FOTO UTAMA, DIPERBARUI** ditambahkan otomatis di kanan saat perubahan pertama. Baris diidentifikasi dengan nomor baris + nama alat (cegah salah tulis bila sheet berubah).
+- Terhubung ke sheet baru **`7. ALAT HV TEST (NEW)`** (Apps Script bagian ALAT HV TEST), dibuat otomatis (NO, NAMA ALAT, MEREK, TIPE, KONDISI + dropdown, TAHUN, LOKASI, KETERANGAN, INSTRUKSI KERJA, LINK FOTO, ID FOTO UTAMA, DIPERBARUI). Saat sheet baru kosong, tombol **Salin data ke sheet baru** menyalin isi sheet lama `7. ALAT HV TEST` (termasuk hyperlink instruksi kerja); sheet lama tidak diubah. Baris diidentifikasi dengan nomor baris + nama alat (cegah salah tulis bila sheet berubah).
 - Tambah/edit (kondisi NORMAL/ANOMALI/RUSAK, lokasi & keterangan multi-baris, nama file + link instruksi kerja ditulis sebagai hyperlink), foto per alat di subfolder `FOTO HV TEST` (atau Script Property `HV_PHOTO_FOLDER_ID`).
 - Data cadangan: `python3 tools/xlsx_hv_test_to_js.py "HV_TEST.xlsx"` → `data/hv-test.js`.
 

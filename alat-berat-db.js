@@ -229,8 +229,8 @@
     try {
       const j = await (await fetch(`${API}${API.includes("?") ? "&" : "?"}action=ab_photos&id=${encodeURIComponent(a.id)}`, { cache: "no-store" })).json();
       if (!j.ok) throw new Error(j.error || "Gagal memuat foto");
-      if (DB.editing === a) PS.reset({ photos: j.photos, cover: j.cover, folder: j.folder });
-    } catch (e) { if (DB.editing === a) PS.reset({ err: String(e.message || e) }); }
+      if (DB.editing === a) PS.setExisting({ photos: j.photos, cover: j.cover, folder: j.folder });
+    } catch (e) { if (DB.editing === a) PS.setExisting({ err: String(e.message || e) }); }
   }
 
   /* ---------- Detail: galeri foto & tombol edit ---------- */

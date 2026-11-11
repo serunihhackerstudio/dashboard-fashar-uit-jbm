@@ -203,7 +203,8 @@ function syncUpdated_(rows, moves) {
     // perubahan sudah tercatat (dashboard/onEdit) → cukup simpan hash baru; selain itu catat waktu sinkronisasi ini
     if (!updated) updated = fileUpdated_() || new Date().toISOString(); // pertama kali: pakai waktu ubah file spreadsheet
     else if (p.TRAFO_HASH && p.TRAFO_HASH_STALE !== '1') updated = new Date().toISOString();
-    props.setProperties({ TRAFO_HASH: hash, TRAFO_UPDATED: updated, TRAFO_HASH_STALE: '' });
+    props.setProperties({ TRAFO_HASH: hash, TRAFO_UPDATED: updated });
+    props.deleteProperty('TRAFO_HASH_STALE'); // dihapus (bukan dikosongkan) agar halaman Script Properties tetap bisa disimpan
   }
   return updated;
 }

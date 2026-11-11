@@ -1033,3 +1033,6 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 @media (max-width:620px){.hv-age-bars li{grid-template-columns:120px minmax(0,1fr) 44px}.hv-grid{grid-template-columns:1fr}}
 .fld.wide2{grid-column:span 2}
 @media (max-width:860px){.fld.wide2{grid-column:1/-1}}
+.hv-view button{display:inline-flex;align-items:center;gap:6px}
+.hv-view svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hv-grid[hidden],.hv-table-card[hidden]{display:none}

@@ -12,7 +12,8 @@
   const K = { NORMAL: { label: "Normal", tone: "ok", color: "var(--ok)" }, ANOMALI: { label: "Anomali", tone: "warn", color: "var(--p2)" },
     RUSAK: { label: "Rusak", tone: "bad", color: "var(--p1)" }, "": { label: "Belum diisi", tone: "muted", color: "var(--text-3)" } };
   const kOf = r => K[String(r.kondisi || "").toUpperCase()] ? String(r.kondisi || "").toUpperCase() : "";
-  const S = { rows: DOC.rows.slice(), q: "", k: "", live: false, updated: null, editing: null, photos: [], cover: null, folder: null, phBusy: "", phErr: "", batch: false };
+  const S = { rows: DOC.rows.slice(), q: "", k: "", live: false, updated: null, editing: null, photos: [], cover: null, folder: null, phBusy: "", phErr: "", batch: false, view: "grid" };
+  try { const v = localStorage.getItem("fashar-hv-view"); if (v === "grid" || v === "list") S.view = v; } catch (e) { }
   const yearOf = r => { const m = String(r.tahun || "").match(/(19|20)\d{2}/); return m ? +m[0] : null; };
   const umur = r => { const y = yearOf(r); return y ? new Date().getFullYear() - y : null; };
   const lines = t => String(t || "").split("\n").map(x => x.replace(/^[-•]\s*/, "").trim()).filter(Boolean);
@@ -29,18 +30,21 @@
    <div class="ab-kpis" id="hvKpi"></div>
    <div class="ab-filters hv-filters">
     <div class="ab-chips" id="hvK" role="group" aria-label="Filter kondisi"></div>
-    <div class="ab-filter-right"><div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="hvSearch" type="search" placeholder="Cari nama, merek, tipe, lokasi…" aria-label="Cari alat HV test"></div></div>
+    <div class="ab-filter-right"><div class="seg hv-view" id="hvView" role="group" aria-label="Tampilan">
+      <button type="button" data-v="grid">${svg('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>')}Grid</button>
+      <button type="button" data-v="list">${svg('<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>')}List</button></div><div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="hvSearch" type="search" placeholder="Cari nama, merek, tipe, lokasi…" aria-label="Cari alat HV test"></div></div>
    </div>
    <div class="hv-grid" id="hvGrid"></div>
-   <div class="grid g2 ab-charts">
-    <div class="card"><div class="card-head"><div><h3>Kondisi alat</h3><p>Komposisi kondisi alat HV test</p></div></div><div class="card-body ab-donut-wrap" id="hvChK"></div></div>
-    <div class="card"><div class="card-head"><div><h3>Umur alat</h3><p>Berdasarkan tahun pembuatan / perolehan</p></div></div><div class="card-body" id="hvChU"></div></div>
-   </div>
    <div class="card hv-table-card">
     <div class="table-wrap ab-table hv-table"><table class="table"><thead><tr><th class="num">No</th><th>Nama alat</th><th>Merek / Tipe</th><th>Kondisi</th><th class="num">Tahun</th><th>Lokasi</th><th>Instruksi kerja</th><th></th></tr></thead>
      <tbody id="hvRows"></tbody></table><div class="empty" id="hvEmpty" hidden>Tidak ada alat yang cocok dengan filter.</div></div>
     <div class="card-foot tdb-foot"><span class="muted" id="hvCount"></span><span class="muted sm" id="hvSrc"></span></div>
-   </div>`;
+   </div>
+   <div class="grid g2 ab-charts">
+    <div class="card"><div class="card-head"><div><h3>Kondisi alat</h3><p>Komposisi kondisi alat HV test</p></div></div><div class="card-body ab-donut-wrap" id="hvChK"></div></div>
+    <div class="card"><div class="card-head"><div><h3>Umur alat</h3><p>Berdasarkan tahun pembuatan / perolehan</p></div></div><div class="card-body" id="hvChU"></div></div>
+   </div>
+`;
   document.body.insertAdjacentHTML("beforeend", `
   <dialog class="modal modal-lg" id="hvDetail" aria-labelledby="hvDetTitle"><div class="modal-wrap">
    <header class="modal-head"><div><h3 id="hvDetTitle"></h3><p id="hvDetSub"></p></div><button class="icon-btn" type="button" onclick="this.closest('dialog').close()" aria-label="Tutup">${svg('<path d="M6 6l12 12M18 6 6 18"/>')}</button></header>
@@ -79,6 +83,8 @@
       .map(([l, v, ic, t, sub]) => `<div class="card kpi tone-${t}"><div class="kpi-icon">${icon(ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${esc(sub)}</div></div></div>`).join("");
     $("#hvK").innerHTML = [["", "Semua"], ["NORMAL", "Normal"], ["ANOMALI", "Anomali"], ["RUSAK", "Rusak"]].map(([k, l]) =>
       `<button type="button" class="ab-chip${S.k === k ? " on" : ""}" data-k="${k}" aria-pressed="${S.k === k}"><span>${l}</span><em>${k ? cnt(k) : all.length}</em></button>`).join("");
+    $("#hvGrid").hidden = S.view !== "grid"; $(".hv-table-card").hidden = S.view !== "list";
+    document.querySelectorAll("#hvView button").forEach(b => { const on = b.dataset.v === S.view; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
     $("#hvGrid").innerHTML = L.length ? L.map(r => `<article class="card hv-card tone-${K[kOf(r)].tone}" data-row="${r._row}" tabindex="0" role="button" aria-label="Detail ${esc(r.nama)}">
         <div class="hv-photo">${r.fotoUrl ? `<img src="${esc(r.fotoUrl)}" alt="${esc(r.nama)}" loading="lazy">` : `<div class="hv-ph">${svg(BOLT)}<small>Foto belum tersedia</small></div>`}${chip(r)}</div>
         <div class="hv-body"><h3>${esc(r.nama)}</h3><p class="muted sm">${esc([r.merk, r.tipe].filter(Boolean).join(" · ") || "Merek/tipe belum diisi")}${r.tahun ? ` · ${esc(r.tahun)}` : ""}${umur(r) != null ? ` <span class="hv-age">${umur(r)} th</span>` : ""}</p>
@@ -252,6 +258,7 @@
   $("#hvEditDlg").addEventListener("close", () => { S.editing = null; });
 
   /* ---------- Event ---------- */
+  $("#hvView").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; S.view = b.dataset.v; try { localStorage.setItem("fashar-hv-view", S.view); } catch (x) { } render(); });
   $("#hvK").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { S.k = b.dataset.k; render(); } });
   $("#hvSearch").addEventListener("input", e => { S.q = e.target.value; render(); });
   const onClick = e => {

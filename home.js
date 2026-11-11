@@ -25,6 +25,7 @@
     const cui = window.CUI_SUMMARY ? window.CUI_SUMMARY() : null;
     const dcm = (window.DC_MOBILE && window.DC_MOBILE.rows) || [], fm = (window.FILTER_MINYAK && window.FILTER_MINYAK.rows) || [];
     const kal = (rows, re) => rows.filter(r => re.test(String(r.kalibrasi || ""))).length;
+    const hv = window.HV_SUMMARY ? window.HV_SUMMARY() : null;
     const ab = ((window.ALAT_BERAT || window.ALAT_BERAT_DUMMY) || {}).alat || [];
     const tw = (D.towerKpi || []).map(x => x[1]);
     return [
@@ -44,7 +45,9 @@
       { id: "alat", g: "alat", ic: '<path d="M4 21h9M7 21V4l12 3.5M7 4 4 8M19 7.5V14"/><path d="M17 14h4v3h-4z"/>', t: "Alat Berat", d: "Database kesiapan crane, forklift, manlift & alat pendukung lengkap dengan peta lokasi.", pending: window.ALAT_BERAT ? "" : "Menunggu sinkronisasi WARNOTO", src: window.ALAT_BERAT ? "Data WARNOTO" : "",
         s: [["Alat", ab.length], ["Lokasi", new Set(ab.map(a => a.lokasi)).size]] },
       { id: "fm", g: "alat", ic: '<path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11Z"/><path d="M9 14h6M10 17h4"/>', t: "Filter Minyak", d: "Unit filter minyak trafo per UPT/ULTG dan status kalibrasinya.",
-        s: [["Unit", fm.length], ["Kalibrasi aktif", kal(fm, /AKTIF|BERLAKU/i)], ["Kedaluwarsa", kal(fm, /EXPIRED/i)]] }
+        s: [["Unit", fm.length], ["Kalibrasi aktif", kal(fm, /AKTIF|BERLAKU/i)], ["Kedaluwarsa", kal(fm, /EXPIRED/i)]] },
+      { id: "hv", g: "alat", ic: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>', t: "HV Test", d: "Alat uji tegangan tinggi: kondisi, lokasi, keterangan & instruksi kerja, terhubung ke sheet 7. ALAT HV TEST.",
+        live: hv && hv.live, s: hv ? [["Alat", hv.total], ["Normal", hv.normal], ["Anomali / rusak", hv.anomali + hv.rusak]] : [] }
     ];
   }
 

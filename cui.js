@@ -322,9 +322,9 @@
   /* ---------- Shimmer saat memuat data dari Google Drive ---------- */
   function skeleton() {
     const on = S.remote === "loading" && !S.rows.length;
-    $("#page-cui").classList.toggle("cui-loading", on);
+    $("#page-cui").classList.toggle("page-loading", on); // efek loading (spinner), bukan shimmer
     $("#page-cui").setAttribute("aria-busy", on ? "true" : "false");
-    if (!on) return;
+    return;
     const sk = (w, h) => `<span class="sk" style="width:${w}${h ? `;height:${h}px` : ""}"></span>`;
     $("#cuiUptChart").innerHTML = `<ul class="bars cui-upt sk-bars">${[92, 78, 64, 50, 38, 26].map(w => `<li><span class="bl">${sk("70%")}</span><span class="bt">${sk(w + "%", 10)}</span><b>${sk("28px")}</b></li>`).join("")}</ul>`;
     $("#cuiWeekChart").innerHTML = `<div class="cui-cols sk-cols">${[30, 45, 60, 40, 70, 55, 80, 65, 50, 90, 45, 35].map(h => `<div class="cui-col"><i class="sk" style="height:${h}%"></i></div>`).join("")}</div>`;

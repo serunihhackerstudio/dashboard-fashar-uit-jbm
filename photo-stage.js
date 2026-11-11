@@ -20,7 +20,7 @@ function photoStager(sec, opts) {
     const changes = hasChanges();
     sec.innerHTML = `<div class="ph-head"><h4>Foto <small>${n} foto${S.folder ? ` · <a href="${esc(S.folder)}" target="_blank" rel="noopener">buka folder Drive</a>` : ""}</small></h4>
       <label class="btn ghost sm${S.busy ? " disabled" : ""}">${icon("camera", "ic xs")}Tambah foto<input type="file" id="${inputId}" accept="image/*" multiple hidden ${S.busy ? "disabled" : ""}></label></div>
-      ${S.loading ? `<div class="ph-grid sk-grid"><span class="sk"></span><span class="sk"></span><span class="sk"></span></div>` : ""}${S.busy ? `<p class="ph-status"><i class="spin"></i>${esc(S.busy)}</p>` : ""}${S.err ? `<p class="form-err">${esc(S.err)}</p>` : ""}
+      ${S.loading ? `<div class="ld-inline"><i class="ld-spin"></i>Memuat foto…</div>` : ""}${S.busy ? `<p class="ph-status"><i class="spin"></i>${esc(S.busy)}</p>` : ""}${S.err ? `<p class="form-err">${esc(S.err)}</p>` : ""}
       ${changes ? `<p class="ps-note">${icon("alert", "ic xs")}Perubahan foto belum disimpan — akan diunggah ke Google Drive saat Anda menekan <b>Simpan</b>.</p>` : ""}
       <div class="ph-grid">${S.existing.map(p => { const gone = S.del.has(p.id); return `<figure class="ph-item${isCover(p.id) && !gone ? " cover" : ""}${gone ? " ps-del" : ""}">
           <a class="ph-img" href="${esc(p.view)}" target="_blank" rel="noopener"><img src="${esc(p.thumb)}" alt="${esc(p.caption || p.name)}" loading="lazy"></a>

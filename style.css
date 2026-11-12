@@ -20,23 +20,23 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --sev-p3:#E8C547; --sev-p2:#F59A4A; --sev-kritis:#B91C1C;
-    --bg:#0A111E; --surface:#111A2B; --surface-2:#162136; --border:#1F2B41; --border-2:#2A3852;
-    --text:#E7EDF6; --text-2:#A2B0C4; --text-3:#6D7C93;
-    --primary:#5B9DFF; --primary-soft:rgba(91,157,255,.14); --primary-ink:#8DBBFF;
+    --bg:#1A2232; --surface:#232D40; --surface-2:#2A3549; --border:#35425A; --border-2:#435270;
+    --text:#EEF2F8; --text-2:#B6C2D4; --text-3:#8D9BB1;
+    --primary:#5B9DFF; --primary-soft:rgba(91,157,255,.18); --primary-ink:#8DBBFF;
     --gi:#FF9A45; --jar:#2CC6D3; --p1:#F2676B; --p2:#F6B93B; --p3:#62A0FF; --ok:#34C46E; --violet:#A78BFA;
-    --track:#1E2A40; --sidebar:#0C1424; --sidebar-2:#121D33;
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2); --shadow-lg:0 12px 32px rgba(0,0,0,.45);
+    --track:#34405A; --sidebar:#151D2C; --sidebar-2:#1E2A3F;
+    --shadow:0 1px 2px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.14); --shadow-lg:0 12px 32px rgba(0,0,0,.35);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --sev-p3:#E8C547; --sev-p2:#F59A4A; --sev-kritis:#B91C1C;
-  --bg:#0A111E; --surface:#111A2B; --surface-2:#162136; --border:#1F2B41; --border-2:#2A3852;
-  --text:#E7EDF6; --text-2:#A2B0C4; --text-3:#6D7C93;
-  --primary:#5B9DFF; --primary-soft:rgba(91,157,255,.14); --primary-ink:#8DBBFF;
+  --bg:#1A2232; --surface:#232D40; --surface-2:#2A3549; --border:#35425A; --border-2:#435270;
+  --text:#EEF2F8; --text-2:#B6C2D4; --text-3:#8D9BB1;
+  --primary:#5B9DFF; --primary-soft:rgba(91,157,255,.18); --primary-ink:#8DBBFF;
   --gi:#FF9A45; --jar:#2CC6D3; --p1:#F2676B; --p2:#F6B93B; --p3:#62A0FF; --ok:#34C46E; --violet:#A78BFA;
-  --track:#1E2A40; --sidebar:#0C1424; --sidebar-2:#121D33;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2); --shadow-lg:0 12px 32px rgba(0,0,0,.45);
+  --track:#34405A; --sidebar:#151D2C; --sidebar-2:#1E2A3F;
+  --shadow:0 1px 2px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.14); --shadow-lg:0 12px 32px rgba(0,0,0,.35);
   color-scheme:dark;
 }
 
@@ -424,8 +424,8 @@ details.tdb-field[open] summary::before{content:"▾ ";}
 /* tutup celah garis putih antar-ubin peta (sering muncul saat skala layar 125%/150% atau zoom browser) */
 .leaflet-container img.leaflet-tile{mix-blend-mode:normal!important;width:257px!important;height:257px!important} /* ubin sedikit ditumpuk 1px */
 .leaflet-container{background:#f2efe9}
-:root[data-theme="dark"] .leaflet-container{background:#1b2230}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .leaflet-container{background:#1b2230}}
+:root[data-theme="dark"] .leaflet-container{background:#2A3549}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .leaflet-container{background:#2A3549}}
 .tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.6)}
 .tm-pin{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;font-size:12.5px;font-weight:800;
   border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3),0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent);transition:transform .15s;cursor:pointer}

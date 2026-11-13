@@ -98,7 +98,7 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 ### AO (section RKAU)
 - Membaca **live** sheet `MONITORING AO` di spreadsheet RKAU (`1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0`) langsung dari browser lewat Google Visualization API (tanpa Apps Script). Syarat: spreadsheet dibagikan **Anyone with the link – Viewer**. Hanya baca; data diubah di spreadsheet.
 - Kolom: NO, PROKER RKAU, JUDUL PROGRAM KERJA, NILAI RAB, NILAI KONTRAK, STATUS PROKER (`<tahap>. <nama>`), progres (%), LINK/NO KONTRAK.
-- Visualisasi: KPI (jumlah program, total RAB, total kontrak, sudah terbayar, efisiensi RAB→kontrak, rata-rata progres), tahapan 1–6 (klik untuk filter), serapan anggaran + donut tahapan, nilai per proker RKAU (klik untuk filter), tabel (urut, cari, progres) & pop-up detail.
+- Visualisasi: KPI (jumlah program, total RAB, total kontrak, sudah terbayar, efisiensi RAB→kontrak, rata-rata progres), tahapan 1–6 (klik untuk filter), tabel (urut, cari, progres) & pop-up detail.
 - **Progres penyerapan pagu** dari sheet `PROGRES PAGU` (NO, PROGRAM, PAGU, REALISASI, kolom rincian per pekerjaan sampai sebelum kolom SISA): total pagu / realisasi / sisa / % terserap, daftar per proker RKAU (klik → rincian realisasi per pekerjaan). Total dihitung dari baris program (bukan baris total sheet).
 - Data cadangan: `python3 tools/sheet_ao_to_js.py` → `data/ao.js`.
 

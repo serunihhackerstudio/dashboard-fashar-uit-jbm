@@ -2,6 +2,7 @@
 window.AO_DATA = {
  "sheetId": "1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0",
  "sheet": "MONITORING AO",
+ "paguSheet": "PROGRES PAGU",
  "generated": "2026-11-13",
  "rows": [
   {
@@ -203,6 +204,185 @@ window.AO_DATA = {
    "status": "3. Proses Kontrak Laksda",
    "progres": 0.5,
    "noKontrak": null
+  }
+ ],
+ "pagu": [
+  {
+   "no": 1.0,
+   "program": "Peralatan Kerja PDKB \n(Pemeliharaan Alat Berat & PDKB)",
+   "pagu": 303077640.0,
+   "realisasi": 264047812.0,
+   "rincian": [
+    {
+     "pekerjaan": "Pengadaan Peralatan Kerja PDKB Jaringan 150 kV 006.SPKPB PENGADAAN PERALATAN KERJA PDKB JARINGAN 150 KV.pdf",
+     "nilai": 56156227.0
+    },
+    {
+     "pekerjaan": "Perbaikan Alat Berat Headtruck dan Crane FKPL 029, Perbaikan Alat Berat Headtruck & Crane.pdfs",
+     "nilai": 98374295.0
+    },
+    {
+     "pekerjaan": "Perbaikan Alat Berat Headtruck Scania & Mobil Uji 001.SPJL PERBAIKAN ALAT BERAT HEADTRUCK SCANIA DAN MOBIL UJI.pdf",
+     "nilai": 99516368.0
+    },
+    {
+     "pekerjaan": "CCTV PDKB Portable",
+     "nilai": 10000922.0
+    }
+   ]
+  },
+  {
+   "no": 2.0,
+   "program": "Biaya Jasa Kalirasi Alat Uji Antara Lain Tan Delta, Tahanan Isolasi, Thermovisi dll",
+   "pagu": 207144600.0,
+   "realisasi": 67270421.0,
+   "rincian": [
+    {
+     "pekerjaan": "Kalibrasi alat uji 18371_KEU.01.01_F27000000_2026.pdf",
+     "nilai": 67270421.0
+    }
+   ]
+  },
+  {
+   "no": 3.0,
+   "program": "Biaya Jasa Pengujian Alat Isolasi PDKB Antara Lain Insulating Scafold dll",
+   "pagu": 272040000.0,
+   "realisasi": 0.0,
+   "rincian": []
+  },
+  {
+   "no": 4.0,
+   "program": "Mobilisasi Alat Berat, Trafo Mobile Untuk Kondisi Darurat",
+   "pagu": 517115133.0,
+   "realisasi": 484037078.0,
+   "rincian": [
+    {
+     "pekerjaan": "CCTV PDKB Portable",
+     "nilai": 185853028.0
+    },
+    {
+     "pekerjaan": "Post Insulator Tower Emergency TERKONTRAK",
+     "nilai": 99184050.0
+    },
+    {
+     "pekerjaan": "Rescue Kit",
+     "nilai": 199000000.0
+    }
+   ]
+  },
+  {
+   "no": 5.0,
+   "program": "Perbaikan Alat Uji Rusak (Breaker Analyzer, Tangen Delta, Tahanan kontak, RDC Winding, Alat Uji Rele, Rasio Trafo dan lain sebagainya)",
+   "pagu": 781767062.01,
+   "realisasi": 763585650.0,
+   "rincian": [
+    {
+     "pekerjaan": "Perbaikan Alat Uji Tangen Delta Transformator SPKPJ N0 008 PERBAIKAN ALAT UJI TANGEN DELTA TRANFORMATOR.pdf",
+     "nilai": 197152650.0
+    },
+    {
+     "pekerjaan": "Perbaikan alat thermovisi untuk pemeliharaan Gardu Induk SPKPJ NO 012 PERBAIKAN ALAT THERMOVISI GARDU INDUK.pdf",
+     "nilai": 198468000.0
+    },
+    {
+     "pekerjaan": "Perbaikan alat thermovisi untuk pemeliharaan jaringan (Merk Flir) 016.SPKPJ PERBAIKAN ALAT THERMOVISI PEMELIHARAAN JARINGAN.pdf",
+     "nilai": 199800000.0
+    },
+    {
+     "pekerjaan": "Perbaikan alat uji rele 3 phasa 020.SPKPJ PERBAIKAN ALAT UJI PEMELIHARAAN PROTEKSI-.pdf",
+     "nilai": 139860000.0
+    },
+    {
+     "pekerjaan": "Perbaikan kabel HV Tangen Delta",
+     "nilai": 28305000.0
+    }
+   ]
+  },
+  {
+   "no": 6.0,
+   "program": "Pengembangan dan Maintenance Aplikasi Monitoring Alat Uji",
+   "pagu": 48353764.5,
+   "realisasi": 48353726.0,
+   "rincian": [
+    {
+     "pekerjaan": "Pengembangan Aplikasi SIMANJI FKPL NO 014 (VENDOR) PENGEMBANGAN DAN MAINTENANCE APLIKASI MONITORING ALAT UJI.pdf",
+     "nilai": 48353726.0
+    }
+   ]
+  },
+  {
+   "no": 7.0,
+   "program": "Resetting Tower Emergency",
+   "pagu": 90000000.0,
+   "realisasi": 90000000.0,
+   "rincian": [
+    {
+     "pekerjaan": "Resetting Tower Emergency Dokumen FKPL  Resetting Tower Emergency.pdf",
+     "nilai": 90000000.0
+    }
+   ]
+  },
+  {
+   "no": 8.0,
+   "program": "Pengadaan Material Aksesoris Tower Emergency",
+   "pagu": 199485271.0,
+   "realisasi": 199485271.0,
+   "rincian": [
+    {
+     "pekerjaan": "Aksesoris TE SPKPB  NO 005 MATERIAL AKSESORIS TOWER EMERGENCY.pdf",
+     "nilai": 199485271.0
+    }
+   ]
+  },
+  {
+   "no": 9.0,
+   "program": "Mobilisasi Tower Emergency",
+   "pagu": 0.0,
+   "realisasi": 0.0,
+   "rincian": []
+  },
+  {
+   "no": 10.0,
+   "program": "Pengadaan Peralatan Kerja PDKB Jaringan 150 kV",
+   "pagu": 220233773.0,
+   "realisasi": 220233773.0,
+   "rincian": [
+    {
+     "pekerjaan": "Pengadaan Peralatan Kerja PDKB Jaringan 150 kV 006.SPKPB PENGADAAN PERALATAN KERJA PDKB JARINGAN 150 KV.pdf",
+     "nilai": 220233773.0
+    }
+   ]
+  },
+  {
+   "no": 11.0,
+   "program": "Perbaikan Alat Corona Camera",
+   "pagu": 198000000.0,
+   "realisasi": 197580000.0,
+   "rincian": [
+    {
+     "pekerjaan": "Perbaikan Alat Corona Camera 019.SPKPJ PERBAIKAN ALAT CORONA CAMERA.pdf",
+     "nilai": 197580000.0
+    }
+   ]
+  },
+  {
+   "no": 12.0,
+   "program": "Pengadaan CCTV Portabel untuk Peningkatan Sistem Pengawasan PDKB",
+   "pagu": null,
+   "realisasi": null,
+   "rincian": []
+  },
+  {
+   "no": 13.0,
+   "program": "Bedah Teknik PDKB",
+   "pagu": 75000000.0,
+   "realisasi": 75000000.0,
+   "rincian": [
+    {
+     "pekerjaan": "Bedah Teknik PDKB",
+     "nilai": 75000000.0
+    }
+   ]
   }
  ]
 };

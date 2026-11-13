@@ -1115,3 +1115,28 @@ body.lbx-open{overflow:hidden}
 @media (max-width:620px){.ao-steps-mini{grid-template-columns:repeat(3,minmax(0,1fr))}}
 #aoKpi{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:760px){#aoKpi{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* AO · progres pagu */
+.ao-pagu-card{margin-top:16px}
+.ao-pagu-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.ao-pagu-sum>div{padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:3px;min-width:0}
+.ao-pagu-sum span{font-size:12px;font-weight:700;color:var(--text-2)}
+.ao-pagu-sum b{font-size:22px;font-weight:800;line-height:1.15}
+.ao-pagu-sum small{font-size:11.5px;color:var(--text-3);font-variant-numeric:tabular-nums}
+.ao-gbar{display:block;height:10px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:6px}
+.ao-gbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--ok))}
+.ao-gbar.big{height:12px;margin:14px 0 4px}
+.ao-pagu-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.ao-pagu-list li{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.6fr) 150px;gap:14px;align-items:center;padding:9px 10px;border-radius:10px;cursor:pointer}
+.ao-pagu-list li:hover,.ao-pagu-list li:focus-visible{background:var(--surface-2)}
+.ao-pl-name b{display:block;font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ao-pl-name small{font-size:11px;color:var(--text-3);font-weight:600}
+.ao-pl-track{display:block;height:12px;min-width:4px;border-radius:99px;background:var(--track);overflow:hidden}
+.ao-pl-track i{display:block;height:100%;border-radius:99px}
+.ao-pl-num{display:flex;flex-direction:column;align-items:flex-end;text-align:right;font-variant-numeric:tabular-nums}
+.ao-pl-num b{font-size:15px;font-weight:800}
+.ao-pl-num small{font-size:11px;color:var(--text-3)}
+.ao-pl-num .ao-sisa{color:var(--p2);font-weight:700}.ao-pl-num .ao-habis{color:var(--ok);font-weight:700}
+.ao-rinci li{grid-template-columns:minmax(0,2fr) minmax(0,1fr) 84px}
+.ao-rinci .bl{white-space:normal;line-height:1.3}
+@media (max-width:900px){.ao-pagu-sum{grid-template-columns:repeat(2,minmax(0,1fr))}.ao-pagu-list li{grid-template-columns:minmax(0,1fr) 120px}.ao-pl-bar{grid-column:1/-1;order:3}}

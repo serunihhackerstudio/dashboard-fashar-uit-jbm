@@ -800,20 +800,31 @@ async function tdbSubmit(ev) {
     btn.disabled = false; btn.textContent = "Simpan";
   }
 }
-/* Kode akses edit TIDAK disimpan di perangkat: wajib dimasukkan setiap kali menyimpan perubahan.
-   Setelah satu perubahan berhasil, semua kolom kode akses dikosongkan (tokenClear). */
+/* Kode akses edit diingat di komputer/browser ini setelah satu kali berhasil menyimpan.
+   Di komputer lain (atau setelah "Lupakan") kode harus dimasukkan lagi. */
 const TOKEN_KEY = "fashar-edit-token";
-try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch (e) { } // hapus kode lama yang pernah diingat
-function tokenGet() { return ""; }
-function tokenSave() { /* sengaja tidak menyimpan */ }
+const TOKEN_INPUTS = 'input[type="password"][id$="_token"], input[type="password"][id$="SeedTok"], #f_token';
+function tokenGet() { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; } }
+function tokenSave(t) { if (t) try { localStorage.setItem(TOKEN_KEY, t); } catch (e) { } }
+/* Dipanggil setelah perubahan berhasil: simpan kode yang dipakai, lalu isi semua kolom kode akses dengan kode tersimpan */
 function tokenClear() {
-  document.querySelectorAll('input[type="password"][id$="_token"], input[type="password"][id$="SeedTok"], #f_token').forEach(i => { i.value = ""; });
+  const used = [...document.querySelectorAll(TOKEN_INPUTS)].map(i => i.value.trim()).find(Boolean);
+  tokenSave(used);
+  document.querySelectorAll(TOKEN_INPUTS).forEach(i => { i.value = tokenGet(); });
+  document.dispatchEvent(new Event("token-change"));
 }
-function tokenForget() { tokenClear(); }
+function tokenForget(silent) {
+  try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch (e) { }
+  document.querySelectorAll(TOKEN_INPUTS).forEach(i => { i.value = ""; });
+  if ($("#tdbDialog").open) tdbTokenUi();
+  document.dispatchEvent(new Event("token-change"));
+  if (!silent) toast("Kode akses dihapus dari komputer ini");
+}
 function tdbTokenUi() {
-  $("#f_token").value = "";
-  $("#tokenInput").hidden = false;
-  $("#tokenSaved").hidden = true;
+  const tok = tokenGet();
+  $("#f_token").value = tok;
+  $("#tokenInput").hidden = !!tok;
+  $("#tokenSaved").hidden = !tok;
 }
 
 function tdbErr(msg) { const el = $("#tdbFormErr"); el.textContent = msg; el.hidden = false; }

@@ -50,8 +50,8 @@
         s: [["Unit", fm.length], ["Kalibrasi aktif", kal(fm, /AKTIF|BERLAKU/i)], ["Kedaluwarsa", kal(fm, /EXPIRED/i)]] },
       { id: "hv", g: "alat", ic: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>', t: "HV Test", d: "Alat uji tegangan tinggi: kondisi, lokasi, keterangan & instruksi kerja, terhubung ke sheet 7. ALAT HV TEST (NEW).",
         live: hv && hv.live, s: hv ? [["Alat", hv.total], ["Normal", hv.normal], ["Anomali / rusak", hv.anomali + hv.rusak]] : [] }
-      ,{ id: "ao", g: "rkau", ic: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', t: "AO", d: "Monitoring program kerja AO: nilai RAB vs kontrak, serapan anggaran, dan progres tahapan. Menu rahasia — dibuka dengan token.",
-        live: ao && ao.live, s: ao ? [["Program", ao.n], ["Nilai kontrak", ao.rpShort(ao.kontrak)], ["Terbayar", ao.paid]] : [["Akses", "🔒"], ["Status", "Terkunci"]] }
+      ,{ id: "ao", g: "rkau", ic: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', t: "AO", d: "Monitoring program kerja AO: nilai RAB vs kontrak, serapan anggaran, dan progres tahapan. Nilai rupiah dibuka dengan token.",
+        live: ao && ao.live, s: ao ? [["Program", ao.n], ["Nilai kontrak", ao.rpShort(ao.kontrak)], ["Terbayar", ao.paid]] : [] }
     ];
   }
 

@@ -1272,11 +1272,11 @@ function aoPagu_(ss) {
   return out;
 }
 
-/* Ganti semua nilai rupiah dengan angka pengganti: 1 = ada nilai, null/0 = kosong.
+/* Ganti semua nilai rupiah & nomor kontrak dengan pengganti: 1 = ada nilai, null/0/'' = kosong.
    Realisasi pagu diganti persentase (realisasi/pagu) agar progres penyerapan tetap tampil. */
 function aoMask_(o) {
   const has = function (x) { return typeof x === 'number' && x !== 0; };
-  o.rows.forEach(function (r) { r.rab = has(r.rab) ? 1 : null; r.kontrak = has(r.kontrak) ? 1 : null; });
+  o.rows.forEach(function (r) { r.rab = has(r.rab) ? 1 : null; r.kontrak = has(r.kontrak) ? 1 : null; r.noKontrak = r.noKontrak ? '1' : ''; });
   let tp = 0, tr = 0;
   o.pagu.forEach(function (r) {
     const p = Number(r.pagu) || 0, re = Number(r.realisasi) || 0;

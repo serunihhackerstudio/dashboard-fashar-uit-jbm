@@ -42,6 +42,7 @@
   const rp = n => S.masked ? BLUR : rpRaw(n);
   const M = t => S.masked ? BLUR.replace("Rp 000.000.000", "00% dari 000") : t;
   const rpShort = n => { n = n || 0; return n >= 1e9 ? "Rp " + (n / 1e9).toFixed(2).replace(".", ",") + " M" : n >= 1e6 ? "Rp " + (n / 1e6).toFixed(1).replace(".", ",") + " jt" : rpRaw(n); };
+  const nok = v => !v ? "" : S.masked ? BLUR.replace("Rp 000.000.000", "000/XXXXX/XXXX/2026") : esc(v);
   const rpS = n => S.masked ? BLUR : rpShort(n);
   const pct = x => Math.round((x || 0) * 100) + "%";
   const stageName = s => STAGE_DEF[s] || "Belum diisi";
@@ -113,7 +114,7 @@
   }
   function list() {
     const q = S.q.trim().toLowerCase();
-    const L = S.rows.filter(r => (!S.st || String(r.stage) === S.st) && (!S.proker || r.proker === S.proker) && (!q || [r.judul, r.proker, r.noKontrak, r.stageName].join(" ").toLowerCase().includes(q)));
+    const L = S.rows.filter(r => (!S.st || String(r.stage) === S.st) && (!S.proker || r.proker === S.proker) && (!q || [r.judul, r.proker, S.masked ? "" : r.noKontrak, r.stageName].join(" ").toLowerCase().includes(q)));
     const { k, dir } = S.sort;
     return L.sort((a, b) => (typeof a[k] === "string" ? String(a[k] || "").localeCompare(String(b[k] || "")) : (a[k] || 0) - (b[k] || 0)) * dir || a.no - b.no);
   }
@@ -149,7 +150,7 @@
       <td class="num no">${r.no}</td><td class="ao-judul"><b>${esc(r.judul || "—")}</b><div class="muted sm">${esc(String(r.proker || "").replace(/\s*\n\s*/g, " "))}</div></td>
       <td class="num">${r.rab ? rp(r.rab) : `<span class="muted">—</span>`}</td><td class="num">${r.kontrak ? rp(r.kontrak) : `<span class="muted">Belum kontrak</span>`}</td>
       <td class="num">${d != null ? `<span class="${d >= 0 ? "ao-pos" : "ao-neg"}">${rp(d)}</span>` : `<span class="muted">—</span>`}</td>
-      <td>${chip(r)}</td><td class="num">${bar(r.progres)}<b class="ao-pct">${pct(r.progres)}</b></td><td class="sm ao-nok">${esc(r.noKontrak || "—")}</td></tr>`; }).join("");
+      <td>${chip(r)}</td><td class="num">${bar(r.progres)}<b class="ao-pct">${pct(r.progres)}</b></td><td class="sm ao-nok">${nok(r.noKontrak) || "—"}</td></tr>`; }).join("");
     $("#aoEmpty").hidden = L.length > 0;
     $("#aoShown").innerHTML = `Menampilkan <b>${L.length}</b> program kerja${S.proker ? ` · proker <b>${esc(S.proker.replace(/\s*\n\s*/g, " "))}</b> <button type="button" class="linkbtn" data-clear="proker">hapus filter</button>` : ""}`;
     $("#aoCount").innerHTML = `${L.length} dari ${n} program · nilai ${rpS(L.reduce((a, r) => a + (r.kontrak || r.rab), 0))}`;
@@ -162,7 +163,7 @@
     const it = (l, v, cls) => `<div${cls ? ` class="${cls}"` : ""}><dt>${l}</dt><dd class="${v ? "pre" : "nil"}">${v || "—"}</dd></div>`;
     const d = r.rab && r.kontrak ? r.rab - r.kontrak : null;
     $("#aoDetBody").innerHTML = `<dl class="dgrid">${it("Proker RKAU", esc(r.proker), "wide")}${it("Nilai RAB", r.rab ? rp(r.rab) : "")}${it("Nilai kontrak", r.kontrak ? rp(r.kontrak) : "Belum kontrak")}
-      ${it("Selisih (efisiensi)", d != null ? rp(d) + (r.rab && !S.masked ? ` <span class="muted">(${(d / r.rab * 100).toFixed(2).replace(".", ",")}%)</span>` : "") : "")}${it("No. kontrak", esc(r.noKontrak))}
+      ${it("Selisih (efisiensi)", d != null ? rp(d) + (r.rab && !S.masked ? ` <span class="muted">(${(d / r.rab * 100).toFixed(2).replace(".", ",")}%)</span>` : "") : "")}${it("No. kontrak", nok(r.noKontrak))}
       ${it("Status", chip(r))}${it("Progres", `${bar(r.progres)} <b>${pct(r.progres)}</b>`, "span2")}</dl>
       <div class="ao-steps-mini">${[1, 2, 3, 4, 5, 6].map(s => `<span class="${s <= r.stage ? "done" : ""}${s === r.stage ? " now" : ""}" style="--c:${STAGE_C[s]}"><i>${s}</i>${esc(stageName(s))}</span>`).join("")}</div>`;
     $("#aoDetail").showModal();

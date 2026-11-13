@@ -82,7 +82,7 @@
   document.body.insertAdjacentHTML("beforeend", `<dialog class="modal" id="aoDetail" aria-labelledby="aoDetTitle"><div class="modal-wrap">
    <header class="modal-head"><div><h3 id="aoDetTitle"></h3><p id="aoDetSub"></p></div><button class="icon-btn" type="button" onclick="this.closest('dialog').close()" aria-label="Tutup">${svg('<path d="M6 6l12 12M18 6 6 18"/>')}</button></header>
    <div class="modal-body" id="aoDetBody"></div>
-   <footer class="modal-foot"><div class="modal-btns"><a class="btn ghost" href="${SHEET_URL}" target="_blank" rel="noopener">Buka spreadsheet</a><button class="btn primary" type="button" onclick="this.closest('dialog').close()">Tutup</button></div></footer></div></dialog>`);
+   <footer class="modal-foot"><div class="modal-btns"><button class="btn primary" type="button" onclick="this.closest('dialog').close()">Tutup</button></div></footer></div></dialog>`);
 
   function renderPagu() {
     const P = S.pagu, tp = P.reduce((a, r) => a + r.pagu, 0), tr = P.reduce((a, r) => a + r.real, 0), ts = tp - tr, tpct = S.masked ? S.paguPct : tp ? tr / tp : 0;

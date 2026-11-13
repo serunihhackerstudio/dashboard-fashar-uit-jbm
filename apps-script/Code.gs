@@ -150,10 +150,15 @@ function doPost(e) {
     const token = PropertiesService.getScriptProperties().getProperty('EDIT_TOKEN');
     if (!token && req.action !== 'ao_get') return json_({ ok: false, code: 'config', error: 'EDIT_TOKEN belum diatur di Script Properties.' });
     if (req.action === 'ao_get') {
-      // Menu AO (rahasia): token baca = AO_TOKEN di Script Properties, atau EDIT_TOKEN bila AO_TOKEN tidak diisi
+      // Menu AO: terbuka untuk semua, tetapi nilai rupiah hanya dikirim bila token benar
+      // (token = AO_TOKEN di Script Properties, atau EDIT_TOKEN bila AO_TOKEN tidak diisi)
       const aoTok = PropertiesService.getScriptProperties().getProperty('AO_TOKEN') || token;
-      if (req.token !== aoTok) return json_({ ok: false, code: 'auth', error: 'Token akses AO salah.' });
-      return json_(aoGet_());
+      const full = !!aoTok && !!req.token && req.token === aoTok;
+      const out = aoGet_();
+      if (!full) aoMask_(out);
+      out.unlocked = full;
+      if (req.token && !full) { out.code = 'auth'; out.authError = 'Token akses salah.'; }
+      return json_(out);
     }
     if (req.token !== token) return json_({ ok: false, code: 'auth', error: 'Kode akses edit salah.' });
 
@@ -1225,7 +1230,8 @@ function hvAction_(req) {
 }
 
 /* =========================================================
-   MENU AO (section RKAU) — RAHASIA, hanya dibaca lewat token (doPost action 'ao_get').
+   MENU AO (section RKAU) — doPost action 'ao_get'. Tanpa token yang benar, semua nilai rupiah
+   diganti angka pengganti (aoMask_) sehingga nilai asli tidak pernah sampai ke browser.
    Spreadsheet RKAU dibaca dengan akses pemilik script, jadi spreadsheet boleh "Restricted".
    ========================================================= */
 const AO_SPREADSHEET_ID = '1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0';
@@ -1264,4 +1270,22 @@ function aoPagu_(ss) {
     out.push({ no: c[0], program: String(c[1]).trim(), pagu: c[2], realisasi: c[3], rincian: rincian });
   });
   return out;
+}
+
+/* Ganti semua nilai rupiah dengan angka pengganti: 1 = ada nilai, null/0 = kosong.
+   Realisasi pagu diganti persentase (realisasi/pagu) agar progres penyerapan tetap tampil. */
+function aoMask_(o) {
+  const has = function (x) { return typeof x === 'number' && x !== 0; };
+  o.rows.forEach(function (r) { r.rab = has(r.rab) ? 1 : null; r.kontrak = has(r.kontrak) ? 1 : null; });
+  let tp = 0, tr = 0;
+  o.pagu.forEach(function (r) {
+    const p = Number(r.pagu) || 0, re = Number(r.realisasi) || 0;
+    tp += p; tr += re;
+    r.pagu = p ? 1 : 0;
+    r.realisasi = p ? Math.round(re / p * 10000) / 10000 : 0;
+    r.rincian = r.rincian.map(function (x) { return { pekerjaan: x.pekerjaan, nilai: 1 }; });
+  });
+  o.paguPct = tp ? Math.round(tr / tp * 10000) / 10000 : 0;
+  o.masked = true;
+  return o;
 }

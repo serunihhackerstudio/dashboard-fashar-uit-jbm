@@ -51,10 +51,6 @@
    <div class="ab-kpis" id="aoKpi"></div>
    <div class="card ao-pagu-card"><div class="card-head"><div><h3>Progres penyerapan pagu</h3><p>Pagu, realisasi & sisa per proker RKAU · sheet “${esc(PAGU_SHEET)}” · klik baris untuk rincian pekerjaan</p></div></div><div class="card-body" id="aoPagu"></div></div>
    <div class="card ao-pipe-card"><div class="card-head"><div><h3>Tahapan program kerja</h3><p>Jumlah program & nilai per tahapan · klik untuk memfilter</p></div></div><div class="card-body" id="aoPipe"></div></div>
-   <div class="grid g2 ab-charts">
-    <div class="card"><div class="card-head"><div><h3>Serapan anggaran</h3><p>Total RAB, nilai kontrak, dan nilai yang sudah terbayar</p></div></div><div class="card-body" id="aoFunds"></div></div>
-    <div class="card"><div class="card-head"><div><h3>Nilai per proker RKAU</h3><p>Nilai kontrak (atau RAB bila belum kontrak) per proker · klik untuk memfilter</p></div></div><div class="card-body" id="aoProker"></div></div>
-   </div>
    <div class="ab-filters ao-filters">
     <div class="ab-chips" id="aoSt" role="group" aria-label="Filter tahapan"></div>
     <div class="ab-filter-right"><div class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="aoSearch" type="search" placeholder="Cari program kerja, proker, no. kontrak…" aria-label="Cari program kerja"></div></div>
@@ -125,18 +121,6 @@
         <span class="ao-step-no">${x.s}</span><span class="ao-step-name">${esc(x.name)}</span><b>${x.n}</b><small>${x.n ? rpShort(x.val) : "—"}</small>
         <i class="ao-step-bar" style="width:${n ? x.n / n * 100 : 0}%"></i></button>`).join("")}</div>`;
 
-    // serapan anggaran
-    const mx = Math.max(rab, kon, 1);
-    $("#aoFunds").innerHTML = `<ul class="bars ab-bars ao-funds">${[["Total RAB", rab, "var(--text-3)"], ["Nilai kontrak", kon, "var(--primary)"], ["Sudah terbayar", paid, "var(--ok)"]]
-      .map(([l, v, c]) => `<li><span class="bl">${l}</span><span class="bt"><i style="width:${v / mx * 100}%;background:${c}"></i></span><b>${rpShort(v)}</b></li>`).join("")}</ul>
-      <div class="ao-donut-row">${donut(all)}</div>`;
-
-    // per proker
-    const pm = new Map(); all.forEach(r => { const k = r.proker || "(tanpa proker)"; const o = pm.get(k) || { n: 0, v: 0 }; o.n++; o.v += r.kontrak || r.rab; pm.set(k, o); });
-    const pk = [...pm.entries()].sort((a, b) => b[1].v - a[1].v), mxp = Math.max(1, ...pk.map(x => x[1].v));
-    $("#aoProker").innerHTML = `<ul class="bars ab-bars ao-proker">${pk.map(([k, o]) => `<li class="clickable${S.proker === k ? " on" : ""}" data-proker="${esc(k)}" title="${esc(k)}: ${o.n} program · ${rp(o.v)}">
-      <span class="bl">${esc(k.replace(/\s*\n\s*/g, " "))}<small>${o.n} program</small></span><span class="bt"><i style="width:${o.v / mxp * 100}%;background:var(--primary)"></i></span><b>${rpShort(o.v)}</b></li>`).join("")}</ul>`;
-
     // filter tahapan
     $("#aoSt").innerHTML = [["", "Semua", n], ...stages.filter(x => x.n).map(x => [String(x.s), `${x.s}. ${x.name}`, x.n])].map(([v, l, c]) =>
       `<button type="button" class="ab-chip${S.st === v ? " on" : ""}" data-st="${v}" aria-pressed="${S.st === v}"><span>${esc(l)}</span><em>${c}</em></button>`).join("");
@@ -154,13 +138,6 @@
     $("#aoShown").innerHTML = `Menampilkan <b>${L.length}</b> program kerja${S.proker ? ` · proker <b>${esc(S.proker.replace(/\s*\n\s*/g, " "))}</b> <button type="button" class="linkbtn" data-clear="proker">hapus filter</button>` : ""}`;
     $("#aoCount").textContent = `${L.length} dari ${n} program · nilai ${rpShort(L.reduce((a, r) => a + (r.kontrak || r.rab), 0))}`;
     $("#aoFoot").textContent = S.live ? `Sumber: spreadsheet RKAU · sheet ${SHEET} (live)` : `Sumber: data cadangan ${DOC.generated || ""}`;
-  }
-  function donut(all) {
-    const n = all.length, seg = [6, 5, 4, 3, 2, 1, 0].map(s => [s, all.filter(r => r.stage === s).length]).filter(x => x[1]);
-    let acc = 0;
-    const circles = seg.map(([s, v]) => { const p = v / Math.max(n, 1) * 100, c = `<circle cx="50" cy="50" r="40" pathLength="100" style="stroke:${STAGE_C[s] || "var(--text-3)"};stroke-dasharray:${Math.max(p - .6, .4)} ${100 - p + .6};stroke-dashoffset:${-acc}"><title>${stageName(s)}: ${v}</title></circle>`; acc += p; return c; }).join("");
-    return `<svg class="donut" viewBox="0 0 100 100" role="img" aria-label="Komposisi tahapan"><circle cx="50" cy="50" r="40" class="d-track"/>${circles}<text x="50" y="49" class="d-total">${n}</text><text x="50" y="61" class="d-cap">program</text></svg>
-      <ul class="plist">${seg.map(([s, v]) => `<li><i class="swatch" style="background:${STAGE_C[s] || "var(--text-3)"}"></i><span>${s ? s + ". " : ""}${esc(stageName(s))}</span><b>${v}</b><em>${pct(v / n)}</em></li>`).join("")}</ul>`;
   }
   function openDetail(i) {
     const r = S.rows[i]; if (!r) return;

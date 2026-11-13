@@ -14,6 +14,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM; data dummy, menunggu sinkronisasi data dari aplikasi WARNOTO)*
 9. Filter Minyak *(Alat Berat & Alat Bantu — data unit filter minyak trafo dari `FILTER_MINYAK_UIT_JBM.xlsx`)*
 10. HV Test *(Alat Berat & Alat Bantu — alat uji tegangan tinggi, live dari sheet `7. ALAT HV TEST (NEW)`: kartu per alat, grafik kondisi & umur, tabel, detail, tambah/edit & foto)*
+11. AO *(section **RKAU** — monitoring program kerja AO, live dari spreadsheet RKAU sheet `MONITORING AO`)*
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.
@@ -93,6 +94,12 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 - Koordinat ULTG/UPT untuk peta ada di `ULTG_COORD` (`alat-export.js`); tambahkan jika ada lokasi baru.
 
 - **Database Google Sheets `4. DC MOBILE (NEW)`** (Apps Script bagian PERALATAN LAIN, `EQ_CFG.dcm`): sheet dibuat otomatis; tombol **Salin 7 data ke sheet** saat sheet kosong; **Tambah DC mobile** / **Edit** (tabel & pop-up detail) menyimpan ke sheet (ID baru `DCM-xxx`); foto per unit diunggah ke subfolder Drive (default folder `FOTO DC MOBILE` di dalam folder foto alat berat, bisa diganti lewat Script Property `DCM_PHOTO_FOLDER_ID`). Modul dashboard: `alat-export-db.js` (aktif bila `alatPage({ db: { kind, sheet } })`).
+
+### AO (section RKAU)
+- Membaca **live** sheet `MONITORING AO` di spreadsheet RKAU (`1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0`) langsung dari browser lewat Google Visualization API (tanpa Apps Script). Syarat: spreadsheet dibagikan **Anyone with the link – Viewer**. Hanya baca; data diubah di spreadsheet.
+- Kolom: NO, PROKER RKAU, JUDUL PROGRAM KERJA, NILAI RAB, NILAI KONTRAK, STATUS PROKER (`<tahap>. <nama>`), progres (%), LINK/NO KONTRAK.
+- Visualisasi: KPI (jumlah program, total RAB, total kontrak, sudah terbayar, efisiensi RAB→kontrak, rata-rata progres), tahapan 1–6 (klik untuk filter), serapan anggaran + donut tahapan, nilai per proker RKAU (klik untuk filter), tabel (urut, cari, progres) & pop-up detail.
+- Data cadangan: `python3 tools/sheet_ao_to_js.py` → `data/ao.js`.
 
 ### HV Test (Alat Berat & Alat Bantu)
 - Terhubung ke sheet baru **`7. ALAT HV TEST (NEW)`** (Apps Script bagian ALAT HV TEST), dibuat otomatis (NO, NAMA ALAT, MEREK, TIPE, KONDISI + dropdown, TAHUN, LOKASI, KETERANGAN, INSTRUKSI KERJA, LINK FOTO, ID FOTO UTAMA, DIPERBARUI). Saat sheet baru kosong, tombol **Salin data ke sheet baru** menyalin isi sheet lama `7. ALAT HV TEST` (termasuk hyperlink instruksi kerja); sheet lama tidak diubah. Baris diidentifikasi dengan nomor baris + nama alat (cegah salah tulis bila sheet berubah).

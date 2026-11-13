@@ -14,7 +14,8 @@
     { key: "kondisi", label: "Kondisi Aset", tone: "violet", desc: "Pantau kesehatan aset jaringan & gardu induk" },
     { key: "inspeksi", label: "Inspeksi Transmisi", tone: "blue", desc: "Hasil climb up inspection tower dari Jarvis" },
     { key: "ers", label: "Peralatan ERS", tone: "orange", desc: "Kesiapan peralatan emergency restoration" },
-    { key: "alat", label: "Alat Berat & Alat Bantu", tone: "green", desc: "Inventaris & kesiapan alat kerja" }
+    { key: "alat", label: "Alat Berat & Alat Bantu", tone: "green", desc: "Inventaris & kesiapan alat kerja" },
+    { key: "rkau", label: "RKAU", tone: "violet", desc: "Monitoring program kerja & anggaran" }
   ];
 
   /* Kartu fitur: id halaman, grup, ikon (path svg), judul, deskripsi, statistik ringkas */
@@ -26,6 +27,7 @@
     const dcm = (window.DC_MOBILE && window.DC_MOBILE.rows) || [], fm = (window.FILTER_MINYAK && window.FILTER_MINYAK.rows) || [];
     const kal = (rows, re) => rows.filter(r => re.test(String(r.kalibrasi || ""))).length;
     const hv = window.HV_SUMMARY ? window.HV_SUMMARY() : null;
+    const ao = window.AO_SUMMARY ? window.AO_SUMMARY() : null;
     const ab = ((window.ALAT_BERAT || window.ALAT_BERAT_DUMMY) || {}).alat || [];
     const tw = (D.towerKpi || []).map(x => x[1]);
     return [
@@ -48,6 +50,8 @@
         s: [["Unit", fm.length], ["Kalibrasi aktif", kal(fm, /AKTIF|BERLAKU/i)], ["Kedaluwarsa", kal(fm, /EXPIRED/i)]] },
       { id: "hv", g: "alat", ic: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>', t: "HV Test", d: "Alat uji tegangan tinggi: kondisi, lokasi, keterangan & instruksi kerja, terhubung ke sheet 7. ALAT HV TEST (NEW).",
         live: hv && hv.live, s: hv ? [["Alat", hv.total], ["Normal", hv.normal], ["Anomali / rusak", hv.anomali + hv.rusak]] : [] }
+      ,{ id: "ao", g: "rkau", ic: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', t: "AO", d: "Monitoring program kerja AO: nilai RAB vs kontrak, serapan anggaran, dan progres tahapan — live dari spreadsheet RKAU.",
+        live: ao && ao.live, s: ao ? [["Program", ao.n], ["Nilai kontrak", ao.rpShort(ao.kontrak)], ["Terbayar", ao.paid]] : [] }
     ];
   }
 

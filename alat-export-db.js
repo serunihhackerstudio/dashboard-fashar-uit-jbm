@@ -104,8 +104,8 @@ function alatDbInit(ctx) {
      <button class="icon-btn" type="button" onclick="this.closest('dialog').close()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
     <div class="modal-body"><section class="dsec ph-sec ab-ph-sec" id="${P}PhSec"></section><div class="form-grid" id="${P}Fields"></div></div>
     <footer class="modal-foot">
-     <div class="fld token"><label class="tok-in" id="${P}TokIn"><span>Kode akses edit</span><input type="password" id="${P}_token" autocomplete="new-password" placeholder="Kode dari admin"><small class="hint">Wajib diisi setiap kali menyimpan perubahan.</small></label>
-      <p class="token-saved" id="${P}TokSaved" hidden><svg class="ic xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Kode akses tersimpan di perangkat ini · <button type="button" class="linkbtn" id="${P}TokForget">Lupakan</button></p></div>
+     <div class="fld token"><label class="tok-in" id="${P}TokIn"><span>Kode akses edit</span><input type="password" id="${P}_token" autocomplete="new-password" placeholder="Kode dari admin"><small class="hint">Cukup sekali — akan diingat di komputer ini.</small></label>
+      <p class="token-saved" id="${P}TokSaved" hidden><svg class="ic xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Kode akses tersimpan di komputer ini · <button type="button" class="linkbtn" id="${P}TokForget">Lupakan</button></p></div>
      <p class="form-err" id="${P}EditErr" role="alert" hidden></p>
      <div class="modal-btns"><button class="btn ghost" type="button" onclick="this.closest('dialog').close()">Batal</button><button class="btn primary" type="submit" id="${P}Save">Simpan</button></div>
     </footer></form></dialog>`);

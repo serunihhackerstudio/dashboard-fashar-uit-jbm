@@ -67,7 +67,8 @@
      <label class="fld wide2"><span>Link instruksi kerja</span><input id="hvf_ikUrl" type="url" autocomplete="off" placeholder="https://drive.google.com/…"></label>
     </div></div>
    <footer class="modal-foot">
-    <div class="fld token"><label class="tok-in"><span>Kode akses edit</span><input type="password" id="hv_token" autocomplete="new-password" placeholder="Kode dari admin"><small class="hint">Wajib diisi setiap kali menyimpan perubahan.</small></label></div>
+    <div class="fld token"><label class="tok-in"><span>Kode akses edit</span><input type="password" id="hv_token" autocomplete="new-password" placeholder="Kode dari admin"><small class="hint">Cukup sekali — akan diingat di komputer ini.</small></label>
+     <p class="token-saved" id="hvTokSaved" hidden><svg class="ic xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Kode akses tersimpan di komputer ini · <button type="button" class="linkbtn" id="hvTokForget">Lupakan</button></p></div>
     <p class="form-err" id="hvEditErr" role="alert" hidden></p>
     <div class="modal-btns"><button class="btn ghost" type="button" onclick="this.closest('dialog').close()">Batal</button><button class="btn primary" type="submit" id="hvSave">Simpan</button></div>
    </footer></form></dialog>`);
@@ -173,9 +174,10 @@
 
   /* ---------- Simpan (kode akses wajib setiap perubahan) ---------- */
   async function post(body, tokInput) {
-    const inp = tokInput || $("#hv_token"), token = (inp.value || "").trim();
-    if (!token) { inp.focus(); throw new Error("Masukkan kode akses edit (kolom di bagian bawah form) — wajib setiap kali menyimpan perubahan."); }
+    const inp = tokInput || $("#hv_token"), token = ((inp && inp.value) || tokenGet() || "").trim();
+    if (!token) { if (inp) inp.focus(); throw new Error("Masukkan kode akses edit (kolom di bagian bawah form) — wajib setiap kali menyimpan perubahan."); }
     const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token, ...body }) })).json();
+    if (!j.ok && j.code === "auth") { tokenForget(true); hvTokUi(); }
     if (!j.ok) throw new Error(/Aksi tidak dikenal/i.test(j.error || "") ? "Apps Script masih versi lama. Tempel Code.gs terbaru lalu deploy New version." : (j.error || "Gagal menyimpan"));
     if (!S.batch) tokenClear();
     if (j.updated) S.updated = j.updated;
@@ -185,7 +187,7 @@
   function showSeed() {
     $("#hvSeed").hidden = false;
     $("#hvSeed").innerHTML = `<div><b>Sheet "${esc(SHEET)}" ${S.rows.length ? "masih kosong" : "belum berisi data"}.</b> Salin data alat dari sheet lama <b>"${esc(SRC_SHEET)}"</b> (sheet lama tidak diubah) agar bisa diedit dari dashboard.</div>
-      <div class="ab-seed-act"><input type="password" id="hvSeedTok" placeholder="Kode akses edit" autocomplete="new-password"><button class="btn primary sm" type="button" id="hvSeedBtn">Salin data ke sheet baru</button></div>`;
+      <div class="ab-seed-act">${tokenGet() ? "" : `<input type="password" id="hvSeedTok" placeholder="Kode akses edit" autocomplete="new-password">`}<button class="btn primary sm" type="button" id="hvSeedBtn">Salin data ke sheet baru</button></div>`;
   }
   $("#hvSeed").addEventListener("click", async e => {
     if (!e.target.closest("#hvSeedBtn")) return;
@@ -203,7 +205,7 @@
     const r = row ? byRow(row) : null;
     S.editing = r; err("");
     F.forEach(k => { $("#hvf_" + k).value = r ? (r[k] || "") : (k === "kondisi" ? "NORMAL" : ""); });
-    $("#hv_token").value = "";
+    hvTokUi();
     $("#hvEditTitle").textContent = r ? `Edit ${r.nama}` : "Tambah alat HV test";
     $("#hvEditSub").textContent = `${r ? "Baris " + r._row + " · " : ""}disimpan ke sheet ${SHEET}`;
     PS.reset({ loading: !!r });
@@ -258,6 +260,9 @@
   };
   $("#hvGrid").addEventListener("click", onClick); $("#hvRows").addEventListener("click", onClick);
   $("#hvGrid").addEventListener("keydown", e => { const t = e.target.closest(".hv-card[data-row]"); if (t && e.key === "Enter") openDetail(t.dataset.row); });
+  function hvTokUi() { const t = tokenGet(); $("#hv_token").value = t; $("#hv_token").closest(".tok-in").hidden = !!t; $("#hvTokSaved").hidden = !t; }
+  $("#hvTokForget").addEventListener("click", () => { tokenForget(); hvTokUi(); $("#hv_token").focus(); });
+  document.addEventListener("token-change", () => { if ($("#hvEditDlg").open) hvTokUi(); });
   $("#hvAddBtn").addEventListener("click", () => openEdit(null));
   $("#hvReload").addEventListener("click", load);
   $("#hvDetail").addEventListener("click", e => { if (e.target === $("#hvDetail")) $("#hvDetail").close(); });

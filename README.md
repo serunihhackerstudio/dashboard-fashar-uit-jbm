@@ -54,8 +54,8 @@ Jika `Code.gs` diubah, gunakan **Deploy → Manage deployments → Edit → Vers
 
 ### Cara kerja & keamanan
 - **Foto di form Edit (Alat Berat, DC Mobile, Filter Minyak, HV Test) disiapkan dulu**: memilih, menghapus, atau menjadikan foto utama tidak langsung dikirim; semuanya diunggah bersama data saat menekan **Simpan** (sekali isi kode akses). Komponen: `photo-stage.js`.
-- **Kode akses edit tidak disimpan di perangkat**: wajib diketik setiap kali menyimpan perubahan (edit, tambah, foto, riwayat, BA, unggah CUI, salin data awal) di semua menu. Setelah satu perubahan berhasil, kolom kode akses dikosongkan.
-- Siapa pun yang membuka dashboard dapat **melihat** data (sama seperti sebelumnya). **Menyimpan** perubahan wajib memasukkan kode akses edit (`EDIT_TOKEN`); kode **tidak diingat** dan harus diketik ulang untuk setiap perubahan.
+- **Kode akses edit diingat per komputer**: cukup diketik sekali; setelah berhasil menyimpan, semua form di komputer itu terisi otomatis. Komputer lain wajib memasukkan kode. Tautan **Lupakan** menghapusnya.
+- Siapa pun yang membuka dashboard dapat **melihat** data (sama seperti sebelumnya). **Menyimpan** perubahan wajib memasukkan kode akses edit (`EDIT_TOKEN`); kode **cukup dimasukkan sekali per komputer/browser** (diingat setelah berhasil menyimpan, bisa dihapus lewat **Lupakan**). Di komputer lain kode harus dimasukkan lagi.
 - Tombol **Detail** menampilkan seluruh informasi baris (termasuk informasi aset, tautan dokumentasi, dan riwayat lokasi). Kolom nilai aset, referensi, dan riwayat hanya bisa diubah langsung di Google Sheets.
 - **UPT** dan **Gardu induk** dipilih dari daftar GI/GIS UIT JBM (`data/gi-uit-jbm.js`, dibuat dengan `python3 tools/xlsx_to_gi_list.py "LIST_GI_SE_UIT_JBM.xlsx"`); unit di luar UIT JBM bisa diisi manual. **Nama aset** dibentuk otomatis dari pilihan UPT + gardu induk. Bila nama aset berupa sel gabungan, skrip memisahkan sel itu dulu agar baris lain dalam satu set tidak ikut berubah.
 - Baris baru ditambahkan di bawah baris data terakhir. Sebelum mengedit, skrip memastikan isi baris belum berubah di spreadsheet (jika berubah, muat ulang halaman).

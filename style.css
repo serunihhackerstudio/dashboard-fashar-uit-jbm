@@ -1113,7 +1113,8 @@ body.lbx-open{overflow:hidden}
 .ao-steps-mini .now{color:var(--text)}
 .ao-steps-mini .now i{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 25%,transparent)}
 @media (max-width:620px){.ao-steps-mini{grid-template-columns:repeat(3,minmax(0,1fr))}}
-#aoKpi{grid-template-columns:repeat(3,minmax(0,1fr))}
+#aoKpi{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:1600px){#aoKpi{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:760px){#aoKpi{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* AO · progres pagu */
@@ -1140,3 +1141,13 @@ body.lbx-open{overflow:hidden}
 .ao-rinci li{grid-template-columns:minmax(0,2fr) minmax(0,1fr) 84px}
 .ao-rinci .bl{white-space:normal;line-height:1.3}
 @media (max-width:900px){.ao-pagu-sum{grid-template-columns:repeat(2,minmax(0,1fr))}.ao-pagu-list li{grid-template-columns:minmax(0,1fr) 120px}.ao-pl-bar{grid-column:1/-1;order:3}}
+/* AO terkunci (token) */
+.ao-lock{display:flex;justify-content:center;padding:48px 0}
+.ao-lock-card{max-width:420px;width:100%;padding:32px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.ao-lock-card h3{margin:4px 0 0;font-size:20px}
+.ao-lock-card p{margin:0;font-size:13.5px;line-height:1.5}
+.ao-lock-ic{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:var(--primary-soft,rgba(37,99,235,.12));color:var(--primary)}
+.ao-lock-ic svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ao-lock-card input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;text-align:center}
+.ao-lock-card .btn{width:100%;justify-content:center}
+.ao-lock-err{color:var(--p1)!important;font-weight:600}

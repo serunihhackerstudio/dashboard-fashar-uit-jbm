@@ -148,7 +148,13 @@ function doPost(e) {
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     const token = PropertiesService.getScriptProperties().getProperty('EDIT_TOKEN');
-    if (!token) return json_({ ok: false, code: 'config', error: 'EDIT_TOKEN belum diatur di Script Properties.' });
+    if (!token && req.action !== 'ao_get') return json_({ ok: false, code: 'config', error: 'EDIT_TOKEN belum diatur di Script Properties.' });
+    if (req.action === 'ao_get') {
+      // Menu AO (rahasia): token baca = AO_TOKEN di Script Properties, atau EDIT_TOKEN bila AO_TOKEN tidak diisi
+      const aoTok = PropertiesService.getScriptProperties().getProperty('AO_TOKEN') || token;
+      if (req.token !== aoTok) return json_({ ok: false, code: 'auth', error: 'Token akses AO salah.' });
+      return json_(aoGet_());
+    }
     if (req.token !== token) return json_({ ok: false, code: 'auth', error: 'Kode akses edit salah.' });
 
     if (req.action === 'cui_upload') return json_(cuiUpload_(req));
@@ -1216,4 +1222,46 @@ function hvAction_(req) {
     return hvChanged_({ ok: true, row: hvRowObj_(sh, col, r) });
   }
   return { ok: false, error: 'Aksi tidak dikenal.' };
+}
+
+/* =========================================================
+   MENU AO (section RKAU) — RAHASIA, hanya dibaca lewat token (doPost action 'ao_get').
+   Spreadsheet RKAU dibaca dengan akses pemilik script, jadi spreadsheet boleh "Restricted".
+   ========================================================= */
+const AO_SPREADSHEET_ID = '1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0';
+const AO_SHEET = 'MONITORING AO';
+const AO_PAGU_SHEET = 'PROGRES PAGU';
+
+function aoGet_() {
+  const ss = SpreadsheetApp.openById(AO_SPREADSHEET_ID);
+  const sh = ss.getSheetByName(AO_SHEET);
+  if (!sh) throw new Error('Sheet "' + AO_SHEET + '" tidak ditemukan.');
+  const rows = [];
+  sh.getDataRange().getValues().forEach(function (v) {
+    const isNum = function (x) { return typeof x === 'number'; };
+    if (!(isNum(v[0]) || (v[2] && (isNum(v[3]) || isNum(v[4]))))) return; // lewati baris judul
+    if (!v[1] && !v[2]) return;
+    rows.push({ no: v[0] === '' ? null : v[0], proker: v[1], judul: v[2], rab: v[3] === '' ? null : v[3], kontrak: v[4] === '' ? null : v[4],
+      status: v[5], progres: v[6] === '' ? null : v[6], noKontrak: v[8] || '' });
+  });
+  return { ok: true, sheet: AO_SHEET, rows: rows, pagu: aoPagu_(ss), loaded: new Date().toISOString() };
+}
+
+function aoPagu_(ss) {
+  const sh = ss.getSheetByName(AO_PAGU_SHEET);
+  if (!sh) return [];
+  const vals = sh.getDataRange().getValues();
+  let hi = vals.findIndex(function (r) { return r.some(function (c) { return String(c).trim().toUpperCase() === 'PAGU'; }); });
+  if (hi < 0) hi = 0;
+  const cols = vals[hi].map(function (c) { return String(c || '').trim(); });
+  const up = cols.map(function (c) { return c.toUpperCase(); });
+  const si = up.indexOf('SISA') >= 0 ? up.indexOf('SISA') : cols.length;
+  const out = [];
+  vals.slice(hi + 1).forEach(function (c) {
+    if (typeof c[0] !== 'number' || !c[1]) return;
+    const rincian = [];
+    for (let k = 4; k < si; k++) if (cols[k] && typeof c[k] === 'number' && c[k]) rincian.push({ pekerjaan: cols[k], nilai: c[k] });
+    out.push({ no: c[0], program: String(c[1]).trim(), pagu: c[2], realisasi: c[3], rincian: rincian });
+  });
+  return out;
 }

@@ -1197,7 +1197,8 @@ const PAGES = {
   dcm: ["Peralatan ERS", "DC Mobile", "Data unit DC mobile (sistem DC bergerak) UIT JBM"],
   alat: ["Alat Berat & Alat Bantu", "Alat Berat", "Database Kesiapan Alat Berat UIT JBM"],
   fm: ["Alat Berat & Alat Bantu", "Filter Minyak", "Data unit filter minyak trafo UIT JBM"],
-  hv: ["Alat Berat & Alat Bantu", "HV Test", "Database alat uji tegangan tinggi (HV test) UIT JBM"]
+  hv: ["Alat Berat & Alat Bantu", "HV Test", "Database alat uji tegangan tinggi (HV test) UIT JBM"],
+  ao: ["RKAU", "AO", "Monitoring program kerja AO — anggaran (RAB & kontrak) dan progres tahapan"]
 };
 /* Tanggal "Diperbarui" di topbar: halaman boleh mendaftarkan tanggalnya sendiri lewat window.PAGE_UPDATED[id]() */
 const UPDATED_DEFAULT = "3 Okt 2026";

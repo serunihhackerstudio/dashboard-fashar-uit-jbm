@@ -1,19 +1,20 @@
 /* =========================================================
    MENU AO (section RKAU) — Monitoring program kerja AO
-   Data live: spreadsheet RKAU, sheet "MONITORING AO" (Google Visualization API, read-only).
-   Cadangan: data/ao.js (tools/sheet_ao_to_js.py).
+   RAHASIA: data hanya dibaca lewat Apps Script (doPost action "ao_get") dengan token.
+   Token dimasukkan sekali dan disimpan di komputer/browser pengguna (localStorage).
    ========================================================= */
 (function () {
   const sec = $("#page-ao");
   if (!sec) return;
-  const DOC = window.AO_DATA || { rows: [] };
-  const SHEET_ID = DOC.sheetId || "1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0", SHEET = DOC.sheet || "MONITORING AO";
-  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
-  // nama tahap 3–6 sesuai isi sheet; tahap 1–2 belum muncul di data, nama diambil dari sheet bila nanti ada
-  const STAGE_DEF = { 1: "Tahap 1", 2: "Tahap 2", 3: "Proses Kontrak Laksda", 4: "Pelaksanaan Pekerjaan", 5: "Proses IPMS & VIP", 6: "Terbayar" };
+  const API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").trim();
+  const AO_TOKEN_KEY = "fashar-ao-token";
+  const aoTokGet = () => { try { return localStorage.getItem(AO_TOKEN_KEY) || ""; } catch (e) { return ""; } };
+  const aoTokSet = t => { try { t ? localStorage.setItem(AO_TOKEN_KEY, t) : localStorage.removeItem(AO_TOKEN_KEY); } catch (e) { } };
+  const SHEET = "MONITORING AO", SHEET_URL = "https://docs.google.com/spreadsheets/d/1RpPBoPXkaPu98nO41LXEuttQi8YkP3AO6xSPRmg-0M0/edit";
+  const STAGE_DEF = { 1: "Penyusunan RAB", 2: "Permohonan PA", 3: "Proses Kontrak Laksda", 4: "Pelaksanaan Pekerjaan", 5: "Proses IPMS & VIP", 6: "Terbayar" };
   const STAGE_C = { 1: "var(--text-3)", 2: "var(--violet)", 3: "var(--p2)", 4: "var(--primary)", 5: "#0ea5a4", 6: "var(--ok)" };
-  const PAGU_SHEET = DOC.paguSheet || "PROGRES PAGU";
-  const S = { pagu: normPagu(DOC.pagu), paguLive: false, rows: norm(DOC.rows), q: "", st: "", proker: "", live: false, loadedAt: null, sort: { k: "no", dir: 1 } };
+  const PAGU_SHEET = "PROGRES PAGU";
+  const S = { pagu: [], paguLive: false, rows: [], q: "", st: "", proker: "", live: false, loadedAt: null, sort: { k: "no", dir: 1 } };
   const svg = p => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
 
   /* PROGRES PAGU: pagu, realisasi, sisa & rincian pekerjaan per proker RKAU */
@@ -43,9 +44,21 @@
   const bar = p => `<span class="ao-prog"><i style="width:${Math.min(100, p * 100)}%;background:${p >= 1 ? "var(--ok)" : p >= .67 ? "var(--primary)" : "var(--p2)"}"></i></span>`;
 
   sec.innerHTML = `
+   <div class="ao-lock" id="aoLock" hidden>
+    <form class="card ao-lock-card" id="aoLockForm" autocomplete="off">
+     <div class="ao-lock-ic">${svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')}</div>
+     <h3>Menu AO bersifat rahasia</h3>
+     <p class="muted">Masukkan token akses untuk membuka data program kerja AO. Token cukup dimasukkan sekali dan akan diingat di komputer ini.</p>
+     <input type="password" id="aoTok" placeholder="Token akses AO" aria-label="Token akses AO" required>
+     <p class="ao-lock-err" id="aoLockErr" hidden></p>
+     <button class="btn primary" type="submit" id="aoLockBtn">Buka menu AO</button>
+    </form>
+   </div>
+   <div id="aoMain" hidden>
    <div class="tdb-bar card ab-bar">
     <div class="tdb-bar-info"><span class="chip sync" id="aoSync"></span><span class="muted sm" id="aoSyncNote"></span></div>
     <div class="tdb-actions"><button class="btn ghost" type="button" id="aoReload">${svg('<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/>')}Muat ulang</button>
+     <button class="btn ghost" type="button" id="aoLogout" title="Hapus token AO dari komputer ini">${svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')}Kunci</button>
      <a class="btn primary" href="${SHEET_URL}" target="_blank" rel="noopener">${svg('<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>')}Buka spreadsheet</a></div>
    </div>
    <div class="ab-kpis" id="aoKpi"></div>
@@ -59,6 +72,7 @@
    <div class="card">
     <div class="table-wrap ab-table ao-table"><table class="table"><thead id="aoHead"></thead><tbody id="aoRows"></tbody></table><div class="empty" id="aoEmpty" hidden>Tidak ada program kerja yang cocok.</div></div>
     <div class="card-foot tdb-foot"><span class="muted" id="aoCount"></span><span class="muted sm" id="aoFoot"></span></div>
+   </div>
    </div>`;
   document.body.insertAdjacentHTML("beforeend", `<dialog class="modal" id="aoDetail" aria-labelledby="aoDetTitle"><div class="modal-wrap">
    <header class="modal-head"><div><h3 id="aoDetTitle"></h3><p id="aoDetSub"></p></div><button class="icon-btn" type="button" onclick="this.closest('dialog').close()" aria-label="Tutup">${svg('<path d="M6 6l12 12M18 6 6 18"/>')}</button></header>
@@ -105,14 +119,12 @@
     const rab = all.reduce((a, r) => a + r.rab, 0), kon = all.reduce((a, r) => a + r.kontrak, 0);
     const paid = all.filter(r => r.stage === 6).reduce((a, r) => a + (r.kontrak || r.rab), 0);
     const both = all.filter(r => r.rab && r.kontrak), eff = both.reduce((a, r) => a + (r.rab - r.kontrak), 0), effBase = both.reduce((a, r) => a + r.rab, 0);
-    const avg = n ? all.reduce((a, r) => a + r.progres, 0) / n : 0;
     $("#aoKpi").innerHTML = [
       ["Program kerja", n, "doc", "primary", `${all.filter(r => r.stage === 6).length} terbayar · ${all.filter(r => r.stage && r.stage < 6).length} berjalan`],
       ["Total nilai RAB", rpShort(rab), "bars", "primary", `${all.filter(r => r.rab).length} program dengan RAB`],
       ["Total nilai kontrak", rpShort(kon), "check", "p3", `${all.filter(r => r.kontrak).length} program sudah kontrak`],
       ["Sudah terbayar", rpShort(paid), "shield", "p3", kon ? `${pct(paid / kon)} dari nilai kontrak` : "—"],
-      ["Efisiensi RAB → kontrak", rpShort(eff), "pulse", "p2", effBase ? `${(eff / effBase * 100).toFixed(2).replace(".", ",")}% dari RAB (${both.length} program)` : "—"],
-      ["Rata-rata progres", pct(avg), "rotate", "primary", "Berdasarkan tahapan proker"]
+      ["Efisiensi RAB → kontrak", rpShort(eff), "pulse", "p2", effBase ? `${(eff / effBase * 100).toFixed(2).replace(".", ",")}% dari RAB (${both.length} program)` : "—"]
     ].map(([l, v, ic, t, sub]) => `<div class="card kpi tone-${t}"><div class="kpi-icon">${icon(ic === "bars" ? "doc" : ic)}</div><div><div class="kpi-label">${l}</div><div class="kpi-value">${v}</div><div class="kpi-sub">${esc(sub)}</div></div></div>`).join("");
 
     // pipeline tahapan
@@ -137,7 +149,7 @@
     $("#aoEmpty").hidden = L.length > 0;
     $("#aoShown").innerHTML = `Menampilkan <b>${L.length}</b> program kerja${S.proker ? ` · proker <b>${esc(S.proker.replace(/\s*\n\s*/g, " "))}</b> <button type="button" class="linkbtn" data-clear="proker">hapus filter</button>` : ""}`;
     $("#aoCount").textContent = `${L.length} dari ${n} program · nilai ${rpShort(L.reduce((a, r) => a + (r.kontrak || r.rab), 0))}`;
-    $("#aoFoot").textContent = S.live ? `Sumber: spreadsheet RKAU · sheet ${SHEET} (live)` : `Sumber: data cadangan ${DOC.generated || ""}`;
+    $("#aoFoot").textContent = `Sumber: spreadsheet RKAU · sheet ${SHEET}`;
   }
   function openDetail(i) {
     const r = S.rows[i]; if (!r) return;
@@ -154,50 +166,50 @@
 
   /* ---------- Muat live dari spreadsheet ---------- */
   function setSync(st, t, note) { $("#aoSync").className = "chip sync " + st; $("#aoSync").innerHTML = `<i class="live-dot"></i>${esc(t)}`; $("#aoSyncNote").textContent = note || ""; sec.classList.toggle("page-loading", st === "loading"); }
-  async function gviz(sheet) {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}&_=${Date.now()}`;
-    const txt = await (await fetch(url, { cache: "no-store" })).text();
-    const j = JSON.parse(txt.slice(txt.indexOf("(") + 1, txt.lastIndexOf(")")));
-    if (j.status !== "ok") throw new Error((j.errors && j.errors[0] && (j.errors[0].detailed_message || j.errors[0].message)) || "Gagal membaca sheet");
-    return j;
+  function lockUi(msg) {
+    $("#aoMain").hidden = true; $("#aoLock").hidden = false; sec.classList.remove("page-loading");
+    $("#aoLockErr").hidden = !msg; $("#aoLockErr").textContent = msg || "";
+    $("#aoLockBtn").disabled = false; $("#aoLockBtn").textContent = "Buka menu AO";
   }
-  function paguFrom(j) {
-    const cols = j.table.cols.map(c => String(c.label || "").trim()), up = cols.map(c => c.toUpperCase());
-    const si = up.indexOf("SISA") >= 0 ? up.indexOf("SISA") : cols.length;
-    return j.table.rows.map(r => (r.c || []).map(x => (x || {}).v ?? null)).filter(c => typeof c[0] === "number" && c[1])
-      .map(c => ({ no: c[0], program: c[1], pagu: c[2], realisasi: c[3], rincian: cols.slice(4, si).map((h, k) => ({ pekerjaan: h, nilai: c[k + 4] })).filter(x => x.pekerjaan && typeof x.nilai === "number" && x.nilai) }));
-  }
-  async function load() {
+  async function load(tok) {
+    tok = tok || aoTokGet();
+    if (!tok) { S.rows = []; S.pagu = []; S.live = false; lockUi(); changed(); return; }
+    if (!API) { lockUi("URL Apps Script belum diatur di config.js."); return; }
+    $("#aoLock").hidden = true; $("#aoMain").hidden = false;
     setSync("loading", "Memuat dari Google Sheets…");
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET)}&_=${Date.now()}`;
-      const txt = await (await fetch(url, { cache: "no-store" })).text();
-      const j = JSON.parse(txt.slice(txt.indexOf("(") + 1, txt.lastIndexOf(")")));
-      if (j.status !== "ok") throw new Error((j.errors && j.errors[0] && (j.errors[0].detailed_message || j.errors[0].message)) || "Gagal membaca sheet");
-      const rows = j.table.rows.map(r => { const c = (r.c || []).map(x => x || {}); const v = i => (c[i] || {}).v ?? null;
-        return { no: v(0), proker: v(1), judul: v(2), rab: v(3), kontrak: v(4), status: v(5), progres: v(6), noKontrak: v(8) }; }).filter(r => r.judul || r.proker);
-      S.rows = norm(rows); S.live = true; S.loadedAt = new Date();
-      try { S.pagu = normPagu(paguFrom(await gviz(PAGU_SHEET))); S.paguLive = true; } catch (e) { S.paguLive = false; }
-      setSync("live", "Live · Google Sheets", `Sheet ${SHEET} · ${rows.length} program · dimuat ${S.loadedAt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`);
+      const j = await (await fetch(API, { method: "POST", body: JSON.stringify({ token: tok, action: "ao_get" }) })).json();
+      if (!j.ok && j.code === "auth") { aoTokSet(""); S.rows = []; S.pagu = []; S.live = false; lockUi("Token salah. Silakan masukkan token yang benar."); changed(); return; }
+      if (!j.ok || !Array.isArray(j.rows)) throw new Error(j.error || "Apps Script belum diperbarui (action ao_get belum tersedia).");
+      aoTokSet(tok);
+      S.rows = norm(j.rows); S.pagu = normPagu(j.pagu); S.paguLive = true; S.live = true; S.loadedAt = new Date();
+      setSync("live", "Live · Google Sheets", `Sheet ${SHEET} · ${S.rows.length} program · dimuat ${S.loadedAt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`);
     } catch (e) {
       S.live = false;
-      setSync("error", "Gagal terhubung · menampilkan data cadangan", "Pastikan spreadsheet dibagikan “Anyone with the link – Viewer”. " + String(e.message || e));
+      if (!S.rows.length) { lockUi("Gagal memuat data: " + String(e.message || e)); changed(); return; }
+      setSync("error", "Gagal memuat ulang", String(e.message || e));
     }
     render(); changed();
   }
   function changed() { if (location.hash === "#ao" && typeof setUpdated === "function") setUpdated("ao"); if (window.homeRefresh) window.homeRefresh(); }
   window.PAGE_UPDATED = window.PAGE_UPDATED || {};
   window.PAGE_UPDATED.ao = () => {
-    const d = S.live && S.loadedAt ? S.loadedAt : (DOC.generated ? new Date(DOC.generated + "T00:00:00") : null);
-    if (!d) return null;
+    const d = S.live && S.loadedAt ? S.loadedAt : null;
+    if (!d) return aoTokGet() ? null : { label: "Terkunci · perlu token", pending: true, title: "Masukkan token untuk membuka menu AO" };
     const pad = x => String(x).padStart(2, "0"), date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     return { date, title: S.live ? `Data live dari spreadsheet, dimuat pukul ${pad(d.getHours())}.${pad(d.getMinutes())}` : "Data cadangan" };
   };
   sec.addEventListener("keydown", e => { const pg = e.target.closest("[data-pagu]"); if (pg && e.key === "Enter") openPagu(+pg.dataset.pagu); });
-  window.AO_SUMMARY = () => ({ paguPct: (t => t.p ? t.r / t.p : 0)(S.pagu.reduce((a, r) => ({ p: a.p + r.pagu, r: a.r + r.real }), { p: 0, r: 0 })), n: S.rows.length, kontrak: S.rows.reduce((a, r) => a + r.kontrak, 0), paid: S.rows.filter(r => r.stage === 6).length, live: S.live, rpShort });
+  window.AO_SUMMARY = () => !S.live ? null : ({ paguPct: (t => t.p ? t.r / t.p : 0)(S.pagu.reduce((a, r) => ({ p: a.p + r.pagu, r: a.r + r.real }), { p: 0, r: 0 })), n: S.rows.length, kontrak: S.rows.reduce((a, r) => a + r.kontrak, 0), paid: S.rows.filter(r => r.stage === 6).length, live: S.live, rpShort });
 
   /* ---------- Event ---------- */
-  $("#aoReload").addEventListener("click", load);
+  $("#aoReload").addEventListener("click", () => load());
+  $("#aoLogout").addEventListener("click", () => { aoTokSet(""); S.rows = []; S.pagu = []; S.live = false; $("#aoTok").value = ""; lockUi(); changed(); toast("Token AO dihapus dari komputer ini"); });
+  $("#aoLockForm").addEventListener("submit", e => {
+    e.preventDefault(); const t = $("#aoTok").value.trim(); if (!t) return;
+    $("#aoLockBtn").disabled = true; $("#aoLockBtn").textContent = "Memeriksa token…"; $("#aoLockErr").hidden = true;
+    load(t).then(() => { $("#aoTok").value = ""; });
+  });
   $("#aoSearch").addEventListener("input", e => { S.q = e.target.value; render(); });
   sec.addEventListener("click", e => {
     const st = e.target.closest("[data-st]"); if (st && !st.disabled) { S.st = S.st === st.dataset.st && st.classList.contains("ao-step") ? "" : st.dataset.st; return render(); }
@@ -210,6 +222,6 @@
   $("#aoRows").addEventListener("keydown", e => { const tr = e.target.closest("tr[data-i]"); if (tr && e.key === "Enter") openDetail(+tr.dataset.i); });
   $("#aoDetail").addEventListener("click", e => { if (e.target === $("#aoDetail")) $("#aoDetail").close(); });
 
-  render();
+  if (aoTokGet()) render();
   load();
 })();

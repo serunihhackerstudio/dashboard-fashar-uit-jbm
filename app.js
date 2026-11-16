@@ -1217,6 +1217,19 @@ function setUpdated(id) {
     el.title = v && v.title ? v.title : "";
   }
 }
+/* Menu tersembunyi (config.js hiddenPages): buang dari routing, menu samping & halaman */
+const HIDDEN_PAGES = new Set(((window.FASHAR_CONFIG && window.FASHAR_CONFIG.hiddenPages) || []).filter(id => id !== "home"));
+window.isPageHidden = id => HIDDEN_PAGES.has(id);
+HIDDEN_PAGES.forEach(id => {
+  delete PAGES[id];
+  document.querySelectorAll(`.nav-item[data-page="${id}"]`).forEach(n => n.remove());
+  const pg = document.getElementById("page-" + id); if (pg) pg.hidden = true;
+});
+document.querySelectorAll(".nav-group").forEach(g => { // judul kelompok tanpa menu tersisa ikut disembunyikan
+  let n = g.nextElementSibling, any = false;
+  while (n && !n.classList.contains("nav-group")) { if (n.classList.contains("nav-item")) any = true; n = n.nextElementSibling; }
+  if (!any) g.hidden = true;
+});
 function route() {
   if (location.hash === "#trafo") { location.replace("#trafodb"); return; } // halaman lama Trafo Mobile dihapus
   const id = PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "home"; // halaman awal: Beranda

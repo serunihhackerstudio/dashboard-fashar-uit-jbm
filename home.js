@@ -62,27 +62,28 @@
   const svg = p => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
 
   function render() {
-    const F = features(), byG = g => F.filter(f => f.g === g);
+    const hid = id => window.isPageHidden && window.isPageHidden(id);
+    const F = features().filter(f => !hid(f.id)), byG = g => F.filter(f => f.g === g), GR = GROUPS.filter(G => byG(G.key).length);
     const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const tdb = F.find(f => f.id === "trafodb"), cui = F.find(f => f.id === "cui"), hi = F.find(f => f.id === "health");
     const dcm = F.find(f => f.id === "dcm"), fm = F.find(f => f.id === "fm"), ab = F.find(f => f.id === "alat");
     const hl = [
-      ["Menu fitur", F.length, "grid", "Dalam 4 kelompok"],
-      ["Temuan P1 aset", hi.s[2][1], "alert", "Health Index JAR + GI"],
+      ["Menu fitur", F.length, "grid", `Dalam ${GR.length} kelompok`],
+      hi && ["Temuan P1 aset", hi.s[2][1], "alert", "Health Index JAR + GI"],
       ["Komponen trafo mobile", tdb.s[0][1], "truck", tdb.live ? "Live dari Google Sheets" : "Data statis"],
       ["Tower terinspeksi CUI", cui.s[0][0] === "Tower" ? cui.s[0][1] : "—", "tower", cui.s[0][0] === "Tower" ? "Dari unggahan Jarvis terakhir" : "Unggah file export Jarvis"],
       ["Unit DC mobile & filter minyak", dcm.s[0][1] + fm.s[0][1], "pulse", `${dcm.s[0][1]} DC mobile · ${fm.s[0][1]} filter minyak`],
       ["Alat berat & bantu", ab.s[0][1], "wrench", `${ab.s[1][1]} lokasi penyimpanan`]
-    ];
+    ].filter(Boolean);
     $("#page-home").innerHTML = `
       <div class="home-hero">
         <div class="hh-text">
           <span class="hh-kicker"><i class="live-dot"></i>${esc(today)}</span>
           <h2>${greet()}, Tim <span>PDKB &amp; FASHAR</span></h2>
-          <p>Satu dashboard untuk memantau kondisi aset, hasil inspeksi transmisi, kesiapan peralatan ERS, serta alat berat &amp; alat bantu HARTRANS Unit Induk Transmisi Jawa Bagian Timur dan Bali.</p>
+          <p>Satu dashboard untuk memantau ${byG("kondisi").length ? "kondisi aset, " : ""}hasil inspeksi transmisi, kesiapan peralatan ERS, serta alat berat &amp; alat bantu HARTRANS Unit Induk Transmisi Jawa Bagian Timur dan Bali.</p>
           <div class="hh-cta">
-            <a class="btn hh-btn-primary" href="#health">${svg('<path d="M3 12h4l2-5 4 10 2-5h6"/>')}Lihat Health Index</a>
-            <a class="btn hh-btn-ghost" href="#trafodb">${svg('<rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5"/>')}Trafo Mobile</a>
+            ${hi ? `<a class="btn hh-btn-primary" href="#health">${svg('<path d="M3 12h4l2-5 4 10 2-5h6"/>')}Lihat Health Index</a>` : ""}
+            <a class="btn ${hi ? "hh-btn-ghost" : "hh-btn-primary"}" href="#trafodb">${svg('<rect x="3" y="9" width="13" height="8" rx="1.5"/><path d="M16 12h3l2 3v2h-5"/>')}Trafo Mobile</a>
             <a class="btn hh-btn-ghost" href="#cui">${svg('<path d="M12 2v20M7 22l5-13 5 13M8 6h8"/>')}CUI Jarvis</a>
           </div>
         </div>
@@ -93,7 +94,7 @@
       <div class="home-hl">${hl.map(([l, v, ic, sub], i) => `<div class="card hl-card" style="--d:${i * 60}ms"><div class="hl-ic">${ic === "grid" ? svg('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>') : icon(ic)}</div>
         <div><div class="hl-v">${n(v)}</div><div class="hl-l">${esc(l)}</div><div class="hl-s">${esc(sub)}</div></div></div>`).join("")}</div>
 
-      ${GROUPS.map(G => `<section class="home-group tone-${G.tone}">
+      ${GR.map(G => `<section class="home-group tone-${G.tone}">
         <div class="hg-head"><h3>${esc(G.label)}</h3><p>${esc(G.desc)}</p></div>
         <div class="hg-grid">${byG(G.key).map((f, i) => `<a class="card feat" href="#${f.id}" style="--d:${i * 70}ms" aria-label="Buka ${esc(f.t)}">
           <div class="feat-top"><span class="feat-ic">${svg(f.ic)}</span>${f.live ? `<span class="feat-live"><i class="live-dot"></i>Live</span>` : ""}${f.pending ? `<span class="feat-pending">${esc(f.pending)}</span>` : ""}${f.src ? `<span class="feat-live"><i class="live-dot"></i>${esc(f.src)}</span>` : ""}</div>

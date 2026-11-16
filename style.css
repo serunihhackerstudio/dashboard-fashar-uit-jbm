@@ -1344,3 +1344,4 @@ details[open]>summary .gd-chev{transform:rotate(180deg)}
 @media (max-width:1280px){.te-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.te-charts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){.te-top{grid-template-columns:1fr}.te-dlg{grid-template-columns:1fr}}
 @media (max-width:760px){.te-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.te-charts{grid-template-columns:1fr}.te-mapwrap{min-height:320px}.te-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.te-ph{height:120px}.te-img{max-height:120px}.te-detail{padding:16px}}
+@media (max-width:760px){#teKat{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}#teKat .ab-chip{flex:none}}

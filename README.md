@@ -15,6 +15,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 9. Filter Minyak *(Alat Berat & Alat Bantu — data unit filter minyak trafo dari `FILTER_MINYAK_UIT_JBM.xlsx`)*
 10. HV Test *(Alat Berat & Alat Bantu — alat uji tegangan tinggi, live dari sheet `7. ALAT HV TEST (NEW)`: kartu per alat, grafik kondisi & umur, tabel, detail, tambah/edit & foto)*
 11. AO *(section **RKAU** — monitoring program kerja AO, nilai rupiah diburamkan sampai token dimasukkan; data dari spreadsheet RKAU sheet `MONITORING AO`)*
+12. Panduan *(kelompok **Bantuan** — panduan penggunaan: mulai cepat, mengenal tampilan, panduan & alur sumber data per menu, cara mengedit, kode akses, FAQ; dengan pencarian — `guide.js`. Menu tersembunyi tidak ikut ditampilkan)*
 
 **Menyembunyikan menu (tanpa menghapus):** isi `hiddenPages` di `config.js` dengan id menu (mis. `["health", "jar", "gi"]`). Menu tersebut hilang dari menu samping dan Beranda, judul kelompok yang kosong ikut hilang, dan alamatnya (`#health`, dst.) dialihkan ke Beranda. Kode & data tetap ada; hapus id dari daftar untuk menampilkannya lagi.
 

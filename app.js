@@ -192,10 +192,10 @@ function renderAssess(grid, summary, data) {
 renderAssess("#jarGrid", "#jarSummary", assessData(1));
 renderAssess("#giGrid", "#giSummary", assessData(0.55));
 
-/* ---------- Tower Emergency ---------- */
-$("#towerKpi").innerHTML = DATA.towerKpi.map(kpi).join("");
-$("#mapTower").innerHTML = mapSvg(DATA.mapTower);
-$("#materialTables").innerHTML = Object.entries(DATA.materials).map(([k, rows], idx) => `
+/* ---------- Tower Emergency (lama, tidak dipakai; halaman kini dibuat oleh tower.js) ---------- */
+if ($("#towerKpi")) $("#towerKpi").innerHTML = DATA.towerKpi.map(kpi).join("");
+if ($("#mapTower")) $("#mapTower").innerHTML = mapSvg(DATA.mapTower);
+if ($("#materialTables")) $("#materialTables").innerHTML = Object.entries(DATA.materials).map(([k, rows], idx) => `
   <div class="card material-card" data-material-card="${idx}">
     <div class="card-head"><div><h3>${k}</h3><p><span class="count">${rows.length}</span> jenis material · ${fmt(sum(rows.map(r => r[1])))} unit</p></div></div>
     <div class="search">${icon("search")}<input type="search" placeholder="Cari material…" aria-label="Cari material ${k}" oninput="filterMaterialTable(${idx}, this.value)"></div>
@@ -258,7 +258,6 @@ function tdbMarkUpdated(iso) {
   if (location.hash === "#trafodb" && typeof setUpdated === "function") setUpdated("trafodb");
 }
 window.PAGE_UPDATED = window.PAGE_UPDATED || {};
-window.PAGE_UPDATED.tower = () => ({ label: "Dalam pengembangan", pending: true, title: "Halaman Tower Emergency sedang dalam pengembangan" });
 window.PAGE_UPDATED.trafodb = () => {
   if (!TDB.updated) return null;
   const d = new Date(TDB.updated.length > 10 ? TDB.updated : TDB.updated + "T00:00:00");

@@ -1252,10 +1252,9 @@ details[open]>summary .gd-chev{transform:rotate(180deg)}
    ========================================================= */
 .te-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
 .te-kpi-click{cursor:pointer;transition:transform .15s,box-shadow .15s}.te-kpi-click:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-.te-top{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
-.te-map-card{overflow:hidden;padding:0}.te-map-card .te-mapwrap{min-height:520px}
-.te-merk-card .te-merk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-@media (max-width:900px){.te-merk-card .te-merk{grid-template-columns:1fr}.te-map-card .te-mapwrap{min-height:380px}}
+.te-top{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:16px;margin-top:16px;align-items:stretch}
+.te-map-card{overflow:hidden;padding:0;display:flex;flex-direction:column}.te-map-card .te-mapwrap{flex:1;min-height:480px}
+@media (max-width:900px){.te-map-card .te-mapwrap{min-height:380px}}
 .te-mapwrap{min-height:400px}
 .te-map-fb{position:absolute;inset:auto 16px 16px}
 .te-pin{font-size:14px;border:3px solid #fff}

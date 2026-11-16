@@ -134,8 +134,6 @@ function doGet(e) {
     if (p.action === 'eq_photos') return json_(eqPhotos_(p.kind, p.id));
     if (p.action === 'hv') return json_(hvGet_());
     if (p.action === 'hv_photos') return json_(hvPhotos_(p.row, p.expect));
-    if (p.action === 'te') return json_(teGet_());
-    if (p.action === 'te_photos') return json_(tePhotos_(p.id));
     ensureIds_(sheet_());
     const rows = readRows_(), moves = readMoves_();
     return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: rows, moves: moves, updated: syncUpdated_(rows, moves) });
@@ -168,7 +166,6 @@ function doPost(e) {
     if (String(req.action || '').indexOf('ab_') === 0) return json_(abAction_(req));
     if (String(req.action || '').indexOf('eq_') === 0) return json_(eqAction_(req));
     if (String(req.action || '').indexOf('hv_') === 0) return json_(hvAction_(req));
-    if (String(req.action || '').indexOf('te_') === 0) return json_(teAction_(req));
 
     const sh = sheet_();
     const data = validate_(req.data || {});
@@ -242,7 +239,6 @@ function onEdit(e) {
     const name = e && e.range && e.range.getSheet().getName();
     if (name === SHEET_NAME || name === MOVE_SHEET) markUpdated_();
     if (name === AB_SHEET) PropertiesService.getScriptProperties().setProperty('AB_UPDATED', new Date().toISOString());
-    if (name === TE_SHEET || name === TE_LOK_SHEET) PropertiesService.getScriptProperties().setProperty('TE_UPDATED', new Date().toISOString());
     if (name === HV_SHEET) PropertiesService.getScriptProperties().setProperty('HV_UPDATED', new Date().toISOString());
     Object.keys(EQ_CFG).forEach(k => { if (name === EQ_CFG[k].sheet) PropertiesService.getScriptProperties().setProperty('EQ_UPDATED_' + k, new Date().toISOString()); });
   } catch (err) { /* abaikan */ }
@@ -1292,217 +1288,4 @@ function aoMask_(o) {
   o.paguPct = tp ? Math.round(tr / tp * 10000) / 10000 : 0;
   o.masked = true;
   return o;
-}
-
-/* =========================================================
-   TOWER EMERGENCY (Peralatan ERS) — database item TE per lokasi & NAMA KONTAINER
-   Sheet item  : TOWER EMERGENCY (NEW)        — satu baris per item per lokasi
-   Sheet lokasi: TOWER EMERGENCY LOKASI (NEW) — daftar lokasi & nama kontainernya
-   Kolom JUMLAH PER KONTAINER berformat "Bromo: 1; Raung: 3".
-   Foto per item: subfolder di FOTO TOWER EMERGENCY (di folder foto alat berat) atau Script Property TE_PHOTO_FOLDER_ID.
-   ========================================================= */
-const TE_SHEET = 'TOWER EMERGENCY (NEW)';
-const TE_LOK_SHEET = 'TOWER EMERGENCY LOKASI (NEW)';
-const TE_COLS = [
-  ['id', 'ID ITEM'], ['lokasi', 'LOKASI'], ['merk', 'MEREK'], ['kat', 'KATEGORI'], ['nama', 'NAMA ITEM'], ['part', 'PART NO.'], ['ts', 'NAMA TS'],
-  ['satuan', 'SATUAN'], ['qty', 'JUMLAH PER KONTAINER'], ['total', 'TOTAL'], ['ket', 'KETERANGAN'], ['extra', 'INFO TAMBAHAN'],
-  ['fotoAwal', 'FOTO AWAL (DASHBOARD)'], ['linkFoto', 'LINK FOTO'], ['fotoUtama', 'ID FOTO UTAMA'], ['diperbarui', 'DIPERBARUI']
-];
-const TE_KEYS = TE_COLS.map(c => c[0]);
-const TE_COL = Object.fromEntries(TE_COLS.map((c, i) => [c[0], i + 1]));
-const TE_LCOLS = [['lokasi', 'LOKASI'], ['merk', 'MEREK'], ['sheet', 'SHEET ASAL'], ['title', 'KETERANGAN LOKASI'], ['containers', 'NAMA KONTAINER (pisahkan dengan koma)'],
-  ['lat', 'LATITUDE'], ['lng', 'LONGITUDE'], ['notes', 'CATATAN (pisahkan dengan |)']];
-
-function teHead_(sh, cols) {
-  sh.getRange(1, 1, 1, cols.length).setValues([cols.map(x => x[1])]).setFontWeight('bold').setBackground('#0b2545').setFontColor('#ffffff');
-  sh.setFrozenRows(1);
-  sh.getRange(2, 1, sh.getMaxRows() - 1, cols.length).setNumberFormat('@');
-  sh.autoResizeColumns(1, cols.length);
-}
-function teSheets_(create) {
-  const ss = SpreadsheetApp.getActive();
-  let sh = ss.getSheetByName(TE_SHEET), lk = ss.getSheetByName(TE_LOK_SHEET);
-  if (create && !sh) { sh = ss.insertSheet(TE_SHEET); teHead_(sh, TE_COLS); }
-  if (create && !lk) { lk = ss.insertSheet(TE_LOK_SHEET); teHead_(lk, TE_LCOLS); }
-  return { sh: sh, lk: lk };
-}
-/* "Bromo: 1; Raung: 3" <-> { Bromo: 1, Raung: 3 } */
-function teQtyParse_(s) {
-  const o = {};
-  String(s || '').split(/[;\n]+/).forEach(p => {
-    const m = p.match(/^\s*(.+?)\s*[:=]\s*(-?[\d.,]+)\s*$/);
-    if (m) { const v = Number(m[2].replace(',', '.')); if (v) o[m[1].trim()] = v; }
-  });
-  return o;
-}
-function teQtyStr_(o) { return Object.keys(o || {}).filter(k => Number(o[k])).map(k => k + ': ' + Number(o[k])).join('; '); }
-/* "Label: nilai; Label2: nilai2" -> objek */
-function teExtraParse_(s) {
-  const o = {};
-  String(s || '').split(';').forEach(p => { const i = p.indexOf(':'); if (i > 0) o[p.slice(0, i).trim()] = p.slice(i + 1).trim(); });
-  return o;
-}
-function teLokasi_(lk) {
-  if (!lk || lk.getLastRow() < 2) return [];
-  return lk.getRange(2, 1, lk.getLastRow() - 1, TE_LCOLS.length).getDisplayValues().filter(r => String(r[0]).trim()).map(r => ({
-    lokasi: String(r[0]).trim(), merk: String(r[1]).trim(), sheet: String(r[2]).trim(), title: String(r[3]).trim(),
-    containers: String(r[4]).split(',').map(x => x.trim()).filter(String),
-    lat: String(r[5]).trim() === '' ? null : Number(String(r[5]).replace(',', '.')), lng: String(r[6]).trim() === '' ? null : Number(String(r[6]).replace(',', '.')),
-    notes: String(r[7]).split('|').map(x => x.trim()).filter(String)
-  }));
-}
-function teRows_(sh) {
-  if (!sh || sh.getLastRow() < 2) return [];
-  const v = sh.getRange(2, 1, sh.getLastRow() - 1, TE_COLS.length).getDisplayValues(), out = [];
-  v.forEach((r, i) => {
-    if (!String(r[0]).trim()) return;
-    const o = { _row: i + 2 };
-    TE_KEYS.forEach((k, j) => { o[k] = String(r[j]).trim().replace(/^'(?=[=+\-@])/, ''); });
-    o.q = teQtyParse_(o.qty);
-    o.total = o.total === '' ? Object.keys(o.q).reduce((a, k) => a + o.q[k], 0) : (Number(String(o.total).replace(',', '.')) || 0);
-    o.extra = teExtraParse_(o.extra);
-    o.fotoUrl = o.fotoUtama ? 'https://drive.google.com/thumbnail?id=' + o.fotoUtama + '&sz=w800' : null;
-    out.push(o);
-  });
-  return out;
-}
-function teGet_() {
-  const t = teSheets_(false);
-  return { ok: true, kind: 'te', sheet: !!t.sh, source: 'DATABASE ALAT BERAT UIT JBM — ' + TE_SHEET, lokasi: teLokasi_(t.lk), rows: teRows_(t.sh),
-    updated: PropertiesService.getScriptProperties().getProperty('TE_UPDATED') || fileUpdated_() };
-}
-function teFind_(sh, id) {
-  id = String(id || '').trim();
-  if (!id || sh.getLastRow() < 2) return 0;
-  const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getDisplayValues();
-  for (let i = 0; i < ids.length; i++) if (String(ids[i][0]).trim() === id) return i + 2;
-  return 0;
-}
-function teTxt_(v, max) {
-  let s = String(v == null ? '' : v).replace(/\r/g, '').trim().slice(0, max || 500);
-  if (/^[=+\-@]/.test(s)) s = "'" + s;
-  return s;
-}
-function teClean_(d, lokList) {
-  d = d || {};
-  const o = {};
-  ['lokasi', 'kat', 'nama', 'part', 'ts', 'satuan', 'ket', 'fotoAwal'].forEach(k => { if (k in d) o[k] = teTxt_(d[k], k === 'ket' ? 1000 : 300); });
-  if ('satuan' in o) o.satuan = o.satuan.toUpperCase();
-  if ('lokasi' in o) {
-    const L = lokList.filter(x => x.lokasi === o.lokasi)[0];
-    if (!L) throw new Error('Lokasi "' + o.lokasi + '" tidak ada di sheet ' + TE_LOK_SHEET + '.');
-    o.merk = L.merk;
-  }
-  if ('q' in d) {
-    const q = {};
-    Object.keys(d.q || {}).forEach(k => {
-      const raw = String(d.q[k] == null ? '' : d.q[k]).trim(), v = Number(raw.replace(',', '.'));
-      if (raw !== '' && (isNaN(v) || v < 0 || v > 100000)) throw new Error('Jumlah untuk kontainer ' + k + ' harus angka 0 atau lebih.');
-      if (v) q[teTxt_(k, 60).replace(/[:;]/g, ' ')] = v;
-    });
-    o.qty = teQtyStr_(q);
-    o.total = String(Object.keys(q).reduce((a, k) => a + q[k], 0));
-  }
-  if ('extra' in d) o.extra = Object.keys(d.extra || {}).map(k => teTxt_(k, 60).replace(/[:;]/g, ' ') + ': ' + teTxt_(d.extra[k], 200).replace(/;/g, ',')).join('; ');
-  return o;
-}
-function teWrite_(sh, r, o) {
-  o.diperbarui = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
-  Object.keys(o).forEach(k => { if (TE_COL[k]) sh.getRange(r, TE_COL[k]).setNumberFormat('@').setValue(o[k]); });
-}
-function teRowObj_(sh, r) { return teRows_(sh).filter(x => x._row === r)[0] || null; }
-function teChanged_(o) {
-  if (o && o.ok) { o.updated = new Date().toISOString(); PropertiesService.getScriptProperties().setProperty('TE_UPDATED', o.updated); }
-  return o;
-}
-function tePhotoRoot_() {
-  const id = PropertiesService.getScriptProperties().getProperty('TE_PHOTO_FOLDER_ID');
-  if (id) return DriveApp.getFolderById(id);
-  const root = abPhotoRoot_(), it = root.getFoldersByName('FOTO TOWER EMERGENCY');
-  return it.hasNext() ? it.next() : root.createFolder('FOTO TOWER EMERGENCY');
-}
-function tePhotoFolder_(sh, r, create) {
-  const row = teRowObj_(sh, r), m = String(row.linkFoto || '').match(/folders\/([\w-]+)/);
-  if (m) {
-    try { return DriveApp.getFolderById(m[1]); } catch (err) { throw new Error('Folder foto item ini tidak dapat diakses oleh skrip.'); }
-  }
-  if (!create) return null;
-  const folder = tePhotoRoot_().createFolder([row.id, row.nama, row.lokasi].filter(String).join(' - '));
-  sh.getRange(r, TE_COL.linkFoto).setValue(folder.getUrl());
-  return folder;
-}
-function tePhotos_(id) {
-  const sh = teSheets_(false).sh, r = sh ? teFind_(sh, id) : 0;
-  if (!r) return { ok: false, error: 'Item ' + id + ' tidak ditemukan di sheet ' + TE_SHEET + '.' };
-  const folder = tePhotoFolder_(sh, r, false), row = teRowObj_(sh, r);
-  return { ok: true, folder: folder ? folder.getUrl() : null, cover: row.fotoUtama, photos: folder ? listPhotos_(folder) : [] };
-}
-function teNextId_(sh) {
-  let max = 0;
-  teRows_(sh).forEach(x => { const m = String(x.id).match(/^TE-(\d+)$/); if (m) max = Math.max(max, Number(m[1])); });
-  return 'TE-' + ('000' + (max + 1)).slice(-4);
-}
-function teAction_(req) {
-  const t = teSheets_(true), sh = t.sh, lk = t.lk;
-  if (req.action === 'te_seed') {
-    if (teRows_(sh).length) return { ok: false, error: 'Sheet ' + TE_SHEET + ' sudah berisi data.' };
-    const L = (Array.isArray(req.lokasi) ? req.lokasi : []).slice(0, 50);
-    const R = (Array.isArray(req.rows) ? req.rows : []).slice(0, 5000);
-    if (!L.length || !R.length) return { ok: false, error: 'Tidak ada data untuk disalin.' };
-    if (!teLokasi_(lk).length) {
-      lk.getRange(2, 1, L.length, TE_LCOLS.length).setNumberFormat('@').setValues(L.map(x => [teTxt_(x.lokasi, 120), teTxt_(x.merk, 60), teTxt_(x.sheet, 120), teTxt_(x.title, 200),
-        (x.containers || []).map(c => teTxt_(c, 60).replace(/,/g, ' ')).join(', '), x.lat == null ? '' : String(x.lat), x.lng == null ? '' : String(x.lng),
-        (x.notes || []).map(n => teTxt_(n, 300).replace(/\n/g, ' ').replace(/\|/g, '/')).join(' | ')]));
-    }
-    const lokList = teLokasi_(lk), now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
-    const rows = R.map((d, i) => {
-      const o = teClean_({ lokasi: d.lokasi, kat: d.kat, nama: d.nama, part: d.part, ts: d.ts, satuan: d.satuan, ket: d.ket, fotoAwal: d.fotoAwal, q: d.q, extra: d.extra }, lokList);
-      if (d.total != null && d.total !== '') o.total = String(Number(d.total) || 0);
-      o.id = 'TE-' + ('000' + (i + 1)).slice(-4); o.diperbarui = now;
-      return TE_KEYS.map(k => o[k] == null ? '' : o[k]);
-    });
-    sh.getRange(2, 1, rows.length, TE_COLS.length).setNumberFormat('@').setValues(rows);
-    return teChanged_({ ok: true, lokasi: teLokasi_(lk), rows: teRows_(sh) });
-  }
-  const lokList = teLokasi_(lk);
-  if (req.action === 'te_add') {
-    const o = teClean_(req.data, lokList);
-    if (!o.nama) return { ok: false, error: 'Nama item wajib diisi.' };
-    if (!o.lokasi) return { ok: false, error: 'Lokasi wajib dipilih.' };
-    o.id = teNextId_(sh);
-    const r = Math.max(sh.getLastRow(), 1) + 1;
-    teWrite_(sh, r, o);
-    return teChanged_({ ok: true, row: teRowObj_(sh, r) });
-  }
-  const r = teFind_(sh, req.id);
-  if (!r) return { ok: false, code: 'conflict', error: 'Item ' + req.id + ' tidak ditemukan di sheet. Muat ulang data lalu coba lagi.' };
-  if (req.action === 'te_update') {
-    const o = teClean_(req.data, lokList);
-    if ('nama' in o && !o.nama) return { ok: false, error: 'Nama item wajib diisi.' };
-    teWrite_(sh, r, o);
-    return teChanged_({ ok: true, row: teRowObj_(sh, r) });
-  }
-  if (req.action === 'te_photo_upload') {
-    const folder = tePhotoFolder_(sh, r, true), f = folder.createFile(photoBlob_(req));
-    const caption = String(req.caption || '').trim().slice(0, 500);
-    if (caption) f.setDescription(caption);
-    if (!teRowObj_(sh, r).fotoUtama) sh.getRange(r, TE_COL.fotoUtama).setValue(f.getId());
-    return teChanged_({ ok: true, photo: photoInfo_(f), row: teRowObj_(sh, r) });
-  }
-  const folder = tePhotoFolder_(sh, r, false);
-  if (!folder) return { ok: false, error: 'Item ini belum punya foto di Drive.' };
-  const f = photoInFolder_(folder, req.fileId);
-  if (req.action === 'te_photo_cover') {
-    sh.getRange(r, TE_COL.fotoUtama).setValue(f.getId());
-    return teChanged_({ ok: true, row: teRowObj_(sh, r) });
-  }
-  if (req.action === 'te_photo_delete') {
-    f.setTrashed(true);
-    if (teRowObj_(sh, r).fotoUtama === f.getId()) {
-      const rest = listPhotos_(folder);
-      sh.getRange(r, TE_COL.fotoUtama).setValue(rest.length ? rest[0].id : '');
-    }
-    return teChanged_({ ok: true, row: teRowObj_(sh, r) });
-  }
-  return { ok: false, error: 'Aksi tidak dikenal.' };
 }

@@ -105,7 +105,7 @@
 
       <div class="card home-tips">
         <div class="ht-ic">${icon("search")}</div>
-        <div><h4>Tips cepat</h4><ul>
+        <div><h4>Tips cepat</h4><p class="ht-guide">Baru pertama kali? <a href="#panduan">Baca panduan penggunaan lengkap →</a></p><ul>
           <li>Klik kartu ringkasan, bar grafik, atau titik di peta untuk memfilter data dan membuka detail.</li>
           <li>Data <b>Trafo Mobile</b> dan <b>CUI Jarvis</b> tersimpan di Google Sheets/Drive — perubahan langsung terlihat oleh semua pengguna.</li>
           <li>Gunakan tombol bulan/matahari di kanan atas untuk mode gelap, dan “Ciutkan menu” untuk layar yang lebih lega.</li>

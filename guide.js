@@ -71,9 +71,12 @@
       src: [["app", "Aplikasi Jarvis", "Export hasil CUI (.xls)"], ["file", "Unggah di dashboard", "Kode akses edit"], ["drive", "Google Drive", "Folder CUI Jarvis: file asli + data ringkas"], ["sheet", "Google Sheets", "Spreadsheet database CUI Jarvis: sheet CUI JARVIS DATA & CUI JARVIS UPLOAD"], ["screen", "Dashboard", "Selalu menampilkan unggahan terakhir"]],
       srcNote: "Tanggal <b>Diperbarui</b> = tanggal unggahan terakhir. Item Bottom/Mid Section & Earth Wire dihitung per tower; item Top Section Fasa dihitung per klem." },
 
-    { id: "tower", g: "Peralatan ERS", t: "Tower Emergency", tone: "p2", sum: "Ketersediaan & inventaris tower emergency (ERS).",
-      use: ["Menu ini <b>sedang dalam pemeliharaan</b> (under maintenance) dan akan segera kembali dengan data terbaru."], how: ["Untuk sementara belum ada yang perlu dioperasikan di menu ini."],
-      src: [["screen", "Dashboard", "Halaman under maintenance"]], srcNote: "Sumber data akan diinformasikan setelah menu aktif kembali." },
+    { id: "tower", g: "Peralatan ERS", t: "Tower Emergency", tone: "p2", sum: "Inventaris tower emergency (TE) per lokasi dan per kontainer: Lindsey, TS, dan SBB.",
+      use: ["Melihat 6 lokasi penyimpanan TE (GIS Bangil, GI Babat, GI Pacitan, Gudang Tandes, GIS Tanah Lot, GI Kebonagung) beserta kontainernya.", "Mengetahui isi setiap kontainer (nama kontainer seperti Bromo, Semeru, Kerinci, Argopuro) lengkap dengan foto, jumlah, satuan, dan keterangan kondisi.", "Menemukan item yang bermasalah (rusak / tidak lengkap) atau berjumlah 0."],
+      how: ["Klik <b>titik di peta</b> atau <b>kartu lokasi</b> untuk melihat isi lokasi tersebut; " + kbd("Semua lokasi") + " menampilkan gabungan seluruh lokasi.", "Klik <b>kartu kontainer</b> (gambar kontainer berwarna) untuk menampilkan hanya item di kontainer itu; klik lagi untuk membatalkan.", "Saring dengan chip <b>kategori</b>, " + kbd("Ada catatan") + ", " + kbd("Jumlah 0") + ", atau kotak cari (nama item, part no., keterangan).", "Klik batang grafik kategori/kontainer untuk memfilter; klik kartu KPI \"Item dengan catatan\" atau \"Item berjumlah 0\" untuk langsung menampilkan item tersebut.", "Pilih tampilan <b>Grid</b> (kartu bergambar) atau <b>List</b> (tabel dengan kolom per kontainer).", "Klik item untuk pop-up detail: foto (klik untuk memperbesar), jumlah per kontainer, dan keterangan."],
+      terms: [["Nama kontainer", "Kolom NAMA KONTAINER di sheet; tiap sub-kolom = satu kontainer"], ["Total", "Jumlah seluruh kontainer di lokasi (kolom TOTAL/JUMLAH)"], ["Ada catatan", "Kolom KETERANGAN terisi, mis. rusak, berkarat, tidak lengkap"]],
+      src: [["sheet", "Google Sheets", "Spreadsheet Tower Emergency — sheet LINDSEY BANGIL, TS BABAT, LINDSEY PACITAN, TS TANDES, TS TANAH LOT, SBB KEBONAGUNG"], ["file", "Pengambilan data", "Isi sheet + foto item disalin ke dashboard"], ["screen", "Dashboard", "Peta, kontainer, grafik & daftar item"]],
+      srcNote: "Tanggal <b>Diperbarui</b> = tanggal data diambil dari spreadsheet. Perubahan di spreadsheet tampil di dashboard setelah data diambil ulang oleh admin. Posisi lokasi di peta adalah titik perkiraan." },
 
     { id: "trafodb", g: "Peralatan ERS", t: "Trafo Mobile", tone: "p2", sum: "Data komponen trafo mobile per trailer: lokasi, kondisi, foto, dan riwayat perpindahan.",
       use: ["Melihat lokasi penempatan trafo mobile di peta dan daftar komponennya.", "Menambah/mengedit komponen, mengunggah foto, dan mencatat perpindahan lokasi beserta dokumen BA mobilisasi."],
@@ -133,7 +136,7 @@
   const DASH = "Tambah/Edit di dashboard (kode akses) atau langsung di sheet";
   const TABLE = {
     cui: ["Aplikasi Jarvis<small>Export hasil CUI (.xls)</small>", "Spreadsheet database CUI Jarvis<small>Sheet CUI JARVIS DATA & CUI JARVIS UPLOAD + folder Drive CUI Jarvis</small>", "Unggah file export Jarvis di dashboard"],
-    tower: ["—", "—", "Menu sedang dalam pemeliharaan"],
+    tower: ["Data inventaris TE<small>Dikelola petugas ERS</small>", "Spreadsheet Tower Emergency<small>6 sheet lokasi, acuan kolom NAMA KONTAINER</small>", "Ubah di spreadsheet, lalu admin mengambil ulang data ke dashboard"],
     trafodb: ["Data komponen trafo mobile<small>Dikelola petugas</small>", "DATABASE ALAT BERAT UIT JBM<small>Sheet 2. TRAFO MOBILE & RIWAYAT LOKASI + Drive (foto, BA)</small>", DASH],
     dcm: ["Aplikasi alat<small>Export DATA DC MOBILE UIT JBM</small>", "DATABASE ALAT BERAT UIT JBM<small>Sheet 4. DC MOBILE (NEW) + Drive (foto)</small>", DASH],
     alat: ["Aplikasi WARNOTO<small>Export data alat berat</small>", "DATABASE ALAT BERAT UIT JBM<small>Sheet 3. ALAT BERAT (NEW) + Drive (foto)</small>", DASH],

@@ -206,6 +206,15 @@
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, className: typeof tdbIsDark === "function" && tdbIsDark() ? "tiles-dark" : "",
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(MAP.map);
       MAP.layer = L.layerGroup().addTo(MAP.map);
+      // tombol home: kembali ke tampilan Jawa Timur & Bali
+      const Home = L.Control.extend({ options: { position: "topleft" }, onAdd() {
+        const box = L.DomUtil.create("div", "leaflet-bar map-home");
+        box.innerHTML = `<a href="#" role="button" title="Tampilkan Jawa Timur &amp; Bali" aria-label="Tampilkan Jawa Timur dan Bali"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg></a>`;
+        L.DomEvent.disableClickPropagation(box);
+        L.DomEvent.on(box.querySelector("a"), "click", e => { L.DomEvent.preventDefault(e); if (S.lok) select("", false); else mapFit(); });
+        return box;
+      } });
+      MAP.map.addControl(new Home());
       // peta baru bisa diukur setelah halaman tampil: sesuaikan agar semua lokasi terlihat
       if (window.ResizeObserver) new ResizeObserver(() => { if ($("#teMap").clientWidth) { MAP.map.invalidateSize(); if (!MAP.fitted) { MAP.fitted = true; mapFit(); } } }).observe($("#teMap"));
     }
@@ -224,7 +233,7 @@
     if (!MAP.map || !$("#teMap").clientWidth) return; MAP.map.invalidateSize();
     const L0 = curLok();
     if (L0) MAP.map.setView([L0.lat, L0.lng], 9, { animate: true });
-    else MAP.map.fitBounds(LOK.filter(x => x.lat != null).map(x => [x.lat, x.lng]), { padding: [40, 40] });
+    else MAP.map.fitBounds([[-8.85, 110.9], [-6.75, 115.75]], { padding: [10, 10] }); // Jawa Timur & Bali
   }
 
   /* ---------- Interaksi ---------- */

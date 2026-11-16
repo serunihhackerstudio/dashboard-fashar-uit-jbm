@@ -4,9 +4,9 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 
 ## Menu
 0. **Beranda** *(halaman awal: sambutan + foto tim, angka sorotan dari seluruh menu, dan kartu fitur per kelompok menu — `home.js`)*
-1. Health Index
-2. Asesmen JAR
-3. Asesmen GI
+1. Health Index *(disembunyikan)*
+2. Asesmen JAR *(disembunyikan)*
+3. Asesmen GI *(disembunyikan)*
 4. CUI Jarvis (hasil Climb Up Inspection tower dari export Jarvis)
 5. Tower Emergency *(Peralatan ERS — sementara menampilkan halaman "under maintenance"; konten lama disembunyikan di `.tower-legacy`)*
 6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
@@ -15,6 +15,8 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 9. Filter Minyak *(Alat Berat & Alat Bantu — data unit filter minyak trafo dari `FILTER_MINYAK_UIT_JBM.xlsx`)*
 10. HV Test *(Alat Berat & Alat Bantu — alat uji tegangan tinggi, live dari sheet `7. ALAT HV TEST (NEW)`: kartu per alat, grafik kondisi & umur, tabel, detail, tambah/edit & foto)*
 11. AO *(section **RKAU** — monitoring program kerja AO, nilai rupiah diburamkan sampai token dimasukkan; data dari spreadsheet RKAU sheet `MONITORING AO`)*
+
+**Menyembunyikan menu (tanpa menghapus):** isi `hiddenPages` di `config.js` dengan id menu (mis. `["health", "jar", "gi"]`). Menu tersebut hilang dari menu samping dan Beranda, judul kelompok yang kosong ikut hilang, dan alamatnya (`#health`, dst.) dialihkan ke Beranda. Kode & data tetap ada; hapus id dari daftar untuk menampilkannya lagi.
 
 ## Status
 Menu Trafo Mobile memakai data live Google Sheets (lihat bagian di bawah). Menu lain masih memakai data statis/mock.

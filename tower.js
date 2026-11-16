@@ -35,7 +35,6 @@
 
    <div class="te-top">
     <div class="card te-map-card">
-     <div class="card-head"><div><h3>Peta lokasi tower emergency</h3><p>Ukuran titik = jumlah kontainer · klik titik untuk memilih lokasi</p></div></div>
      <div class="tdb-mapwrap te-mapwrap"><div id="teMap" class="alx-map" role="region" aria-label="Peta lokasi tower emergency"></div>
       <p class="muted sm te-map-fb" id="teMapFb" hidden>Peta tidak dapat dimuat.</p></div>
     </div>
@@ -207,6 +206,8 @@
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, className: typeof tdbIsDark === "function" && tdbIsDark() ? "tiles-dark" : "",
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(MAP.map);
       MAP.layer = L.layerGroup().addTo(MAP.map);
+      // peta baru bisa diukur setelah halaman tampil: sesuaikan agar semua lokasi terlihat
+      if (window.ResizeObserver) new ResizeObserver(() => { if ($("#teMap").clientWidth) { MAP.map.invalidateSize(); if (!MAP.fitted) { MAP.fitted = true; mapFit(); } } }).observe($("#teMap"));
     }
     MAP.layer.clearLayers();
     LOK.forEach(x => {
@@ -220,7 +221,7 @@
     });
   }
   function mapFit() {
-    if (!MAP.map) return; MAP.map.invalidateSize();
+    if (!MAP.map || !$("#teMap").clientWidth) return; MAP.map.invalidateSize();
     const L0 = curLok();
     if (L0) MAP.map.setView([L0.lat, L0.lng], 9, { animate: true });
     else MAP.map.fitBounds(LOK.filter(x => x.lat != null).map(x => [x.lat, x.lng]), { padding: [40, 40] });

@@ -274,8 +274,8 @@
     if (!window.L || !$("#teMap")) { $("#teMapFb").hidden = false; return; }
     if (!MAP.map) {
       MAP.map = L.map("teMap", { scrollWheelZoom: false, minZoom: 5, zoomSnap: 0.25 }).setView([-7.8, 113.2], 7);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { maxZoom: 18, subdomains: "abcd", className: typeof tdbIsDark === "function" && tdbIsDark() ? "tiles-dark" : "",
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>' }).addTo(MAP.map);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, className: typeof tdbIsDark === "function" && tdbIsDark() ? "tiles-dark" : "",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(MAP.map);
       MAP.layer = L.layerGroup().addTo(MAP.map);
       const Home = L.Control.extend({ options: { position: "topleft" }, onAdd() {
         const box = L.DomUtil.create("div", "leaflet-bar map-home");
@@ -292,9 +292,11 @@
     LOK.forEach(x => {
       if (x.lat == null || isNaN(x.lat)) return;
       const sel = S.lok === x.key, dim = S.lok && !sel;
+      // label dibalik ke kiri bila ada lokasi lain dekat di sebelah timurnya (agar tidak saling menimpa)
+      const flip = LOK.some(o => o !== x && o.lat != null && o.lng > x.lng && o.lng - x.lng < 1 && Math.abs(o.lat - x.lat) < 0.2);
       L.marker([x.lat, x.lng], { title: `${x.lokasi} · ${x.containers.length} kontainer`, riseOnHover: true, zIndexOffset: sel ? 1000 : 0,
         icon: L.divIcon({ className: "te-mk-icon", iconSize: null, iconAnchor: [17, 17],
-          html: `<span class="te-mpin${sel ? " sel" : ""}${dim ? " dim" : ""}" style="--c:${x.color}"><b>${x.containers.length}</b><span class="te-mpin-t"><em>${esc(x.lokasi)}</em><small>${esc(x.merk)} · ${fmt(x.items.length)} item</small></span></span>` }) })
+          html: `<span class="te-mpin${sel ? " sel" : ""}${dim ? " dim" : ""}${flip ? " flip" : ""}" style="--c:${x.color}"><b>${x.containers.length}</b><span class="te-mpin-t"><em>${esc(x.lokasi)}</em><small>${esc(x.merk)} · ${fmt(x.items.length)} item</small></span></span>` }) })
         .on("click", () => select(S.lok === x.key ? "" : x.key, true))
         .bindTooltip(`<b>${esc(x.lokasi)}</b> · ${esc(x.merk)}<br>Kontainer: ${x.containers.map(esc).join(", ")}<br>${fmt(x.items.length)} jenis item`, { direction: "top", offset: [0, -18] })
         .addTo(MAP.layer);

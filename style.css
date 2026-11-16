@@ -1345,3 +1345,41 @@ details[open]>summary .gd-chev{transform:rotate(180deg)}
 @media (max-width:900px){.te-top{grid-template-columns:1fr}.te-dlg{grid-template-columns:1fr}}
 @media (max-width:760px){.te-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.te-charts{grid-template-columns:1fr}.te-mapwrap{min-height:320px}.te-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.te-ph{height:120px}.te-img{max-height:120px}.te-detail{padding:16px}}
 @media (max-width:760px){#teKat{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}#teKat .ab-chip{flex:none}}
+/* Tower Emergency — peta berlabel, komposisi merek, form jumlah per kontainer */
+.te-map-card .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.te-map-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--text-2)}
+.te-map-legend span{display:inline-flex;align-items:center;gap:6px}.te-map-legend i{width:10px;height:10px;border-radius:50%}
+.te-mapwrap{min-height:440px}
+.te-map-card{display:flex;flex-direction:column}.te-map-card .te-mapwrap{flex:1}
+.te-mk-icon{background:none;border:0}
+.te-mpin{display:inline-flex;align-items:center;height:34px;padding:0 12px 0 0;border-radius:999px;background:#fff;box-shadow:0 6px 16px rgba(2,6,23,.22);border:2px solid var(--c);white-space:nowrap;cursor:pointer;transition:transform .15s,opacity .15s,box-shadow .15s;transform-origin:17px 17px}
+.te-mpin>b{display:grid;place-items:center;width:30px;height:30px;margin-right:8px;border-radius:50%;background:var(--c);color:#fff;font-size:13.5px;font-weight:800}
+.te-mpin-t{display:flex;flex-direction:column;line-height:1.1}.te-mpin-t em{font-style:normal;font-weight:800;font-size:12.5px;color:#0f172a}.te-mpin-t small{font-size:10.5px;color:#475569;font-weight:600}
+.te-mpin:hover{transform:scale(1.06);box-shadow:0 10px 22px rgba(2,6,23,.28)}
+.te-mpin.sel{transform:scale(1.12);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 35%,transparent),0 10px 22px rgba(2,6,23,.3)}
+.te-mpin.dim{opacity:.55}
+.te-mk-total{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.te-mk-total>div{display:flex;flex-direction:column;align-items:center;padding:12px 8px;border-radius:14px;background:var(--surface-2)}
+.te-mk-total b{font-size:26px;font-weight:800;line-height:1.1}.te-mk-total span{font-size:12px;color:var(--text-2);font-weight:600}
+.te-mk-stack{display:flex;height:30px;border-radius:10px;overflow:hidden;gap:3px;margin-bottom:18px}
+.te-mk-stack i{display:grid;place-items:center;min-width:34px;color:#fff;font-style:normal;font-size:12px;font-weight:800}
+.te-mk-list{display:flex;flex-direction:column;gap:12px}
+.te-mk{padding:12px 14px;border-radius:14px;border:1px solid var(--border);border-left:4px solid var(--c);background:var(--surface)}
+.te-mk-head{display:flex;align-items:center;gap:8px}.te-mk-head b{font-size:15px}
+.te-mk-dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.te-mk-n{margin-left:auto;font-size:22px;font-weight:800;color:var(--c);display:flex;align-items:baseline;gap:4px}.te-mk-n small{font-size:11.5px;color:var(--text-3);font-weight:600}
+.te-mk-icons{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.te-mk-icons span{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.te-mk-icons svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.te-mk-loks{display:flex;flex-wrap:wrap;gap:6px}
+.te-mk-lok{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);font:inherit;font-size:12px;font-weight:700;color:var(--text);cursor:pointer}
+.te-mk-lok em{font-style:normal;font-size:11px;padding:0 6px;border-radius:99px;background:var(--c);color:#fff}
+.te-mk-lok:hover,.te-mk-lok.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+.te-mk-sub{display:block;margin-top:8px;font-size:12px;color:var(--text-3)}
+.te-qin{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px}
+.te-qf{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;border:1px solid var(--border);border-top:3px solid var(--c);background:var(--surface-2)}
+.te-qf span{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800}.te-qf .te-con-art{width:34px;height:22px;margin:0}
+.te-qf input{width:100%}
+.te-strip{margin-top:10px}
+#teDlgEdit svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:760px){.te-mapwrap{min-height:340px}.te-mpin-t small{display:none}}

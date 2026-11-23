@@ -14,12 +14,12 @@ import datetime, hashlib, html, io, json, os, re, subprocess, sys, time
 from html.parser import HTMLParser
 
 SHEET_ID = "1P92IKcPwqLltC4sY_L3BcezIYiuwA0qKnGX6McyZ-6Y"
-# gid, nama sheet, info lokasi (titik peta perkiraan)
+# gid, nama sheet, info lokasi (titik peta perkiraan; "title" opsional = keterangan lokasi yang ditampilkan)
 SHEETS = [
     ("921593795", "LINDSEY BANGIL", {"lokasi": "GIS Bangil", "merk": "Lindsey", "lat": -7.600, "lng": 112.780}),
     ("1287518963", "TS BABAT", {"lokasi": "GI Babat", "merk": "TS", "lat": -7.112, "lng": 112.163}),
     ("1567974116", "LINDSEY PACITAN", {"lokasi": "GI Pacitan", "merk": "Lindsey", "lat": -8.195, "lng": 111.105}),
-    ("1033846467", "TS TANDES", {"lokasi": "Gudang Tandes", "merk": "TS", "lat": -7.250, "lng": 112.676}),
+    ("910709979", "TS TANDES", {"lokasi": "GIS Tandes", "merk": "TS", "lat": -7.250, "lng": 112.676, "title": "UPT GRESIK GIS TANDES"}),
     ("819924374", "TS TANAH LOT", {"lokasi": "GIS Tanah Lot", "merk": "TS", "lat": -8.615, "lng": 115.090}),
     ("865271373", "SBB KEBONAGUNG", {"lokasi": "GI Kebonagung", "merk": "SBB", "lat": -8.010, "lng": 112.625}),
 ]
@@ -180,7 +180,7 @@ def main():
         else: raw = fetch(f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlview/sheet?headers=false&gid={gid}").decode("utf-8")
         p = Grid(); p.feed(raw); d = parse_sheet(p.grid(), name)
         for it in d["items"]: it["img"] = save_img(it["img"])
-        lokasi.append({"sheet": name, "gid": gid, **info, **d})
+        lokasi.append({"sheet": name, "gid": gid, **info, **d, **({"title": info["title"]} if info.get("title") else {})})  # title di SHEETS menimpa judul sheet
         print(f"{name}: {len(d['containers'])} kontainer {d['containers']}, {len(d['items'])} item, foto {sum(1 for i in d['items'] if i['img'])}")
     doc = {"sheetId": SHEET_ID, "generated": datetime.date.today().isoformat(), "lokasi": lokasi}
     with open("data/tower-emergency.js", "w", encoding="utf-8") as f:

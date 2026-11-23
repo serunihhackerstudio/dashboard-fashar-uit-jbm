@@ -194,7 +194,7 @@
     const mx = Math.max(1, ...L.containers.map(k => it.q[k] || 0));
     const dd = (l, v) => `<div><dt>${l}</dt><dd class="${v ? "pre" : "nil"}">${v || "—"}</dd></div>`;
     $("#teDlgBody").innerHTML = `<div class="te-dlg">
-      <div class="te-dlg-ph">${it.img ? `<a href="${esc(it.img)}" class="te-zoom" title="Klik untuk memperbesar"><img src="${esc(it.img)}" alt="${esc(it.nama)}"${fb(it)}></a><small class="muted">Klik foto untuk memperbesar</small>` : photo(it, "te-img big")}</div>
+      <div class="te-dlg-ph">${it.img ? `<a href="${esc(it.img)}" class="te-zoom" data-fb="${esc(it.imgFb || "")}" title="Klik untuk memperbesar"><img src="${esc(it.img)}" alt="${esc(it.nama)}"${fb(it)}></a><small class="muted">Klik foto untuk memperbesar</small>` : photo(it, "te-img big")}</div>
       <div><dl class="dgrid">${dd(L.merk === "TS" ? "Uraian / nama barang" : "Description", esc(it.nama))}${dd(L.merk === "TS" ? "Nama TS" : "Part no.", esc(it.part || it.ts))}${dd("Satuan", esc(it.satuan))}${dd("Total", `<b>${num(it.total)}</b> ${esc(it.satuan || "")}`)}
         ${Object.entries(it.extra || {}).map(([k, v]) => dd(esc(title1(k)), esc(v))).join("")}</dl>
         <h4 class="te-dlg-h">Jumlah per kontainer</h4>
@@ -269,7 +269,13 @@
   $("#teSearch").addEventListener("input", e => { S.q = e.target.value; S.page = 1; renderItems(); });
   $("#teDialog").addEventListener("click", e => {
     if (e.target === $("#teDialog")) return $("#teDialog").close();
-    const z = e.target.closest(".te-zoom"); if (z && window.openLightbox) { e.preventDefault(); openLightbox([{ thumb: z.getAttribute("href"), alt: $("#teDlgTitle").textContent, view: z.getAttribute("href") }], 0); }
+    const z = e.target.closest(".te-zoom");
+    if (z && window.openLightbox) {
+      e.preventDefault();
+      // pakai foto yang sedang tampil (foto Google bisa kedaluwarsa -> sudah diganti foto cadangan lokal)
+      const im = z.querySelector("img"), fbk = z.dataset.fb || "", shown = im && im.complete && im.naturalWidth ? im.currentSrc || im.src : (fbk || z.getAttribute("href"));
+      openLightbox([{ thumb: shown, fb: fbk, alt: $("#teDlgTitle").textContent, view: shown }], 0);
+    }
   });
 
   /* ---------- Data live dari spreadsheet (dimuat ulang tiap menit) ---------- */

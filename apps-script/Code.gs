@@ -1299,31 +1299,49 @@ function aoMask_(o) {
    Dashboard mem-parsing tabelnya sendiri. Spreadsheet harus "Anyone with the link – Viewer".
    ========================================================= */
 const TE_SHEET_ID = '1P92IKcPwqLltC4sY_L3BcezIYiuwA0qKnGX6McyZ-6Y';
-const TE_GIDS = ['921593795', '1287518963', '1567974116', '1033846467', '819924374', '865271373'];
+// [gid cadangan, nama tab]. Tab dicari berdasarkan NAMA lebih dulu (gid berubah bila tab dibuat ulang).
+const TE_SHEETS = [['921593795', 'LINDSEY BANGIL'], ['1287518963', 'TS BABAT'], ['1567974116', 'LINDSEY PACITAN'],
+  ['1033846467', 'TS TANDES'], ['819924374', 'TS TANAH LOT'], ['865271373', 'SBB KEBONAGUNG']];
 const TE_CACHE_SEC = 50;
+const teNorm_ = s => String(s || '').toUpperCase().replace(/\s+/g, ' ').trim();
+
+// Peta nama tab -> gid dari spreadsheet Tower Emergency (cache 10 menit)
+function teTabs_(cache) {
+  const hit = cache.get('te_tabs');
+  if (hit) { try { return JSON.parse(hit); } catch (err) { } }
+  const map = {};
+  try {
+    SpreadsheetApp.openById(TE_SHEET_ID).getSheets().forEach(sh => { map[teNorm_(sh.getName())] = String(sh.getSheetId()); });
+    cache.put('te_tabs', JSON.stringify(map), 600);
+  } catch (err) { /* tidak bisa membuka: pakai gid cadangan */ }
+  return map;
+}
 
 function teLive_() {
   const cache = CacheService.getScriptCache();
+  const tabs = teTabs_(cache), haveTabs = Object.keys(tabs).length > 0;
+  const list = TE_SHEETS.map(([g, name]) => ({ name: name, gid: tabs[teNorm_(name)] || g, found: !haveTabs || !!tabs[teNorm_(name)] }));
   const out = {}, todo = [];
-  TE_GIDS.forEach(gid => {
-    const hit = teCacheGet_(cache, 'te_' + gid);
-    if (hit) out[gid] = { gid: gid, html: hit, cached: true }; else todo.push(gid);
+  list.forEach(t => {
+    const hit = teCacheGet_(cache, 'te_' + t.gid);
+    if (hit) out[t.name] = { gid: t.gid, name: t.name, html: hit, cached: true }; else todo.push(t);
   });
   if (todo.length) {
-    const res = UrlFetchApp.fetchAll(todo.map(gid => ({
-      url: 'https://docs.google.com/spreadsheets/d/' + TE_SHEET_ID + '/htmlview/sheet?headers=false&gid=' + gid,
+    const res = UrlFetchApp.fetchAll(todo.map(t => ({
+      url: 'https://docs.google.com/spreadsheets/d/' + TE_SHEET_ID + '/htmlview/sheet?headers=false&gid=' + t.gid,
       muteHttpExceptions: true, followRedirects: true
     })));
     res.forEach((r, i) => {
-      const gid = todo[i], code = r.getResponseCode();
-      if (code !== 200) { out[gid] = { gid: gid, error: 'HTTP ' + code }; return; }
+      const t = todo[i], code = r.getResponseCode();
+      const miss = !t.found ? ' — tab "' + t.name + '" tidak ditemukan; tab yang ada: ' + Object.keys(tabs).join(', ') : '';
+      if (code !== 200) { out[t.name] = { gid: t.gid, name: t.name, error: 'HTTP ' + code + ' (gid ' + t.gid + ')' + miss }; return; }
       const html = teSlim_(r.getContentText('UTF-8'));
-      if (!/<tr/i.test(html)) { out[gid] = { gid: gid, error: 'Tabel tidak ditemukan (cek akses link spreadsheet)' }; return; }
-      teCachePut_(cache, 'te_' + gid, html);
-      out[gid] = { gid: gid, html: html };
+      if (!/<tr/i.test(html)) { out[t.name] = { gid: t.gid, name: t.name, error: 'Tabel tidak ditemukan (cek akses link spreadsheet)' + miss }; return; }
+      teCachePut_(cache, 'te_' + t.gid, html);
+      out[t.name] = { gid: t.gid, name: t.name, html: html };
     });
   }
-  return { ok: true, sheetId: TE_SHEET_ID, fetched: new Date().toISOString(), sheets: TE_GIDS.map(g => out[g]) };
+  return { ok: true, sheetId: TE_SHEET_ID, fetched: new Date().toISOString(), sheets: list.map(t => out[t.name]) };
 }
 
 // Ambil tabelnya saja dan buang atribut gaya agar respons kecil

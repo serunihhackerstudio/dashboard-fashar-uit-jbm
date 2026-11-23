@@ -354,7 +354,8 @@
   function liveDoc(j) {
     const errs = [];
     const lokasi = DOC.lokasi.map(base => {
-      const sh = (j.sheets || []).find(x => x && String(x.gid) === String(base.gid));
+      const nm = v => String(v || "").toUpperCase().replace(/\s+/g, " ").trim();
+      const sh = (j.sheets || []).find(x => x && x.name && nm(x.name) === nm(base.sheet)) || (j.sheets || []).find(x => x && !x.name && String(x.gid) === String(base.gid));
       const prev = LIVE.good[base.gid] || base; // sheet gagal: pakai data live terakhir yang berhasil
       if (!sh || !sh.html) { errs.push(`${base.sheet}: ${sh && sh.error || "tidak terbaca"}`); return prev; }
       try {

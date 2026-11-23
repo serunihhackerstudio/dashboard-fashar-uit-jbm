@@ -8,7 +8,7 @@ Functional web prototype hasil redesign dari Dashboard FASHAR Looker Studio.
 2. Asesmen JAR *(disembunyikan)*
 3. Asesmen GI *(disembunyikan)*
 4. CUI Jarvis (hasil Climb Up Inspection tower dari export Jarvis)
-5. Tower Emergency *(Peralatan ERS — inventaris TE per lokasi & NAMA KONTAINER dari spreadsheet Tower Emergency; `tower.js`, data `data/tower-emergency.js`)*
+5. Tower Emergency *(Peralatan ERS — inventaris TE per lokasi & NAMA KONTAINER, dibaca live dari spreadsheet Tower Emergency tiap menit; `tower.js`, cadangan `data/tower-emergency.js`)*
 6. Trafo Mobile *(Peralatan ERS — data sheet `2. TRAFO MOBILE` dari Google Sheets: peta lokasi, daftar komponen, tambah/edit, foto)*
 7. DC Mobile *(Peralatan ERS — data unit DC mobile dari `DATA_DC_MOBILE_UIT_JBM.xlsx`: ringkasan, peta per ULTG, grafik, tabel & detail)*
 8. Alat Berat *(grup tersendiri: Alat Berat & Alat Bantu — Database Kesiapan Alat Berat UIT JBM; data dummy, menunggu sinkronisasi data dari aplikasi WARNOTO)*
@@ -101,7 +101,9 @@ python3 tools/xlsx_to_trafo_db.py "DATABASE_ALAT_BERAT_UIT_JBM.xlsx"
 ### Tower Emergency (Peralatan ERS)
 - Sumber: spreadsheet Tower Emergency (`1P92IKcPwqLltC4sY_L3BcezIYiuwA0qKnGX6McyZ-6Y`), sheet **LINDSEY BANGIL, TS BABAT, LINDSEY PACITAN, TS TANDES, TS TANAH LOT, SBB KEBONAGUNG**. Kolom bertajuk **NAMA KONTAINER** menjadi acuan: setiap sub-kolom di bawahnya = satu kontainer (Penanggungan, Bromo, Semeru, Kerinci, Argopuro, dst.).
 - Tampilan: KPI (lokasi, kontainer, jenis item, item dengan catatan, item berjumlah 0), peta lokasi, komposisi per merek (Lindsey/TS/SBB), kartu lokasi, kartu kontainer (klik untuk filter), grafik per kategori / kontainer / kondisi data, daftar item Grid/List dengan foto, pop-up detail (foto bisa di-zoom).
-- Memperbarui data: `python3 tools/sheet_tower_to_js.py` (membaca tampilan HTML spreadsheet agar sel gabungan, kolom tersembunyi, dan gambar dalam sel terbaca; foto disimpan di `assets/tower/`), lalu commit `data/tower-emergency.js` dan `assets/tower/`. Spreadsheet harus dapat dibuka dengan link. Titik peta per lokasi ada di `SHEETS` pada skrip tersebut (perkiraan).
+- **Live, diperbarui tiap menit**: dashboard memanggil Apps Script `?action=te_live` (`apps-script/Code.gs`, bagian TOWER EMERGENCY). Apps Script mengambil tabel tiap sheet dari tampilan htmlview spreadsheet (di-cache ±50 detik), lalu `tower.js` mem-parsing-nya dengan aturan yang sama seperti `tools/sheet_tower_to_js.py`. Data dimuat ulang tiap 60 detik selama tab terbuka (dan saat tab dibuka kembali); tombol **Muat ulang** mengambil data saat itu juga. Spreadsheet harus dapat dibuka dengan link (Viewer). Setelah memperbarui `Code.gs`, buat **New version** pada deployment.
+- Bila Apps Script belum diperbarui atau gagal diakses, dashboard memakai data cadangan `data/tower-emergency.js` (atau data live terakhir yang berhasil dimuat). Foto item memakai foto langsung dari spreadsheet, dengan foto lokal `assets/tower/` sebagai cadangan.
+- Memperbarui data cadangan: `python3 tools/sheet_tower_to_js.py` (membaca tampilan HTML spreadsheet agar sel gabungan, kolom tersembunyi, dan gambar dalam sel terbaca; foto disimpan di `assets/tower/`), lalu commit `data/tower-emergency.js` dan `assets/tower/`. Spreadsheet harus dapat dibuka dengan link. Titik peta per lokasi ada di `SHEETS` pada skrip tersebut (perkiraan).
 
 ### AO (section RKAU)
 - Menu AO terbuka untuk semua, tetapi **semua nilai rupiah dan nomor kontrak diburamkan (blur)**. Klik nilai yang buram atau tombol **Tampilkan nilai** lalu masukkan **token akses**; token disimpan di browser komputer itu (localStorage `fashar-ao-token`) sehingga cukup dimasukkan sekali. Tombol **Sembunyikan nilai** menghapus token dan memburamkan lagi. Di komputer lain token harus dimasukkan lagi.

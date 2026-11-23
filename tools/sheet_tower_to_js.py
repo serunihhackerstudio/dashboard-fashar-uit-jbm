@@ -92,6 +92,11 @@ def parse_sheet(G, name):
     nr = kr + 1
     while all(up(nr, c) in ("", "NAMA KONTAINER") for c in kcols): nr += 1
     containers = [(c, txt(nr, c).title()) for c in kcols if txt(nr, c) and up(nr, c) != "NAMA KONTAINER"]
+    # nama kontainer kosong/umum ("KONTAINER") -> pakai nama lokasi dari nama sheet (mis. TS TANDES -> Tandes)
+    lok_name = " ".join(name.split()[1:]).title() or name.title()
+    containers = [(c, lok_name if k.upper() in ("KONTAINER", "CONTAINER", "") else k) for c, k in containers]
+    if len(containers) > 1 and len({k for _, k in containers}) < len(containers):
+        containers = [(c, f"{k} {i + 1}") for i, (c, k) in enumerate(containers)]
     first = max(hr, nr) + 1
     # kolom lain berdasarkan judul (baris hr..nr)
     head = {}
@@ -135,8 +140,9 @@ def parse_sheet(G, name):
         total = tot if tot is not None else sum(qty.values())
         items.append({"kat": cat, "nama": label, "part": part if c_desc is not None else "", "ts": ts, "satuan": sat.upper(),
                       "q": qty, "total": total, "ket": ket, "extra": ex, "img": img})
-    return {"containers": [k for _, k in containers], "items": items, "notes": notes,
-            "title": next((txt(r, 0) for r in range(first) if txt(r, 0) and len(txt(r, 0)) > 6 and "PLN" not in up(r, 0) and up(r, 0) not in ("ITEM NO.", "NO")), name)}
+    title = next((txt(r, 0) for r in range(first) if txt(r, 0) and len(txt(r, 0)) > 6 and "PLN" not in up(r, 0) and up(r, 0) not in ("ITEM NO.", "NO")), name)
+    if lok_name.upper() not in title.upper(): title = "SHEET " + name  # judul sheet tidak menyebut lokasinya (mis. tersalin dari sheet lain)
+    return {"containers": [k for _, k in containers], "items": items, "notes": notes, "title": title}
 
 
 def main():
@@ -161,8 +167,15 @@ def main():
                 time.sleep(2 + 3 * k)
         imgmap[u] = None; return None
 
+    # gid dicari berdasarkan NAMA sheet (sheet yang dibuat ulang mendapat gid baru); gid di SHEETS hanya cadangan
+    gids = {}
+    if not cache:
+        idx = fetch(f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlview").decode("utf-8")
+        for n, g in re.findall(r'\{name: "([^"]*)", pageUrl: "[^"]*?gid=(\d+)"', idx): gids[html.unescape(n).strip().upper()] = g
     lokasi = []
-    for gid, name, info in SHEETS:
+    for gid0, name, info in SHEETS:
+        gid = gids.get(name.upper(), gid0)
+        if gids and name.upper() not in gids: print(f"PERINGATAN: sheet {name} tidak ditemukan, memakai gid lama {gid0}")
         if cache: raw = open(os.path.join(cache, f"h_{gid}.html"), encoding="utf-8").read()
         else: raw = fetch(f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlview/sheet?headers=false&gid={gid}").decode("utf-8")
         p = Grid(); p.feed(raw); d = parse_sheet(p.grid(), name)

@@ -5,7 +5,8 @@
    geser saat diperbesar; panah ←/→ untuk foto lain; Esc untuk menutup.
    ========================================================= */
 (function () {
-  const big = u => String(u || "").replace(/([?&]sz=)w\d+/, "$1w2000");
+  // versi resolusi tinggi: thumbnail Drive (?sz=w…) & gambar sel Google Sheets (…=w217-h172)
+  const big = u => String(u || "").replace(/([?&]sz=)w\d+/, "$1w2000").replace(/(\/sheets-images-rt\/[^=?#]+)=w\d+-h\d+$/, "$1=w1600");
   document.body.insertAdjacentHTML("beforeend", `<dialog class="lbx" id="lbx" aria-label="Foto">
     <div class="lbx-stage" id="lbxStage"><img id="lbxImg" alt="" draggable="false"></div>
     <div class="lbx-top"><span id="lbxCount"></span><div class="lbx-tools">
@@ -24,7 +25,9 @@
   };
   function show(i) {
     V.i = (i + V.list.length) % V.list.length; V.z = 1; V.x = 0; V.y = 0; apply();
-    const it = V.list[V.i]; img.src = it.thumb; img.alt = it.alt || "Foto";
+    const it = V.list[V.i];
+    img.onerror = () => { if (it.fb && img.getAttribute("src") !== it.fb) img.src = it.fb; }; // foto gagal dimuat -> foto cadangan
+    img.src = it.thumb; img.alt = it.alt || "Foto";
     const hi = new Image(); hi.onload = () => { if (V.list[V.i] === it) img.src = hi.src; }; hi.src = big(it.thumb);
     document.getElementById("lbxOpen").href = it.view || hi.src;
     document.getElementById("lbxCount").textContent = V.list.length > 1 ? `${V.i + 1} / ${V.list.length}` : "";
@@ -32,7 +35,7 @@
   }
   function open(list, i) { V.list = list; if (!box.open) box.showModal(); document.body.classList.add("lbx-open"); show(i || 0); }
   function close() { if (box.open) box.close(); }
-  box.addEventListener("close", () => { document.body.classList.remove("lbx-open"); img.src = ""; });
+  box.addEventListener("close", () => { document.body.classList.remove("lbx-open"); img.onerror = null; img.removeAttribute("src"); });
   window.openLightbox = open;
 
   document.addEventListener("click", e => {

@@ -321,7 +321,11 @@
     const kcols = cols(kr).filter(c => up(kr, c) === "NAMA KONTAINER");
     let nr = kr + 1;
     while (nr < G.length && kcols.every(c => ["", "NAMA KONTAINER"].includes(up(nr, c)))) nr++;
-    const containers = kcols.filter(c => txt(nr, c) && up(nr, c) !== "NAMA KONTAINER").map(c => [c, pyTitle(txt(nr, c))]);
+    let containers = kcols.filter(c => txt(nr, c) && up(nr, c) !== "NAMA KONTAINER").map(c => [c, pyTitle(txt(nr, c))]);
+    // nama kontainer kosong/umum ("KONTAINER") -> nama lokasi dari nama sheet (mis. TS TANDES -> Tandes); sama dengan tools/sheet_tower_to_js.py
+    const lokName = pyTitle(name.split(/\s+/).slice(1).join(" ")) || pyTitle(name);
+    containers = containers.map(([c, k]) => [c, ["KONTAINER", "CONTAINER", ""].includes(k.toUpperCase()) ? lokName : k]);
+    if (containers.length > 1 && new Set(containers.map(x => x[1])).size < containers.length) containers = containers.map(([c, k], i) => [c, `${k} ${i + 1}`]);
     const first = Math.max(hr, nr) + 1;
     const head = new Map();
     cols(hr).forEach(c => { for (let r = hr; r <= nr; r++) { const h = up(r, c); if (h && h !== "NAMA KONTAINER" && !kcols.includes(c) && !head.has(c)) head.set(c, h); } });
@@ -354,6 +358,7 @@
     }
     let title = name;
     for (let r = 0; r < first; r++) { const t = txt(r, 0), u = up(r, 0); if (t && t.length > 6 && !u.includes("PLN") && u !== "ITEM NO." && u !== "NO") { title = t; break; } }
+    if (!title.toUpperCase().includes(lokName.toUpperCase())) title = "SHEET " + name; // judul tersalin dari sheet lain
     return { containers: containers.map(x => x[1]), items, notes, title };
   }
   // Gabungkan hasil live dengan info lokasi (titik peta, merek) dan foto lokal sebagai cadangan
@@ -373,7 +378,9 @@
           if (it.img && !/^(https?:|data:)/.test(it.img)) it.img = new URL(it.img, "https://docs.google.com/").href;
           it.imgFb = local; it.img = it.img || local;
         });
-        const { items, containers, notes, title } = d;
+        const { items, containers, notes } = d;
+        // keterangan lokasi yang ditetapkan di data (mis. "UPT GRESIK GIS TANDES") tidak ditimpa judul sheet
+        const title = base.title && !/^SHEET /i.test(base.title) ? base.title : d.title;
         return (LIVE.good[base.gid] = { ...base, items, containers, notes, title });
       } catch (e) { errs.push(`${base.sheet}: ${e.message || e}`); return prev; }
     });

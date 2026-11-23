@@ -1,7 +1,8 @@
 /* =========================================================
    TOWER EMERGENCY (Peralatan ERS) — inventaris TE per lokasi & per NAMA KONTAINER
-   Data: data/tower-emergency.js (tools/sheet_tower_to_js.py) dari spreadsheet DATA TOWER EMERGENCY,
-   sheet LINDSEY BANGIL, TS BABAT, LINDSEY PACITAN, TS TANDES, TS TANAH LOT, SBB KEBONAGUNG.
+   Data live: spreadsheet DATA TOWER EMERGENCY (sheet LINDSEY BANGIL, TS BABAT, LINDSEY PACITAN,
+   TS TANDES, TS TANAH LOT, SBB KEBONAGUNG) lewat Apps Script ?action=te_live, dimuat ulang tiap menit.
+   Cadangan bila live gagal: data/tower-emergency.js (tools/sheet_tower_to_js.py).
    ========================================================= */
 (function () {
   const sec = $("#page-tower");
@@ -15,12 +16,16 @@
   const title1 = s => String(s || "").toLowerCase().replace(/(^|[\s/(&-])([a-z])/g, (m, a, b) => a + b.toUpperCase()).replace(/\bErs\b/g, "ERS").replace(/\bE\.r\.s\./g, "E.R.S.").replace(/\bHpu\b/g, "HPU").replace(/\bOhgw\b/g, "OHGW").replace(/\b(Upt|Ultg|Gis|Gi|Te|Ts|Sbb|Kv)\b/g, m => m.toUpperCase()).replace(/ (And|Of|For|With|Or|The) /g, m => m.toLowerCase());
   const isBad = it => /rusak|tidak lengkap|tidak ada|kurang|karat|hilang|tanpa|tidak memiliki|patah|bengkok/i.test(it.ket || "");
 
+  const API = (window.FASHAR_CONFIG && window.FASHAR_CONFIG.trafoDbApi || "").trim();
+  const REFRESH_MS = 60 * 1000;
   // normalisasi data
-  const LOK = DOC.lokasi.map((L, li) => ({
+  const normalize = lokasi => lokasi.map((L, li) => ({
     ...L, li, key: L.sheet, color: MERK_C[L.merk] || KON_C[li % KON_C.length],
     items: L.items.map((it, ii) => ({ ...it, li, ii, lok: L.lokasi, kat: title1(it.kat), total: Number(it.total) || 0 }))
   }));
-  const ALL = LOK.flatMap(L => L.items);
+  let LOK = normalize(DOC.lokasi);
+  let ALL = LOK.flatMap(L => L.items);
+  const LIVE = { on: false, fetched: null, sig: "", timer: null, busy: false, last: 0, good: {} };
   const S = { lok: "", kon: "", kat: "", q: "", only: "", view: (() => { try { return localStorage.getItem("fashar-te-view") || "grid"; } catch (e) { return "grid"; } })(), page: 1 };
   const PER = 24;
   const curLok = () => LOK.find(L => L.key === S.lok) || null;
@@ -28,8 +33,8 @@
   /* ---------- Kerangka halaman ---------- */
   sec.innerHTML = `
    <div class="tdb-bar card ab-bar">
-    <div class="tdb-bar-info"><span class="chip sync live"><i class="live-dot"></i>Spreadsheet Tower Emergency</span><span class="muted sm">Data per ${esc(typeof fmtTanggal === "function" ? fmtTanggal(DOC.generated) : DOC.generated)} · ${LOK.length} sheet lokasi · acuan kolom <b>NAMA KONTAINER</b></span></div>
-    <div class="tdb-actions"><a class="btn primary" href="${SHEET_URL}" target="_blank" rel="noopener">${svg('<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>')}Buka spreadsheet</a></div>
+    <div class="tdb-bar-info"><span class="chip sync" id="teSync"><i class="live-dot"></i>Spreadsheet Tower Emergency</span><span class="muted sm" id="teSyncNote"></span></div>
+    <div class="tdb-actions"><button class="btn ghost" type="button" id="teReload" hidden>${svg('<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>')}Muat ulang</button><a class="btn primary" href="${SHEET_URL}" target="_blank" rel="noopener">${svg('<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>')}Buka spreadsheet</a></div>
    </div>
    <div class="ab-kpis te-kpis" id="teKpi"></div>
 
@@ -147,7 +152,9 @@
       (!q || [it.nama, it.part, it.ts, it.ket, it.kat, it.lok, Object.values(it.extra || {}).join(" ")].join(" ").toLowerCase().includes(q)));
   }
   const qtyPills = it => { const L = LOK[it.li]; return L.containers.map((k, i) => it.q[k] ? `<span class="te-q" style="--c:${KON_C[i % KON_C.length]}" title="Kontainer ${esc(k)}">${esc(k)} <b>${num(it.q[k])}</b></span>` : "").join(""); };
-  const photo = (it, cls) => it.img ? `<img class="${cls}" src="${esc(it.img)}" alt="${esc(it.nama)}" loading="lazy">` : `<span class="${cls} te-noimg">${svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>')}</span>`;
+  // foto live (Google Sheets) dengan cadangan foto lokal bila gagal dimuat
+  const fb = it => it.imgFb && it.imgFb !== it.img ? ` onerror="this.onerror=null;this.src='${esc(it.imgFb)}'"` : "";
+  const photo = (it, cls) => it.img ? `<img class="${cls}" src="${esc(it.img)}" alt="${esc(it.nama)}" loading="lazy"${fb(it)}>` : `<span class="${cls} te-noimg">${svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>')}</span>`;
   function renderItems() {
     const base = filtered(true), L = filtered(false);
     const kc = new Map(); base.forEach(it => kc.set(it.kat, (kc.get(it.kat) || 0) + 1));
@@ -187,7 +194,7 @@
     const mx = Math.max(1, ...L.containers.map(k => it.q[k] || 0));
     const dd = (l, v) => `<div><dt>${l}</dt><dd class="${v ? "pre" : "nil"}">${v || "—"}</dd></div>`;
     $("#teDlgBody").innerHTML = `<div class="te-dlg">
-      <div class="te-dlg-ph">${it.img ? `<a href="${esc(it.img)}" class="te-zoom" title="Klik untuk memperbesar"><img src="${esc(it.img)}" alt="${esc(it.nama)}"></a><small class="muted">Klik foto untuk memperbesar</small>` : photo(it, "te-img big")}</div>
+      <div class="te-dlg-ph">${it.img ? `<a href="${esc(it.img)}" class="te-zoom" title="Klik untuk memperbesar"><img src="${esc(it.img)}" alt="${esc(it.nama)}"${fb(it)}></a><small class="muted">Klik foto untuk memperbesar</small>` : photo(it, "te-img big")}</div>
       <div><dl class="dgrid">${dd(L.merk === "TS" ? "Uraian / nama barang" : "Description", esc(it.nama))}${dd(L.merk === "TS" ? "Nama TS" : "Part no.", esc(it.part || it.ts))}${dd("Satuan", esc(it.satuan))}${dd("Total", `<b>${num(it.total)}</b> ${esc(it.satuan || "")}`)}
         ${Object.entries(it.extra || {}).map(([k, v]) => dd(esc(title1(k)), esc(v))).join("")}</dl>
         <h4 class="te-dlg-h">Jumlah per kontainer</h4>
@@ -265,11 +272,168 @@
     const z = e.target.closest(".te-zoom"); if (z && window.openLightbox) { e.preventDefault(); openLightbox([{ thumb: z.getAttribute("href"), alt: $("#teDlgTitle").textContent, view: z.getAttribute("href") }], 0); }
   });
 
+  /* ---------- Data live dari spreadsheet (dimuat ulang tiap menit) ---------- */
+  // Port dari tools/sheet_tower_to_js.py: tabel htmlview -> grid -> item per kontainer
+  function htmlGrid(html) {
+    const doc = new DOMParser().parseFromString(/<table/i.test(html) ? html : `<table>${html}</table>`, "text/html");
+    const G = new Map(); let mr = 0, mc = 0;
+    [...doc.querySelectorAll("tr")].forEach((tr, ri) => {
+      let ci = 0;
+      [...tr.children].filter(td => td.tagName === "TD" && !/freezebar/.test(td.className || "")).forEach(td => {
+        while (G.has(ri + "," + ci)) ci++;
+        const cl = td.cloneNode(true); cl.querySelectorAll("br").forEach(b => b.replaceWith("\n"));
+        const cs = +td.getAttribute("colspan") || 1, rs = +td.getAttribute("rowspan") || 1;
+        const cell = { t: cl.textContent.trim(), img: [...td.querySelectorAll("img")].map(i => i.getAttribute("src")).filter(Boolean) };
+        for (let dr = 0; dr < rs; dr++) for (let dc = 0; dc < cs; dc++) {
+          G.set((ri + dr) + "," + (ci + dc), { ...cell, o: dr === 0 && dc === 0 });
+          mr = Math.max(mr, ri + dr + 1); mc = Math.max(mc, ci + dc + 1);
+        }
+        ci += cs;
+      });
+    });
+    return Array.from({ length: mr }, (_, r) => Array.from({ length: mc }, (_, c) => G.get(r + "," + c) || null));
+  }
+  const pyNum = v => {
+    const s = String(v || "").trim().replace(/ /g, "");
+    if (/^\d{1,3}([.,]\d{3})+$/.test(s)) return parseFloat(s.replace(/[.,]/g, ""));
+    if (/^-?\d+([.,]\d+)?$/.test(s)) return parseFloat(s.replace(",", "."));
+    return null;
+  };
+  const clean = s => String(s || "").replace(/\u00a0/g, " ").replace(/[ \t]+/g, " ").trim();
+  const pyTitle = s => s.toLowerCase().replace(/(^|[^\p{L}])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  function parseSheet(G, name) {
+    const at = (r, c) => c != null && r < G.length && c < (G[r] || []).length ? G[r][c] : null;
+    const txt = (r, c) => { const x = at(r, c); return x ? clean(x.t) : ""; };
+    const up = (r, c) => txt(r, c).toUpperCase();
+    const txo = (r, c) => { const x = at(r, c); return x && x.o ? clean(x.t) : ""; };
+    const W = r => (G[r] || []).length, cols = r => [...Array(W(r)).keys()];
+    const hr = G.findIndex((_, r) => cols(r).some(c => up(r, c) === "SATUAN"));
+    if (hr < 0) throw new Error(`sheet ${name}: kolom SATUAN tidak ditemukan`);
+    let kr = -1;
+    for (let r = Math.max(0, hr - 3); r < hr + 2 && kr < 0; r++) if (cols(r).some(c => up(r, c) === "NAMA KONTAINER")) kr = r;
+    if (kr < 0) throw new Error(`sheet ${name}: kolom NAMA KONTAINER tidak ditemukan`);
+    const kcols = cols(kr).filter(c => up(kr, c) === "NAMA KONTAINER");
+    let nr = kr + 1;
+    while (nr < G.length && kcols.every(c => ["", "NAMA KONTAINER"].includes(up(nr, c)))) nr++;
+    const containers = kcols.filter(c => txt(nr, c) && up(nr, c) !== "NAMA KONTAINER").map(c => [c, pyTitle(txt(nr, c))]);
+    const first = Math.max(hr, nr) + 1;
+    const head = new Map();
+    cols(hr).forEach(c => { for (let r = hr; r <= nr; r++) { const h = up(r, c); if (h && h !== "NAMA KONTAINER" && !kcols.includes(c) && !head.has(c)) head.set(c, h); } });
+    const col = (...keys) => { for (const [c, h] of head) if (keys.some(k => h.startsWith(k))) return c; return null; };
+    const c_no = col("ITEM NO", "NO"), c_sat = col("SATUAN"), c_part = col("LINDSEY PART", "SBB PART"), c_desc = col("DESCRIPTION", "URAIAN"),
+      c_ts = col("NAMA TS"), c_foto = col("FOTO", "GAMBAR"), c_tot = col("TOTAL", "JUMLAH"), c_ket = col("KETERANGAN", "KETERANGA");
+    const used = new Set([c_no, c_sat, c_part, c_desc, c_ts, c_foto, c_tot, c_ket, ...kcols]);
+    const extra = [...head].filter(([c]) => !used.has(c)).map(([c, h]) => [c, pyTitle(h)]);
+    const items = [], notes = []; let cat = "Lainnya";
+    for (let r = first; r < G.length; r++) {
+      const nm = txo(r, c_desc), part = txo(r, c_part), ts = txo(r, c_ts), sat = txo(r, c_sat);
+      const q = {}; containers.forEach(([c, k]) => { q[k] = pyNum(txo(r, c)); });
+      const tot = pyNum(txo(r, c_tot)), ket = txo(r, c_ket);
+      const ex = {}; extra.forEach(([c, lab]) => { const v = txo(r, c); if (v) ex[lab] = v; });
+      const cf = at(r, c_foto), img = cf && cf.img.length && cf.o ? cf.img[0] : null;
+      const hasNum = Object.values(q).some(v => v !== null) || tot !== null;
+      const label = nm || part;
+      if (!label && !hasNum) continue;
+      if (!sat && !hasNum && !img) {
+        const lab = clean(label);
+        if (/each\s+set\s+consists?/i.test(lab)) continue;
+        if (/exist|standar|kontainer/i.test(lab) && items.length) { notes.push(lab); continue; }
+        cat = lab.slice(0, 80); continue;
+      }
+      if (!label) continue;
+      let qty = Object.fromEntries(Object.entries(q).filter(([, v]) => v));
+      if (!Object.keys(qty).length && tot && containers.length === 1) qty = { [containers[0][1]]: tot };
+      const total = tot !== null ? tot : Object.values(qty).reduce((a, v) => a + v, 0);
+      items.push({ kat: cat, nama: label, part: c_desc !== null ? part : "", ts, satuan: sat.toUpperCase(), q: qty, total, ket, extra: ex, img });
+    }
+    let title = name;
+    for (let r = 0; r < first; r++) { const t = txt(r, 0), u = up(r, 0); if (t && t.length > 6 && !u.includes("PLN") && u !== "ITEM NO." && u !== "NO") { title = t; break; } }
+    return { containers: containers.map(x => x[1]), items, notes, title };
+  }
+  // Gabungkan hasil live dengan info lokasi (titik peta, merek) dan foto lokal sebagai cadangan
+  function liveDoc(j) {
+    const errs = [];
+    const lokasi = DOC.lokasi.map(base => {
+      const sh = (j.sheets || []).find(x => x && String(x.gid) === String(base.gid));
+      const prev = LIVE.good[base.gid] || base; // sheet gagal: pakai data live terakhir yang berhasil
+      if (!sh || !sh.html) { errs.push(`${base.sheet}: ${sh && sh.error || "tidak terbaca"}`); return prev; }
+      try {
+        const d = parseSheet(htmlGrid(sh.html), base.sheet);
+        if (!d.items.length) throw new Error("tidak ada item");
+        const old = new Map(base.items.map(it => [`${it.nama}|${it.part}|${it.ts}`, it.img]));
+        d.items.forEach(it => {
+          const local = old.get(`${it.nama}|${it.part}|${it.ts}`) || null;
+          if (it.img && !/^(https?:|data:)/.test(it.img)) it.img = new URL(it.img, "https://docs.google.com/").href;
+          it.imgFb = local; it.img = it.img || local;
+        });
+        const { items, containers, notes, title } = d;
+        return (LIVE.good[base.gid] = { ...base, items, containers, notes, title });
+      } catch (e) { errs.push(`${base.sheet}: ${e.message || e}`); return prev; }
+    });
+    return { lokasi, errs };
+  }
+  const setSync = (state, text, note) => {
+    const c = $("#teSync"); c.className = `chip sync ${state}`;
+    c.innerHTML = `<i class="live-dot"></i>${esc(text)}`; $("#teSyncNote").innerHTML = note || "";
+  };
+  const hm = d => d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  const staticNote = `Data per ${esc(typeof fmtTanggal === "function" ? fmtTanggal(DOC.generated) : DOC.generated)} · ${DOC.lokasi.length} sheet lokasi · acuan kolom <b>NAMA KONTAINER</b>`;
+  function applyData(lokasi) {
+    const sig = JSON.stringify(lokasi.map(L => [L.containers, L.notes, L.title, L.items.map(it => [it.kat, it.nama, it.part, it.ts, it.satuan, it.q, it.total, it.ket, it.extra, it.img])]));
+    if (sig === LIVE.sig) return false;
+    const first = !LIVE.sig; LIVE.sig = sig;
+    LOK = normalize(lokasi); ALL = LOK.flatMap(L => L.items);
+    if (first && !LIVE.on) return false; // data awal sudah tergambar
+    if (S.lok && !curLok()) { S.lok = ""; S.kon = ""; }
+    const L0 = curLok(); if (S.kon && (!L0 || !L0.containers.includes(S.kon))) S.kon = "";
+    render();
+    if (window.homeRefresh) window.homeRefresh();
+    return true;
+  }
+  async function loadLive(manual) {
+    if (!API) { setSync("static", "Data statis", `${staticNote} · isi trafoDbApi di config.js agar data live`); return; }
+    if (LIVE.busy) return; LIVE.busy = true;
+    if (!LIVE.on || manual) setSync("loading", "Memuat dari Google Sheets…", LIVE.on ? $("#teSyncNote").innerHTML : staticNote);
+    try {
+      const r = await fetch(API + (API.includes("?") ? "&" : "?") + "action=te_live", { cache: "no-store" });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Gagal memuat");
+      // Apps Script versi lama mengabaikan ?action=te_live dan mengirim data Trafo Mobile
+      if (!Array.isArray(j.sheets)) throw new Error("Apps Script masih versi lama (belum ada fitur Tower Emergency live). Tempel Code.gs terbaru lalu deploy New version.");
+      const { lokasi, errs } = liveDoc(j);
+      if (errs.length === DOC.lokasi.length) throw new Error(errs.join(" · "));
+      const wasLive = LIVE.on;
+      LIVE.on = true; LIVE.fetched = j.fetched ? new Date(j.fetched) : new Date(); LIVE.last = Date.now();
+      const changed = applyData(lokasi) && wasLive;
+      setSync(errs.length ? "error" : "live", errs.length ? "Live · sebagian sheet gagal" : "Live · Google Sheets",
+        `${LOK.length} sheet lokasi · diperbarui otomatis tiap menit · terakhir ${hm(LIVE.fetched)}${changed ? " · ada perubahan data" : ""}${errs.length ? ` · ${esc(errs.join(" · "))}` : ""}`);
+      if (location.hash === "#tower" && typeof setUpdated === "function") setUpdated("tower");
+    } catch (e) {
+      setSync("error", LIVE.on ? "Gagal memperbarui · menampilkan data terakhir" : "Gagal terhubung · menampilkan data statis",
+        `${LIVE.on ? `Terakhir berhasil ${hm(LIVE.fetched)}` : staticNote} · ${esc(String(e.message || e))}`);
+    } finally { LIVE.busy = false; $("#teReload").hidden = !API; }
+  }
+  function schedule() {
+    clearInterval(LIVE.timer);
+    if (!API) return;
+    LIVE.timer = setInterval(() => { if (document.visibilityState === "visible") loadLive(false); }, REFRESH_MS);
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && API && Date.now() - LIVE.last >= REFRESH_MS) loadLive(false); });
+  $("#teReload").addEventListener("click", () => loadLive(true));
+  window.teRefresh = () => loadLive(true);
+
   window.PAGE_UPDATED = window.PAGE_UPDATED || {};
-  window.PAGE_UPDATED.tower = () => ({ date: DOC.generated, title: "Tanggal pengambilan data dari spreadsheet Tower Emergency" });
+  window.PAGE_UPDATED.tower = () => {
+    if (!LIVE.on || !LIVE.fetched) return { date: DOC.generated, title: "Tanggal pengambilan data dari spreadsheet Tower Emergency" };
+    const d = LIVE.fetched, pad = n => String(n).padStart(2, "0");
+    return { date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, title: `Dibaca live dari spreadsheet Tower Emergency pukul ${pad(d.getHours())}.${pad(d.getMinutes())} (diperbarui tiap menit)` };
+  };
   window.TOWER_SUMMARY = () => ({ lokasi: LOK.length, kontainer: LOK.reduce((a, L) => a + L.containers.length, 0), item: ALL.length });
   addEventListener("hashchange", () => { if (location.hash === "#tower") setTimeout(() => { if (!MAP.fitted) { mapFit(); MAP.fitted = true; } else MAP.map && MAP.map.invalidateSize(); }, 80); });
 
   render();
+  setSync(API ? "loading" : "static", API ? "Memuat dari Google Sheets…" : "Data statis", staticNote);
+  applyData(DOC.lokasi); // simpan tanda data awal
+  loadLive(false); schedule();
   if (location.hash === "#tower") setTimeout(() => { mapFit(); MAP.fitted = true; if (typeof setUpdated === "function") setUpdated("tower"); }, 80);
 })();

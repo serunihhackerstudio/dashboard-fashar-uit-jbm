@@ -21,6 +21,7 @@
  * GET  <url>?action=hv_photos&row=N&expect=NAMA
  * POST action: "hv_add" | "hv_update" | "hv_photo_upload" | "hv_photo_delete" | "hv_photo_cover" (baris + expect)
  * GET  <url>?action=eq_photos&kind=dcm&id=ID
+ * GET  <url>?action=te_live           → tabel sheet spreadsheet DATA TOWER EMERGENCY (baca saja, cache ±50 detik)
  * POST action: "eq_seed" | "eq_add" | "eq_update" | "eq_photo_upload" | "eq_photo_delete" | "eq_photo_cover"  + kind
  *
  * CUI Jarvis: file export Jarvis yang diunggah dari dashboard disimpan permanen di
@@ -134,6 +135,7 @@ function doGet(e) {
     if (p.action === 'eq_photos') return json_(eqPhotos_(p.kind, p.id));
     if (p.action === 'hv') return json_(hvGet_());
     if (p.action === 'hv_photos') return json_(hvPhotos_(p.row, p.expect));
+    if (p.action === 'te_live') return json_(teLive_());
     ensureIds_(sheet_());
     const rows = readRows_(), moves = readMoves_();
     return json_({ ok: true, source: 'DATABASE ALAT BERAT UIT JBM — ' + SHEET_NAME, rows: rows, moves: moves, updated: syncUpdated_(rows, moves) });
@@ -1288,4 +1290,65 @@ function aoMask_(o) {
   o.paguPct = tp ? Math.round(tr / tp * 10000) / 10000 : 0;
   o.masked = true;
   return o;
+}
+
+/* =========================================================
+   TOWER EMERGENCY — baca live spreadsheet DATA TOWER EMERGENCY (baca saja)
+   Tabel tiap sheet diambil dari tampilan htmlview (sama seperti tools/sheet_tower_to_js.py)
+   agar sel gabungan NAMA KONTAINER & foto di dalam sel terbaca seperti di Google Sheets.
+   Dashboard mem-parsing tabelnya sendiri. Spreadsheet harus "Anyone with the link – Viewer".
+   ========================================================= */
+const TE_SHEET_ID = '1P92IKcPwqLltC4sY_L3BcezIYiuwA0qKnGX6McyZ-6Y';
+const TE_GIDS = ['921593795', '1287518963', '1567974116', '1033846467', '819924374', '865271373'];
+const TE_CACHE_SEC = 50;
+
+function teLive_() {
+  const cache = CacheService.getScriptCache();
+  const out = {}, todo = [];
+  TE_GIDS.forEach(gid => {
+    const hit = teCacheGet_(cache, 'te_' + gid);
+    if (hit) out[gid] = { gid: gid, html: hit, cached: true }; else todo.push(gid);
+  });
+  if (todo.length) {
+    const res = UrlFetchApp.fetchAll(todo.map(gid => ({
+      url: 'https://docs.google.com/spreadsheets/d/' + TE_SHEET_ID + '/htmlview/sheet?headers=false&gid=' + gid,
+      muteHttpExceptions: true, followRedirects: true
+    })));
+    res.forEach((r, i) => {
+      const gid = todo[i], code = r.getResponseCode();
+      if (code !== 200) { out[gid] = { gid: gid, error: 'HTTP ' + code }; return; }
+      const html = teSlim_(r.getContentText('UTF-8'));
+      if (!/<tr/i.test(html)) { out[gid] = { gid: gid, error: 'Tabel tidak ditemukan (cek akses link spreadsheet)' }; return; }
+      teCachePut_(cache, 'te_' + gid, html);
+      out[gid] = { gid: gid, html: html };
+    });
+  }
+  return { ok: true, sheetId: TE_SHEET_ID, fetched: new Date().toISOString(), sheets: TE_GIDS.map(g => out[g]) };
+}
+
+// Ambil tabelnya saja dan buang atribut gaya agar respons kecil
+function teSlim_(html) {
+  const a = html.search(/<table/i), b = html.toLowerCase().lastIndexOf('</table>');
+  if (a >= 0 && b > a) html = html.slice(a, b + 8);
+  return html.replace(/\s(style|dir|id)="[^"]*"/g, '').replace(/\sclass="s\d+(?:\s+softmerge)?"/g, '');
+}
+
+// Cache dibatasi 100 KB per kunci: simpan terkompresi & dipecah
+function teCachePut_(cache, key, text) {
+  try {
+    const b64 = Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(text, 'text/plain')).getBytes());
+    const parts = {}, n = Math.ceil(b64.length / 90000);
+    for (let i = 0; i < n; i++) parts[key + '_' + i] = b64.slice(i * 90000, (i + 1) * 90000);
+    parts[key] = String(n);
+    cache.putAll(parts, TE_CACHE_SEC);
+  } catch (err) { /* cache gagal: abaikan */ }
+}
+function teCacheGet_(cache, key) {
+  try {
+    const n = Number(cache.get(key)); if (!n) return null;
+    const keys = []; for (let i = 0; i < n; i++) keys.push(key + '_' + i);
+    const got = cache.getAll(keys); let b64 = '';
+    for (let i = 0; i < n; i++) { if (!got[keys[i]]) return null; b64 += got[keys[i]]; }
+    return Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(b64), 'application/x-gzip')).getDataAsString('UTF-8');
+  } catch (err) { return null; }
 }
